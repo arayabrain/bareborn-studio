@@ -1,114 +1,169 @@
-import React from 'react'
-import AppBar from '@mui/material/AppBar'
-import Tabs from '@mui/material/Tabs'
-import Tab from '@mui/material/Tab'
-import Typography from '@mui/material/Typography'
-import Toolbar from '@mui/material/Toolbar'
-import IconButton from '@mui/material/IconButton'
-import Tooltip from '@mui/material/Tooltip'
+import { AppBar, Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import GitHubIcon from '@mui/icons-material/GitHub'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
+import { FC, useState } from 'react'
+import { drawerWidth } from './FlowChart/FlowChart'
+import Header from './Header'
+import { KeyboardBackspace } from '@mui/icons-material'
+import HomeIcon from '@mui/icons-material/Home'
+import SourceIcon from '@mui/icons-material/Source'
+import StorageIcon from '@mui/icons-material/Storage'
+import GroupIcon from '@mui/icons-material/Group'
 
-import { useRunPipeline } from 'store/slice/Pipeline/PipelineHook'
-import FlowChart from './FlowChart/FlowChart'
-import Visualize from './Visualize/Visualize'
-import Experiment from './Experiment/Experiment'
-import studioLogo from './studio.png'
-
-const Layout: React.FC = () => {
-  const [value, setValue] = React.useState(0)
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setValue(newValue)
-  }
-
-  const runPipeline = useRunPipeline() // タブ切り替えによって結果取得処理が止まってしまうのを回避するため、タブの親レイヤーで呼び出している
-
+const Layout: FC = ({ children }) => {
   return (
-    <RootDiv>
-      <StyledAppBar position="fixed" color="inherit">
-        <Toolbar variant="dense">
-          <img src={studioLogo} alt="studio" width={75} height={50} />
-          <Tabs
-            sx={{ width: '100%' }}
-            value={value}
-            onChange={handleChange}
-            centered
-            textColor="primary"
-          >
-            <Tab label="Workflow" {...a11yProps(0)} />
-            <Tab label="Visualize" {...a11yProps(1)} />
-            <Tab label="Record" {...a11yProps(2)} />
-          </Tabs>
-          <Tooltip title="GitHub repository">
-            <IconButton
-              sx={{ mr: 1 }}
-              href="https://github.com/oist/studio"
-              target="_blank"
-            >
-              <GitHubIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Documentation">
-            <IconButton
-              href="https://studio.readthedocs.io/en/latest/"
-              target="_blank"
-            >
-              <MenuBookIcon />
-            </IconButton>
-          </Tooltip>
-        </Toolbar>
-      </StyledAppBar>
-      <TabPanel value={value} index={0}>
-        <FlowChart {...runPipeline} />
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        <Visualize />
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        <Experiment />
-      </TabPanel>
-    </RootDiv>
+    <LayoutWrapper>
+      <Header />
+      <ContentBodyWrapper>
+        <MenuLeft />
+        <ChildrenWrapper>{children}</ChildrenWrapper>
+      </ContentBodyWrapper>
+    </LayoutWrapper>
   )
 }
 
-const RootDiv = styled('div')(({ theme }) => ({
-  flexGrow: 1,
-  backgroundColor: theme.palette.background.paper,
-}))
+const MenuLeft: FC = () => {
+  const [width, setWidth] = useState(drawerWidth)
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  zIndex: theme.zIndex.drawer + 1,
-  backgroundColor: '#E1DEDB',
-}))
-
-interface TabPanelProps {
-  children?: React.ReactNode
-  index: any
-  value: any
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props
+  const onResize = () => {
+    setWidth(width === drawerWidth ? 54 : drawerWidth)
+  }
 
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Typography>{children}</Typography>}
-    </div>
+    <MenuLeftWrapper style={{ width, minWidth: width }}>
+      <BoxBack>
+        <ButtonBack
+          onClick={onResize}
+          style={{ transform: `rotate(${width === drawerWidth ? 0 : 180}deg)` }}
+        >
+          <BoxDivider />
+          <KeyboardBackspaceIcon />
+        </ButtonBack>
+      </BoxBack>
+      <MenuList>
+        <MenuItem isClose={width !== drawerWidth}>
+          <HomeIcon />
+          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+            Dashboard
+          </TypographyMenu>
+        </MenuItem>
+        <MenuItem isClose={width !== drawerWidth}>
+          <StorageIcon />
+          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+            Database
+          </TypographyMenu>
+        </MenuItem>
+        <MenuItem isClose={width !== drawerWidth}>
+          <SourceIcon />
+          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+            Project
+          </TypographyMenu>
+        </MenuItem>
+        <MenuItem isClose={width !== drawerWidth}>
+          <SourceIcon />
+          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+            Project
+          </TypographyMenu>
+        </MenuItem>
+        <MenuItem isClose={width !== drawerWidth}>
+          <GroupIcon />
+          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+            Account Manager
+          </TypographyMenu>
+        </MenuItem>
+      </MenuList>
+    </MenuLeftWrapper>
   )
 }
 
-function a11yProps(index: any) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  }
-}
+const LayoutWrapper = styled(Box)({
+  height: '100%',
+  width: '100%',
+})
+
+const ContentBodyWrapper = styled(Box)(() => ({
+  backgroundColor: '#ffffff',
+  display: 'flex',
+  paddingTop: 48,
+  height: 'calc(100% - 48px)',
+  paddingRight: 10,
+}))
+
+const ChildrenWrapper = styled(Box)(() => ({
+  width: '100%',
+  height: 'calc(100% - 10px)',
+  display: 'flex',
+  paddingTop: 10,
+  paddingLeft: 10,
+}))
+
+const MenuLeftWrapper = styled(Box)({
+  height: '100%',
+  backgroundColor: '#283237',
+  overflow: 'auto',
+  transition: 'all 0.3s',
+})
+
+const BoxBack = styled(Box)({
+  width: '100%',
+  height: 54,
+  display: 'flex',
+  justifyContent: 'flex-end',
+})
+
+const ButtonBack = styled(Box)({
+  height: 54,
+  width: 54,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+})
+
+const BoxDivider = styled(Box)({
+  height: 15,
+  width: 1,
+  backgroundColor: '#ffffff',
+  marginRight: -2,
+})
+
+const KeyboardBackspaceIcon = styled(KeyboardBackspace)({
+  color: '#ffffff',
+  fontSize: 20,
+})
+
+const MenuList = styled('ul')({
+  margin: 0,
+  padding: 0,
+})
+
+const MenuItem = styled('li', {
+  shouldForwardProp: (props) => props !== 'isClose',
+})<{ isClose: boolean }>(({ isClose }) => ({
+  padding: '0 15px',
+  color: '#ffffff',
+  listStyle: 'none',
+  height: 38,
+  minHeight: 38,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  width: '100%',
+  minWidth: 'max-content',
+  transition: 'all 0.3s',
+  cursor: 'pointer',
+  '&:hover': {
+    transform: isClose
+      ? 'scale(1.05) translateX(2px)'
+      : 'scale(1.05) translateX(10px)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+}))
+
+const TypographyMenu = styled(Typography)({
+  lineHeight: '20px',
+  marginTop: 4,
+  fontWeight: 500,
+  transition: 'opacity 0.3s',
+})
 
 export default Layout

@@ -3,7 +3,8 @@ import IconButton from '@mui/material/IconButton'
 import Close from '@mui/icons-material/Close'
 import { SnackbarProvider, SnackbarKey, useSnackbar } from 'notistack'
 
-import AppLayout from './components/Layout'
+import Project from './components/Project'
+import Layout from 'components/Layout'
 
 const App: React.FC = () => {
   return (
@@ -13,7 +14,9 @@ const App: React.FC = () => {
         <SnackbarCloseButton snackbarKey={snackbarKey} />
       )}
     >
-      <AppLayout />
+      <Layout>
+        <Project />
+      </Layout>
     </SnackbarProvider>
   )
 }
