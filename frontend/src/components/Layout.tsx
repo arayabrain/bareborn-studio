@@ -1,4 +1,4 @@
-import { AppBar, Box, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { FC, useState } from 'react'
 import { drawerWidth } from './FlowChart/FlowChart'
@@ -8,6 +8,7 @@ import HomeIcon from '@mui/icons-material/Home'
 import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
+import { Link, useLocation } from 'react-router-dom'
 
 const Layout: FC = ({ children }) => {
   return (
@@ -23,6 +24,7 @@ const Layout: FC = ({ children }) => {
 
 const MenuLeft: FC = () => {
   const [width, setWidth] = useState(drawerWidth)
+  const { pathname } = useLocation()
 
   const onResize = () => {
     setWidth(width === drawerWidth ? 54 : drawerWidth)
@@ -40,40 +42,55 @@ const MenuLeft: FC = () => {
         </ButtonBack>
       </BoxBack>
       <MenuList>
-        <MenuItem isClose={width !== drawerWidth}>
-          <HomeIcon />
-          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-            Dashboard
-          </TypographyMenu>
-        </MenuItem>
-        <MenuItem isClose={width !== drawerWidth}>
-          <StorageIcon />
-          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-            Database
-          </TypographyMenu>
-        </MenuItem>
-        <MenuItem isClose={width !== drawerWidth}>
-          <SourceIcon />
-          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-            Project
-          </TypographyMenu>
-        </MenuItem>
-        <MenuItem isClose={width !== drawerWidth}>
-          <SourceIcon />
-          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-            Project
-          </TypographyMenu>
-        </MenuItem>
-        <MenuItem isClose={width !== drawerWidth}>
-          <GroupIcon />
-          <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-            Account Manager
-          </TypographyMenu>
-        </MenuItem>
+        <LinkWrapper to="/">
+          <MenuItem isClose={width !== drawerWidth} active={pathname === '/'}>
+            <HomeIcon />
+            <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+              Dashboard
+            </TypographyMenu>
+          </MenuItem>
+        </LinkWrapper>
+        <LinkWrapper to="/database">
+          <MenuItem
+            isClose={width !== drawerWidth}
+            active={pathname === '/database'}
+          >
+            <StorageIcon />
+            <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+              Database
+            </TypographyMenu>
+          </MenuItem>
+        </LinkWrapper>
+        <LinkWrapper to="/project">
+          <MenuItem
+            isClose={width !== drawerWidth}
+            active={pathname === '/project'}
+          >
+            <SourceIcon />
+            <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+              Project
+            </TypographyMenu>
+          </MenuItem>
+        </LinkWrapper>
+        <LinkWrapper to="/account-management">
+          <MenuItem
+            isClose={width !== drawerWidth}
+            active={pathname === '/account-management'}
+          >
+            <GroupIcon />
+            <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+              Account Manager
+            </TypographyMenu>
+          </MenuItem>
+        </LinkWrapper>
       </MenuList>
     </MenuLeftWrapper>
   )
 }
+
+const LinkWrapper = styled(Link)(() => ({
+  textDecoration: 'none',
+}))
 
 const LayoutWrapper = styled(Box)({
   height: '100%',
@@ -137,8 +154,8 @@ const MenuList = styled('ul')({
 })
 
 const MenuItem = styled('li', {
-  shouldForwardProp: (props) => props !== 'isClose',
-})<{ isClose: boolean }>(({ isClose }) => ({
+  shouldForwardProp: (props) => props !== 'isClose' && props !== 'active',
+})<{ isClose: boolean; active: boolean }>(({ isClose, active }) => ({
   padding: '0 15px',
   color: '#ffffff',
   listStyle: 'none',
@@ -151,6 +168,7 @@ const MenuItem = styled('li', {
   minWidth: 'max-content',
   transition: 'all 0.3s',
   cursor: 'pointer',
+  backgroundColor: active ? 'rgba(255,255,255,0.4) !important' : 'transparent',
   '&:hover': {
     transform: isClose
       ? 'scale(1.05) translateX(2px)'

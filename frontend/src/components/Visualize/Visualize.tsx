@@ -1,6 +1,5 @@
 import React from 'react'
-import Drawer, { drawerClasses } from '@mui/material/Drawer'
-import { default as MuiToolbar } from '@mui/material/Toolbar'
+import { drawerClasses } from '@mui/material/Drawer'
 import { styled } from '@mui/material/styles'
 import { drawerWidth } from 'components/FlowChart/FlowChart'
 import { FlexItemList } from './FlexItemList'
