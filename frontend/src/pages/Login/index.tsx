@@ -113,7 +113,6 @@ const LableRequired = styled('span')({
 const Input = styled('input', {
   shouldForwardProp: (props) => props !== 'error',
 })<{ error: boolean }>(({ error }) => {
-  console.log('error', error)
   return {
     width: 250,
     height: 24,
@@ -130,10 +129,11 @@ const Input = styled('input', {
   }
 })
 
-const Description = styled(Typography)({
+const Description = styled(Typography)(({ theme }) => ({
   fontSize: 12,
   color: 'rgba(0, 0, 0, 0.65)',
-})
+  marginTop: theme.spacing(1),
+}))
 
 const LinkWrappper = styled(Link)({
   marginLeft: 10,
