@@ -7,6 +7,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Project from './components/Project'
 import Layout from 'components/Layout'
 import Dashboard from 'pages/Dashboard'
+import AccountManager from 'pages/AccountManager'
 
 const App: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/project" element={<Project />} />
+            <Route path="/account-manager" element={<AccountManager />} />
           </Routes>
         </Layout>
       </BrowserRouter>

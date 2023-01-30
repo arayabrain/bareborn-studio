@@ -72,10 +72,10 @@ const MenuLeft: FC = () => {
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
-        <LinkWrapper to="/account-management">
+        <LinkWrapper to="/account-manager">
           <MenuItem
             isClose={width !== drawerWidth}
-            active={pathname === '/account-management'}
+            active={pathname === '/account-manager'}
           >
             <GroupIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
