@@ -2,14 +2,19 @@ import { Box, Stack, styled, Typography } from '@mui/material'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-const Login = () => {
+const Signup = () => {
+  const regex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/
+  const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,100}$/
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({
     email: '',
     password: '',
+    reEnter: '',
   })
-  const [values, setValues] = useState<{ email: string; password: string }>({
+  const [values, setValues] = useState<{ [key: string]: string }>({
     email: '',
     password: '',
+    reEnter: '',
   })
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -17,16 +22,50 @@ const Login = () => {
     //todo call api.
   }
 
-  const onChangeValue = (event: ChangeEvent<HTMLInputElement>) => {
+  const onChangeValue = (
+    event: ChangeEvent<HTMLInputElement>,
+    validate?: Function,
+  ) => {
     const { name, value } = event.target
     setValues({ ...values, [name]: value })
-    setErrors({ ...errors, [name]: !value ? 'This field is required' : '' })
+    setErrors({ ...errors, [name]: validate?.(value) })
+  }
+
+  const validateEmail = (value: string): string => {
+    if (!value) return 'This field is required'
+    if (!regex.test(value)) {
+      return 'Invalid email format'
+    }
+    return ''
+  }
+
+  const validatePassword = (value: string): string => {
+    if (!value) return 'This field is required'
+    if (!regexPassword.test(value)) {
+      return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character.'
+    }
+    return ''
+  }
+
+  const validateReEnter = (value: string): string => {
+    if (!value) return 'This field is required'
+    if (value !== values.password) {
+      return 'Passwords do not match.'
+    }
+    return ''
+  }
+
+  const validateReEnterWhenInputPassword = () => {
+    const { reEnter, password } = values
+    if (reEnter && reEnter !== password) {
+      setErrors((pre) => ({ ...pre, reEnter: 'Passwords do not match.' }))
+    }
   }
 
   return (
     <LoginWrapper>
       <LoginContent>
-        <Title>Sign in to your account</Title>
+        <Title>Create new your account</Title>
         <FormSignUp autoComplete="off" onSubmit={onSubmit}>
           <Box sx={{ position: 'relative' }}>
             <LabelField>
@@ -36,7 +75,7 @@ const Login = () => {
               autoComplete="off"
               error={!!errors.email}
               name="email"
-              onChange={onChangeValue}
+              onChange={(e) => onChangeValue(e, validateEmail)}
               value={values.email}
               placeholder="Enter your email"
             />
@@ -49,30 +88,39 @@ const Login = () => {
             <Input
               autoComplete="off"
               error={!!errors.password}
-              onChange={onChangeValue}
+              onChange={(e) => onChangeValue(e, validatePassword)}
               name="password"
               type="password"
               value={values.password}
               placeholder="Enter your password"
+              onBlur={validateReEnterWhenInputPassword}
             />
             <TextError>{errors.password}</TextError>
           </Box>
-          <Description>
-            Forgot your password?
-            <LinkWrappper to="/reset-password">Reset password</LinkWrappper>
-          </Description>
+          <Box sx={{ position: 'relative' }}>
+            <LabelField>
+              Re-enter password<LableRequired>*</LableRequired>
+            </LabelField>
+            <Input
+              error={!!errors.reEnter}
+              onChange={(e) => onChangeValue(e, validateReEnter)}
+              name="reEnter"
+              type="password"
+              value={values.reEnter}
+              placeholder="Re-enter password"
+            />
+            <TextError>{errors.reEnter}</TextError>
+          </Box>
           <Stack
             flexDirection="row"
             gap={2}
-            mt={1}
             alignItems="center"
             justifyContent="space-between"
           >
-            <Description>
-              No Account
-              <LinkWrappper to="/signup">Create Account</LinkWrappper>
+            <Description sx={{ mt: 0 }}>
+              <LinkWrappper to="/login">Login</LinkWrappper>
             </Description>
-            <ButtonLogin type="submit">Sign in</ButtonLogin>
+            <ButtonLogin type="submit">Sign up</ButtonLogin>
           </Stack>
         </FormSignUp>
       </LoginContent>
@@ -100,7 +148,9 @@ const Title = styled(Typography)({
   marginBottom: 24,
 })
 
-const FormSignUp = styled('form')({})
+const FormSignUp = styled('form')({
+  maxWidth: 273,
+})
 
 const LabelField = styled(Typography)({
   fontSize: 14,
@@ -154,9 +204,11 @@ const ButtonLogin = styled('button')({
 
 const TextError = styled(Typography)({
   fontSize: 12,
+  minHeight: 18,
   color: 'red',
-  position: 'absolute',
-  bottom: -4,
+  lineHeight: '14px',
+  marginTop: -14,
+  wordBreak: 'break-word',
 })
 
-export default Login
+export default Signup

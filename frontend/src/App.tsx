@@ -7,6 +7,7 @@ import Project from './components/Project'
 import Layout from 'components/Layout'
 import Dashboard from 'pages/Dashboard'
 import Login from 'pages/Login'
+import Signup from 'pages/Signup'
 
 const App: React.FC = () => {
   return (
@@ -22,6 +23,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/project" element={<Project />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
           </Routes>
         </Layout>
       </BrowserRouter>
