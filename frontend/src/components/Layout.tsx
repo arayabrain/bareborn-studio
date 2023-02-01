@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { drawerWidth } from './FlowChart/FlowChart'
 import Header from './Header'
 import { KeyboardBackspace } from '@mui/icons-material'
@@ -8,9 +8,33 @@ import HomeIcon from '@mui/icons-material/Home'
 import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { getAuth } from 'firebase/auth'
 
 const Layout: FC = ({ children }) => {
+  const auth = getAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    checkkAuth()
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    checkkAuth()
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
+
+  const checkkAuth = () => {
+    if (
+      !auth.currentUser &&
+      !['/login', '/signup'].includes(window.location.pathname)
+    ) {
+      navigate('/login')
+    }
+  }
+
   return (
     <LayoutWrapper>
       <Header />

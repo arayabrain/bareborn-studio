@@ -3,7 +3,6 @@ import IconButton from '@mui/material/IconButton'
 import Close from '@mui/icons-material/Close'
 import { SnackbarProvider, SnackbarKey, useSnackbar } from 'notistack'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-
 import Project from './components/Project'
 import Layout from 'components/Layout'
 import Dashboard from 'pages/Dashboard'
