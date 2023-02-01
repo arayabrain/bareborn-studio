@@ -42,7 +42,7 @@ const Signup = () => {
   const validatePassword = (value: string): string => {
     if (!value) return 'This field is required'
     if (!regexPassword.test(value)) {
-      return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character.'
+      return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
     }
     return ''
   }
@@ -50,7 +50,7 @@ const Signup = () => {
   const validateReEnter = (value: string): string => {
     if (!value) return 'This field is required'
     if (value !== values.password) {
-      return 'Passwords do not match.'
+      return 'Passwords do not match'
     }
     return ''
   }
@@ -58,7 +58,7 @@ const Signup = () => {
   const validateReEnterWhenInputPassword = () => {
     const { reEnter, password } = values
     if (reEnter && reEnter !== password) {
-      setErrors((pre) => ({ ...pre, reEnter: 'Passwords do not match.' }))
+      setErrors((pre) => ({ ...pre, reEnter: 'Passwords do not match' }))
     }
   }
 
