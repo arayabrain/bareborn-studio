@@ -1,16 +1,41 @@
 import { Box, Button, styled } from '@mui/material'
+import ModalChangePassword from 'components/ModalChangePassword'
+import ModalDeleteAccount from 'components/ModalDeleteAccount'
+import { useState } from 'react'
 
 const AccountManager = () => {
-  const onDelete = () => {
-    //todo call api
+  const [openDelete, setOpenDelete] = useState(false)
+
+  const handleCloseDelete = () => {
+    setOpenDelete(false)
+  }
+
+  const onConfirmDelete = () => {
+    setOpenDelete(true)
   }
 
   const onForgotPassword = () => {
     //todo call api
   }
 
+  const onDelete = () => {
+    //todo call api
+    handleCloseDelete()
+  }
+
   return (
     <AccountManagerWrapper>
+      {/* <ModalDeleteAccount
+        titleSubmit="Delete Account"
+        onClose={handleCloseDelete}
+        open={openDelete}
+        onSubmit={onDelete}
+      /> */}
+      <ModalChangePassword
+        onClose={handleCloseDelete}
+        open={openDelete}
+        onSubmit={onDelete}
+      />
       <BoxButton>
         <ButtonAdd variant="contained">Add</ButtonAdd>
       </BoxButton>
@@ -31,7 +56,7 @@ const AccountManager = () => {
             <Td>Role</Td>
             <Td>Last Login</Td>
             <Td>
-              <ALink sx={{ color: 'red' }} onClick={onDelete}>
+              <ALink sx={{ color: 'red' }} onClick={onConfirmDelete}>
                 Delete
               </ALink>
               <ALink sx={{ ml: 1.25 }} onClick={onForgotPassword}>
