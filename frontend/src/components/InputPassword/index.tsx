@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import { Box, styled, Typography } from '@mui/material'
 import { Input } from 'components/common/Input'
 import { FC, useState } from 'react'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
@@ -32,8 +32,18 @@ const InputPassword: FC<any> = (props) => {
       ) : (
         <VisibilityOffIcon style={style} onClick={onHidden} />
       )}
+      <TextError>{props.error}</TextError>
     </Box>
   )
 }
+
+const TextError = styled(Typography)({
+  fontSize: 12,
+  minHeight: 18,
+  color: 'red',
+  lineHeight: '14px',
+  marginTop: -14,
+  wordBreak: 'break-word',
+})
 
 export default InputPassword

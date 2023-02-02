@@ -1,5 +1,4 @@
 import { Box, Button, styled } from '@mui/material'
-import ModalChangePassword from 'components/ModalChangePassword'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { useState } from 'react'
 
@@ -25,13 +24,8 @@ const AccountManager = () => {
 
   return (
     <AccountManagerWrapper>
-      {/* <ModalDeleteAccount
+      <ModalDeleteAccount
         titleSubmit="Delete Account"
-        onClose={handleCloseDelete}
-        open={openDelete}
-        onSubmit={onDelete}
-      /> */}
-      <ModalChangePassword
         onClose={handleCloseDelete}
         open={openDelete}
         onSubmit={onDelete}

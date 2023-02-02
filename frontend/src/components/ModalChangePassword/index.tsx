@@ -1,6 +1,6 @@
 import { Box, Button, Modal, styled, Typography } from '@mui/material'
 import InputPassword from 'components/InputPassword'
-import { FC, useState } from 'react'
+import { ChangeEvent, FC, useState } from 'react'
 
 type ModalDeleteAccountProps = {
   onClose: () => void
@@ -8,13 +8,47 @@ type ModalDeleteAccountProps = {
   onSubmit: () => void
 }
 
+const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,100}$/
+
 const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
   onClose,
   open,
   onSubmit,
 }) => {
-  const [errors, setError] = useState<{ [key: string]: string }>({})
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [values, setValues] = useState<{ [key: string]: string }>({})
+
+  const onChangeValue = (
+    event: ChangeEvent<HTMLInputElement>,
+    validate?: Function,
+  ) => {
+    const { name, value } = event.target
+    setValues({ ...values, [name]: value })
+    setErrors({ ...errors, [name]: validate?.(value) })
+  }
+
+  const validatePassword = (value: string): string => {
+    if (!value) return 'This field is required'
+    if (!regexPassword.test(value)) {
+      return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
+    }
+    return ''
+  }
+
+  const validateReEnter = (value: string): string => {
+    if (!value) return 'This field is required'
+    if (value !== values.password) {
+      return 'Passwords do not match'
+    }
+    return ''
+  }
+
+  const validateReEnterWhenInputPassword = () => {
+    const { reEnter, password } = values
+    if (reEnter && reEnter !== password) {
+      setErrors((pre) => ({ ...pre, reEnter: 'Passwords do not match' }))
+    }
+  }
 
   return (
     <Modal
@@ -37,15 +71,23 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
             <Label>
               Old password <span style={{ color: 'red' }}>*</span>
             </Label>
-            <InputPassword error={errors.password} placeholder="Old Password" />
+            <InputPassword
+              onChange={(e: any) => onChangeValue(e, validatePassword)}
+              name="password"
+              error={errors.password}
+              placeholder="Old Password"
+            />
           </FormInline>
           <FormInline>
             <Label>
               New Password <span style={{ color: 'red' }}>*</span>
             </Label>
             <InputPassword
+              onChange={(e: any) => onChangeValue(e, validatePassword)}
+              name="new_password"
               error={errors.new_password}
               placeholder="New Password"
+              onBlur={validateReEnterWhenInputPassword}
             />
           </FormInline>
           <FormInline>
@@ -53,6 +95,8 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
               Confirm Password <span style={{ color: 'red' }}>*</span>
             </Label>
             <InputPassword
+              onChange={(e: any) => onChangeValue(e, validateReEnter)}
+              name="confirm_password"
               error={errors.confirm_password}
               placeholder="Confirm Password"
             />
@@ -109,6 +153,7 @@ const FormInline = styled(Box)({
 const Label = styled(Typography)({
   fontSize: 14,
   marginTop: 7,
+  width: '100%',
 })
 
 const ButtonConfirm = styled(Button)({
