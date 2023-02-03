@@ -8,6 +8,7 @@ import Project from './components/Project'
 import Layout from 'components/Layout'
 import Dashboard from 'pages/Dashboard'
 import AccountManager from 'pages/AccountManager'
+import Account from 'pages/Account'
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Dashboard />} />
             <Route path="/project" element={<Project />} />
             <Route path="/account-manager" element={<AccountManager />} />
+            <Route path="/account" element={<Account />} />
           </Routes>
         </Layout>
       </BrowserRouter>
