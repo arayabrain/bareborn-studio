@@ -11,11 +11,13 @@ import GroupIcon from '@mui/icons-material/Group'
 import { Link, useLocation } from 'react-router-dom'
 
 const Layout: FC = ({ children }) => {
+  const location = useLocation()
+
   return (
     <LayoutWrapper>
       <Header />
       <ContentBodyWrapper>
-        <MenuLeft />
+        {location.pathname === '/account-delete' ? null : <MenuLeft />}
         <ChildrenWrapper>{children}</ChildrenWrapper>
       </ContentBodyWrapper>
     </LayoutWrapper>
