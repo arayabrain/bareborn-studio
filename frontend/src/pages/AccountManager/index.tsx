@@ -1,9 +1,10 @@
-import { Box, Button, styled } from '@mui/material'
+import { Box, Button, styled, Typography } from '@mui/material'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { useState } from 'react'
 
 const AccountManager = () => {
   const [openDelete, setOpenDelete] = useState(false)
+  const [data, setData] = useState([])
 
   const handleCloseDelete = () => {
     setOpenDelete(false)
@@ -60,6 +61,7 @@ const AccountManager = () => {
           </Tr>
         </TBody>
       </Table>
+      {/* {!data.length ? <NoData>No Data</NoData> : null} */}
     </AccountManagerWrapper>
   )
 }
@@ -116,6 +118,13 @@ const ALink = styled('a')({
   textDecoration: 'none',
   cursor: 'pointer',
   userSelect: 'none',
+})
+
+const NoData = styled(Typography)({
+  textAlign: 'center',
+  fontWeight: '600',
+  fontSize: 20,
+  paddingTop: 16,
 })
 
 export default AccountManager
