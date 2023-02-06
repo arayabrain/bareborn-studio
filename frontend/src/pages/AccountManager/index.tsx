@@ -1,10 +1,18 @@
-import { Box, Button, styled, Typography } from '@mui/material'
+import { Box, Button, styled } from '@mui/material'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import { useState } from 'react'
+import TableComponent from 'components/Table'
+import { useMemo, useState } from 'react'
 
 const AccountManager = () => {
   const [openDelete, setOpenDelete] = useState(false)
-  const [data, setData] = useState([])
+  const [data, setData] = useState([
+    {
+      name: 'Title',
+      address: 'Mail Address',
+      role: 'Admin',
+      last_login: '03/12/2022',
+    },
+  ])
 
   const handleCloseDelete = () => {
     setOpenDelete(false)
@@ -23,6 +31,31 @@ const AccountManager = () => {
     handleCloseDelete()
   }
 
+  const columns = useMemo(
+    () => [
+      { title: 'Name', name: 'name' },
+      { title: 'Mail Address', name: 'address' },
+      { title: 'Role', name: 'role' },
+      { title: 'Last Login', name: 'last_login' },
+      {
+        title: '',
+        name: 'action',
+        width: 185,
+        render: () => (
+          <>
+            <ALink sx={{ color: 'red' }} onClick={onConfirmDelete}>
+              Delete
+            </ALink>
+            <ALink sx={{ ml: 1.25 }} onClick={onForgotPassword}>
+              Forgot Password
+            </ALink>
+          </>
+        ),
+      },
+    ],
+    [],
+  )
+
   return (
     <AccountManagerWrapper>
       <ModalDeleteAccount
@@ -34,34 +67,11 @@ const AccountManager = () => {
       <BoxButton>
         <ButtonAdd variant="contained">Add</ButtonAdd>
       </BoxButton>
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>Name</Th>
-            <Th>Mail Address</Th>
-            <Th>Role</Th>
-            <Th>Last Login</Th>
-            <Th sx={{ width: 185 }} />
-          </Tr>
-        </Thead>
-        <TBody>
-          <Tr>
-            <Td>Name</Td>
-            <Td>Mail Address</Td>
-            <Td>Role</Td>
-            <Td>Last Login</Td>
-            <Td>
-              <ALink sx={{ color: 'red' }} onClick={onConfirmDelete}>
-                Delete
-              </ALink>
-              <ALink sx={{ ml: 1.25 }} onClick={onForgotPassword}>
-                Forgot Password
-              </ALink>
-            </Td>
-          </Tr>
-        </TBody>
-      </Table>
-      {/* {!data.length ? <NoData>No Data</NoData> : null} */}
+      <TableComponent
+        paginate={{ total: 100, page: 1, page_size: 10 }}
+        data={data}
+        columns={columns}
+      />
     </AccountManagerWrapper>
   )
 }
@@ -81,50 +91,11 @@ const ButtonAdd = styled(Button)(({ theme }) => ({
   width: 100,
 }))
 
-const Table = styled('table')({
-  boxSizing: 'border-box',
-  width: '100%',
-  borderCollapse: 'collapse',
-})
-
-const Thead = styled('thead')({})
-
-const Tr = styled('tr')({})
-
-const Th = styled('th')(({ theme }) => ({
-  padding: theme.spacing(2),
-  textAlign: 'left',
-  backgroundColor: '#E1DEDB',
-  color: 'rgba(0,0,0,.88)',
-  fontWeight: 600,
-  borderBottom: '1px solid #f0f0f0',
-  ':first-of-type': {
-    borderTopLeftRadius: 4,
-  },
-  ':last-of-type': {
-    borderTopRightRadius: 4,
-  },
-}))
-
-const TBody = styled('tbody')(() => ({}))
-
-const Td = styled('td')(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderBottom: '1px solid #f0f0f0',
-}))
-
 const ALink = styled('a')({
   color: '#1677ff',
   textDecoration: 'none',
   cursor: 'pointer',
   userSelect: 'none',
-})
-
-const NoData = styled(Typography)({
-  textAlign: 'center',
-  fontWeight: '600',
-  fontSize: 20,
-  paddingTop: 16,
 })
 
 export default AccountManager
