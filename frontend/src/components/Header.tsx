@@ -41,9 +41,9 @@ const Header: FC = () => {
             <BoxMenuItem>
               <PortraitIcon /> Profile
             </BoxMenuItem>
-            <BoxMenuItem>
+            <BoxMenuItem style={{ color: 'red', fontWeight: 600 }}>
               <LogoutIcon />
-              Sign out
+              SIGN OUT
             </BoxMenuItem>
           </BoxDropdown>
         )}
@@ -117,7 +117,7 @@ const HeaderWrapper = styled(Box)({
   position: 'fixed',
   width: 'calc(100% - 32px)',
   padding: '0 16px',
-  zIndex: 9999
+  zIndex: 9999,
 })
 
 export default Header
