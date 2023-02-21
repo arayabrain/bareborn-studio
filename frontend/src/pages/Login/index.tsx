@@ -62,14 +62,14 @@ const Login = () => {
           <Stack
             flexDirection="row"
             gap={2}
-            mt={1}
+            mt={3}
             alignItems="center"
-            justifyContent="space-between"
+            justifyContent="flex-end"
           >
-            <Description>
+            {/* <Description>
               No Account
               <LinkWrappper to="/signup">Create Account</LinkWrappper>
-            </Description>
+            </Description> */}
             <ButtonLogin type="submit">Sign in</ButtonLogin>
           </Stack>
         </FormSignUp>
@@ -106,7 +106,7 @@ const LabelField = styled(Typography)({
 
 const LableRequired = styled('span')({
   color: 'red',
-  fontSize: 18,
+  fontSize: 14,
   marginLeft: 2,
 })
 
@@ -120,7 +120,7 @@ const Input = styled('input', {
     border: '1px solid',
     borderColor: error ? 'red' : '#d9d9d9',
     padding: '5px 10px',
-    marginBottom: 15,
+    marginBottom: 16,
     transition: 'all 0.3s',
     outline: 'none',
     ':focus, :hover': {
@@ -136,8 +136,8 @@ const Description = styled(Typography)(({ theme }) => ({
 }))
 
 const LinkWrappper = styled(Link)({
-  marginLeft: 10,
-  color: '#1677ff',
+  marginLeft: 6,
+  color: '#1892d1',
 })
 
 const ButtonLogin = styled('button')({
@@ -154,7 +154,7 @@ const TextError = styled(Typography)({
   fontSize: 12,
   color: 'red',
   position: 'absolute',
-  bottom: -4,
+  bottom: -2,
 })
 
 export default Login
