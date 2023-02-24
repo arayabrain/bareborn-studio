@@ -3,7 +3,7 @@ from pydantic.dataclasses import dataclass as pydantic_dataclass
 from dataclasses import dataclass
 from typing import Dict, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 
@@ -32,7 +32,7 @@ class TreeNode:
     isdir: bool
     nodes: List["TreeNode"]
 
-@dataclass
+@pydantic_dataclass
 class FILETYPE:
     IMAGE: str = "image"
     CSV: str = "csv"
@@ -42,7 +42,7 @@ class FILETYPE:
 class DeleteItem(BaseModel):
     uidList: list
 
-@dataclass
+@pydantic_dataclass
 class HDF5Node:
     isDir: bool
     name: str
@@ -83,7 +83,7 @@ class AlgoList(BaseModel):
         }
     }
 
-class NWB(BaseModel):
+class NWBParams(BaseModel):
   session_description: str = "optinist"
   identifier: str = "optinist"
   experiment_description: Optional[str] = None
@@ -93,7 +93,7 @@ class NWB(BaseModel):
   image_series: Union[Dict, Any]
   ophys: Union[Dict, Any]
 
-class Snakemake(BaseModel):
+class SnakemakeParams(BaseModel):
     use_conda: bool
     cores: int
     forceall: bool

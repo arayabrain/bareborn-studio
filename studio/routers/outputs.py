@@ -3,18 +3,19 @@ import pandas as pd
 from glob import glob
 from typing import Optional
 from fastapi import APIRouter
-from studio.api.dir_path import DIRPATH
+from optinist.api.dir_path import DIRPATH
 
-from studio.api.utils.json_writer import JsonWriter, save_tiff2json
-from studio.api.utils.filepath_creater import create_directory, join_filepath
-from studio.routers.const import ACCEPT_TIFF_EXT
-from studio.routers.fileIO.file_reader import JsonReader, Reader
-from studio.routers.model import JsonTimeSeriesData
+from optinist.api.utils.json_writer import JsonWriter, save_tiff2json
+from optinist.api.utils.filepath_creater import create_directory, join_filepath
+from optinist.routers.const import ACCEPT_TIFF_EXT
+from optinist.routers.fileIO.file_reader import JsonReader, Reader
+from optinist.routers.model import JsonTimeSeriesData, OutputData
+
 
 router = APIRouter()
 
 
-@router.get("/outputs/inittimedata/{dirpath:path}")
+@router.get("/outputs/inittimedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
 async def get_inittimedata(dirpath: str):
     file_numbers = sorted([
         os.path.splitext(os.path.basename(x))[0]
@@ -62,7 +63,7 @@ async def get_inittimedata(dirpath: str):
     return return_data
 
 
-@router.get("/outputs/timedata/{dirpath:path}")
+@router.get("/outputs/timedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
 async def get_timedata(dirpath: str, index: int):
     json_data = JsonReader.read_as_timeseries(
         join_filepath([
@@ -85,7 +86,7 @@ async def get_timedata(dirpath: str, index: int):
     return return_data
 
 
-@router.get("/outputs/alltimedata/{dirpath:path}")
+@router.get("/outputs/alltimedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
 async def get_alltimedata(dirpath: str):
     return_data = JsonTimeSeriesData(
         xrange=[],
@@ -106,17 +107,17 @@ async def get_alltimedata(dirpath: str):
     return return_data
 
 
-@router.get("/outputs/data/{filepath:path}")
+@router.get("/outputs/data/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_file(filepath: str):
     return JsonReader.read_as_output(filepath)
 
 
-@router.get("/outputs/html/{filepath:path}")
+@router.get("/outputs/html/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_html(filepath: str):
     return Reader.read_as_output(filepath)
 
 
-@router.get("/outputs/image/{filepath:path}")
+@router.get("/outputs/image/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_image(
         filepath: str,
         start_index: Optional[int] = 0,
@@ -141,7 +142,7 @@ async def get_image(
     return JsonReader.read_as_output(json_filepath)
 
 
-@router.get("/outputs/csv/{filepath:path}")
+@router.get("/outputs/csv/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_csv(filepath: str):
     filepath = join_filepath([DIRPATH.INPUT_DIR, filepath])
 
