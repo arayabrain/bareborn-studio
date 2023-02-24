@@ -63,10 +63,10 @@ const MenuLeft: FC = () => {
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
-        <LinkWrapper to="/project">
+        <LinkWrapper to="/projects">
           <MenuItem
             isClose={width !== drawerWidth}
-            active={pathname === '/project'}
+            active={pathname === '/projects'}
           >
             <SourceIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
@@ -82,6 +82,17 @@ const MenuLeft: FC = () => {
             <GroupIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Account Manager
+            </TypographyMenu>
+          </MenuItem>
+        </LinkWrapper>
+        <LinkWrapper to="/workflow">
+          <MenuItem
+              isClose={width !== drawerWidth}
+              active={pathname === '/workflow'}
+          >
+            <SourceIcon />
+            <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+              Workflow
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
