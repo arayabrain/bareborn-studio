@@ -12,6 +12,7 @@ import AccountDelete from 'pages/AccountDelete'
 import Projects from './pages/Projects'
 import Database from './pages/Database'
 import Login from 'pages/Login'
+import Signup from 'pages/Signup'
 
 const App: React.FC = () => {
   return (
@@ -32,6 +33,7 @@ const App: React.FC = () => {
             <Route path="/database" element={<Database />} />
             <Route path="/project" element={<Project />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
           </Routes>
         </Layout>
       </BrowserRouter>

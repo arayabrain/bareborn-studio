@@ -27,12 +27,13 @@ const Login = () => {
     <LoginWrapper>
       <LoginContent>
         <Title>Sign in to your account</Title>
-        <FormSignUp onSubmit={onSubmit}>
+        <FormSignUp autoComplete="off" onSubmit={onSubmit}>
           <Box sx={{ position: 'relative' }}>
             <LabelField>
               Email<LableRequired>*</LableRequired>
             </LabelField>
             <Input
+              autoComplete="off"
               error={!!errors.email}
               name="email"
               onChange={onChangeValue}
@@ -46,6 +47,7 @@ const Login = () => {
               Password<LableRequired>*</LableRequired>
             </LabelField>
             <Input
+              autoComplete="off"
               error={!!errors.password}
               onChange={onChangeValue}
               name="password"
