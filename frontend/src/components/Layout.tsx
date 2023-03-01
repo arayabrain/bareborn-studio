@@ -16,18 +16,18 @@ const Layout: FC = ({ children }) => {
   const [width, setWidth] = useState(drawerWidth)
   const auth = getAuth()
   const navigate = useNavigate()
-  
+
   const onResize = () => {
     setWidth(width === drawerWidth ? 54 : drawerWidth)
   }
 
   useEffect(() => {
-    checkkAuth()
+    // checkkAuth()
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    checkkAuth()
+    // checkkAuth()
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname])
 
@@ -44,15 +44,23 @@ const Layout: FC = ({ children }) => {
     <LayoutWrapper>
       <Header />
       <ContentBodyWrapper>
-        {location.pathname === '/account-delete' ? null : <MenuLeft onResize={onResize} width={width} />}
-        <ChildrenWrapper style={{width: `calc(100% - ${width + 10}px)` }}>{children}</ChildrenWrapper>
+        {location.pathname === '/account-delete' ? null : (
+          <MenuLeft onResize={onResize} width={width} />
+        )}
+        <ChildrenWrapper style={{ width: `calc(100% - ${width + 10}px)` }}>
+          {children}
+        </ChildrenWrapper>
       </ContentBodyWrapper>
     </LayoutWrapper>
   )
 }
 
-const MenuLeft: FC<{onResize: any; width: number}> = ({onResize, width}) => {
+const MenuLeft: FC<{ onResize: any; width: number }> = ({
+  onResize,
+  width,
+}) => {
   const { pathname } = useLocation()
+  const isClose = width !== drawerWidth
   return (
     <MenuLeftWrapper style={{ width, minWidth: width }}>
       <BoxBack>
@@ -66,7 +74,7 @@ const MenuLeft: FC<{onResize: any; width: number}> = ({onResize, width}) => {
       </BoxBack>
       <MenuList>
         <LinkWrapper to="/">
-          <MenuItem isClose={width !== drawerWidth} active={pathname === '/'}>
+          <MenuItem isClose={isClose} active={pathname === '/'}>
             <HomeIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Dashboard
@@ -74,10 +82,7 @@ const MenuLeft: FC<{onResize: any; width: number}> = ({onResize, width}) => {
           </MenuItem>
         </LinkWrapper>
         <LinkWrapper to="/database">
-          <MenuItem
-            isClose={width !== drawerWidth}
-            active={pathname === '/database'}
-          >
+          <MenuItem isClose={isClose} active={pathname === '/database'}>
             <StorageIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Database
@@ -85,10 +90,7 @@ const MenuLeft: FC<{onResize: any; width: number}> = ({onResize, width}) => {
           </MenuItem>
         </LinkWrapper>
         <LinkWrapper to="/projects">
-          <MenuItem
-            isClose={width !== drawerWidth}
-            active={pathname === '/projects'}
-          >
+          <MenuItem isClose={isClose} active={pathname === '/projects'}>
             <SourceIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Project
@@ -96,10 +98,7 @@ const MenuLeft: FC<{onResize: any; width: number}> = ({onResize, width}) => {
           </MenuItem>
         </LinkWrapper>
         <LinkWrapper to="/account-manager">
-          <MenuItem
-            isClose={width !== drawerWidth}
-            active={pathname === '/account-manager'}
-          >
+          <MenuItem isClose={isClose} active={pathname === '/account-manager'}>
             <GroupIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Account Manager
@@ -107,10 +106,7 @@ const MenuLeft: FC<{onResize: any; width: number}> = ({onResize, width}) => {
           </MenuItem>
         </LinkWrapper>
         <LinkWrapper to="/workflow">
-          <MenuItem
-              isClose={width !== drawerWidth}
-              active={pathname === '/workflow'}
-          >
+          <MenuItem isClose={isClose} active={pathname === '/workflow'}>
             <SourceIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Workflow
