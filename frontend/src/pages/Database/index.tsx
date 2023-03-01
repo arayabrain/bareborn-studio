@@ -1,18 +1,24 @@
-import {Box, Button, IconButton, Input, styled} from "@mui/material";
+import {Box, Button, IconButton, Input, styled, TextField} from "@mui/material";
 import React, {useMemo, useState} from 'react'
 import DatabaseTableComponent from "./DatabaseTable";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 
-const PopupSearch = () => {
+const PopupSearch = ({ onClose }:{onClose: any}) => {
+  const handleFilter = () => {
+    onClose()
+  }
+  
   return (
     <Popup>
       <PopupInner>
-        <h2>Filter</h2>
-        <InputSearch name={'lab_name'} />
-        <InputSearch name={'user_name'} />
-        <InputSearch name={'date'} />
-        <InputSearch name={'sample_name'} />
+        <HeaderTitle><span>Filter</span><ButtonControl onClick={onClose}><CloseIcon /></ButtonControl></HeaderTitle>
+        <InputSearch name={'session'} label="Session" variant="outlined" />
+        <InputSearch name={'dataset'} label="Dataset" variant="outlined"/>
+        <InputSearch name={'type'} label="Type" variant="outlined"/>
+        <InputSearch name={'protocol'} label="Protocol" variant="outlined"/>
+        <Button variant="contained" onClick={handleFilter}>Filter</Button>
       </PopupInner>
     </Popup>
   )
@@ -128,9 +134,18 @@ const Database = () => {
 
     return (
         <DatabaseWrapper>
-          <ProjectsTitle><span>Database</span><ButtonFilter onClick={()=> setOpenPopup(true)}>Search</ButtonFilter></ProjectsTitle>
+          <ProjectsTitle>
+            <span>Database</span>
+            <ButtonFilter
+              variant="contained"
+              onClick={()=> setOpenPopup(true)}
+              style={{margin: '0 26px 0 0'}}
+            >
+              Filter
+            </ButtonFilter>
+          </ProjectsTitle>
           {
-            openPopup && <PopupSearch />
+            openPopup && <PopupSearch onClose={()=> setOpenPopup(false)} />
           }
           <DatabaseTableComponent
             data={data}
@@ -143,6 +158,12 @@ const Database = () => {
 const DatabaseWrapper = styled(Box)(({ theme }) => ({
     width: '100%',
     padding: theme.spacing(2),
+}))
+
+const HeaderTitle = styled('h1')(({ theme }) => ({
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'space-between'
 }))
 
 const Popup = styled(Box)(({ theme }) => ({
@@ -161,12 +182,13 @@ const PopupInner = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2,3),
   backgroundColor: '#fff',
   borderRadius: theme.spacing(1),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2)
 }))
 
-const InputSearch = styled(Input)(({ theme }) => ({
-  padding: theme.spacing(2,3),
-  backgroundColor: '#fff',
-  borderRadius: theme.spacing(1),
+const InputSearch = styled(TextField)(({ theme }) => ({
+  minWidth: 250
 }))
 
 
@@ -187,6 +209,10 @@ const ButtonControl = styled(IconButton)(({ theme }) => ({
   padding: theme.spacing(0, 1)
 }))
 
-const ProjectsTitle = styled('h1')(({ theme }) => ({}))
+const ProjectsTitle = styled('h1')(({ theme }) => ({
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'space-between',
+}))
 
 export default Database
