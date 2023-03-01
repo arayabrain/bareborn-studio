@@ -10,6 +10,8 @@ import Dashboard from 'pages/Dashboard'
 import AccountManager from 'pages/AccountManager'
 import Account from 'pages/Account'
 import AccountDelete from 'pages/AccountDelete'
+import Projects from "./pages/Projects";
+import Database from "./pages/Database";
 
 const App: React.FC = () => {
   return (
@@ -23,10 +25,12 @@ const App: React.FC = () => {
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/project" element={<Project />} />
+            <Route path="/workflow" element={<Project />} />
             <Route path="/account-manager" element={<AccountManager />} />
             <Route path="/account-delete" element={<AccountDelete />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/database" element={<Database />} />
           </Routes>
         </Layout>
       </BrowserRouter>

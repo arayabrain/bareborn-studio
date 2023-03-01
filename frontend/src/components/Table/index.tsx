@@ -1,5 +1,5 @@
 import { Box, styled, Typography } from '@mui/material'
-import { FC, useCallback } from 'react'
+import React, { FC, useCallback } from 'react'
 import ReactPaginate from 'react-paginate'
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
@@ -87,7 +87,7 @@ const TableComponent: FC<TableComponentProps> = (props) => {
   )
 }
 
-const MyPaginate = styled(ReactPaginate)`
+const MyPaginate = styled(ReactPaginate)<any>`
   margin-bottom: 2rem;
   display: flex;
   flex-direction: row;

@@ -12,26 +12,24 @@ import { Link, useLocation } from 'react-router-dom'
 
 const Layout: FC = ({ children }) => {
   const location = useLocation()
-
+  const [width, setWidth] = useState(drawerWidth)
+  const onResize = () => {
+    setWidth(width === drawerWidth ? 54 : drawerWidth)
+  }
+  
   return (
     <LayoutWrapper>
       <Header />
       <ContentBodyWrapper>
-        {location.pathname === '/account-delete' ? null : <MenuLeft />}
-        <ChildrenWrapper>{children}</ChildrenWrapper>
+        {location.pathname === '/account-delete' ? null : <MenuLeft onResize={onResize} width={width} />}
+        <ChildrenWrapper style={{width: `calc(100% - ${width + 10}px)` }}>{children}</ChildrenWrapper>
       </ContentBodyWrapper>
     </LayoutWrapper>
   )
 }
 
-const MenuLeft: FC = () => {
-  const [width, setWidth] = useState(drawerWidth)
+const MenuLeft: FC<{onResize: any; width: number}> = ({onResize, width}) => {
   const { pathname } = useLocation()
-
-  const onResize = () => {
-    setWidth(width === drawerWidth ? 54 : drawerWidth)
-  }
-
   return (
     <MenuLeftWrapper style={{ width, minWidth: width }}>
       <BoxBack>
@@ -63,10 +61,10 @@ const MenuLeft: FC = () => {
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
-        <LinkWrapper to="/project">
+        <LinkWrapper to="/projects">
           <MenuItem
             isClose={width !== drawerWidth}
-            active={pathname === '/project'}
+            active={pathname === '/projects'}
           >
             <SourceIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
@@ -82,6 +80,17 @@ const MenuLeft: FC = () => {
             <GroupIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Account Manager
+            </TypographyMenu>
+          </MenuItem>
+        </LinkWrapper>
+        <LinkWrapper to="/workflow">
+          <MenuItem
+              isClose={width !== drawerWidth}
+              active={pathname === '/workflow'}
+          >
+            <SourceIcon />
+            <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
+              Workflow
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
@@ -105,10 +114,10 @@ const ContentBodyWrapper = styled(Box)(() => ({
   paddingTop: 48,
   height: 'calc(100% - 48px)',
   paddingRight: 10,
+  overflow: 'hidden',
 }))
 
 const ChildrenWrapper = styled(Box)(() => ({
-  width: '100%',
   height: 'calc(100% - 10px)',
   display: 'flex',
   paddingTop: 10,
@@ -166,7 +175,7 @@ const MenuItem = styled('li', {
   display: 'flex',
   alignItems: 'center',
   gap: 10,
-  width: '100%',
+  width: 'calc(100% - 30px)',
   minWidth: 'max-content',
   transition: 'all 0.3s',
   cursor: 'pointer',
