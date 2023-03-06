@@ -1,19 +1,32 @@
-import { Box, Button, IconButton, Input, styled } from '@mui/material'
+import { Box, Button, IconButton, styled, TextField } from '@mui/material'
 import { useMemo, useState } from 'react'
-import DatabaseTableComponent from '../../components/DatabaseTable'
+import DatabaseTableComponent from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CloseIcon from '@mui/icons-material/Close'
 import ImageView from 'components/ImageView'
 
-const PopupSearch = () => {
+const PopupSearch = ({ onClose }: { onClose: any }) => {
+  const handleFilter = () => {
+    onClose()
+  }
+
   return (
     <Popup>
       <PopupInner>
-        <h2>Filter</h2>
-        <InputSearch name={'lab_name'} />
-        <InputSearch name={'user_name'} />
-        <InputSearch name={'date'} />
-        <InputSearch name={'sample_name'} />
+        <HeaderTitle>
+          <span>Filter</span>
+          <ButtonControl onClick={onClose}>
+            <CloseIcon />
+          </ButtonControl>
+        </HeaderTitle>
+        <InputSearch name={'session'} label="Session" variant="outlined" />
+        <InputSearch name={'dataset'} label="Dataset" variant="outlined" />
+        <InputSearch name={'type'} label="Type" variant="outlined" />
+        <InputSearch name={'protocol'} label="Protocol" variant="outlined" />
+        <Button variant="contained" onClick={handleFilter}>
+          Filter
+        </Button>
       </PopupInner>
     </Popup>
   )
@@ -48,7 +61,7 @@ export const defaultDatabase = [
             protocol: 'aaaaaaaa',
             size: '1234',
             voxel_size: '1234',
-            control: true
+            control: true,
           },
           {
             id: '4',
@@ -61,9 +74,9 @@ export const defaultDatabase = [
             protocol: 'aaaaaaaa',
             size: '1234',
             voxel_size: '1234',
-            control: true
+            control: true,
           },
-        ]
+        ],
       },
       {
         id: '10',
@@ -80,11 +93,11 @@ export const defaultDatabase = [
             protocol: 'aaaaaaaa',
             size: '1234',
             voxel_size: '1234',
-            control: true
+            control: true,
           },
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   },
   {
     id: '5',
@@ -92,7 +105,7 @@ export const defaultDatabase = [
     user_name: '',
     date: '',
     session_name: 'sess 2',
-    dataset: null
+    dataset: null,
   },
 ]
 
@@ -214,9 +227,15 @@ const Database = () => {
     <DatabaseWrapper>
       <ProjectsTitle>
         <span>Database</span>
-        <ButtonFilter onClick={() => setOpenViewer(true)}>Search</ButtonFilter>
+        <ButtonFilter
+          variant="contained"
+          onClick={() => setOpenPopup(true)}
+          style={{ margin: '0 26px 0 0' }}
+        >
+          Filter
+        </ButtonFilter>
       </ProjectsTitle>
-      {openPopup && <PopupSearch />}
+      {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
       <DatabaseTableComponent data={data} columns={columns} />
       <ImageView open={openViewer} onClose={onCloseImageView} />
     </DatabaseWrapper>
@@ -228,7 +247,13 @@ const DatabaseWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
 }))
 
-const Popup = styled(Box)(() => ({
+const HeaderTitle = styled('h1')(({ theme }) => ({
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'space-between',
+}))
+
+const Popup = styled(Box)(({ theme }) => ({
   position: 'fixed',
   top: 0,
   left: 0,
@@ -244,12 +269,13 @@ const PopupInner = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2, 3),
   backgroundColor: '#fff',
   borderRadius: theme.spacing(1),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
 }))
 
-const InputSearch = styled(Input)(({ theme }) => ({
-  padding: theme.spacing(2, 3),
-  backgroundColor: '#fff',
-  borderRadius: theme.spacing(1),
+const InputSearch = styled(TextField)(({ theme }) => ({
+  minWidth: 250,
 }))
 
 const BoxButton = styled(Box)(({ theme }) => ({
@@ -269,6 +295,10 @@ const ButtonControl = styled(IconButton)(({ theme }) => ({
   padding: theme.spacing(0, 1),
 }))
 
-const ProjectsTitle = styled('h1')(({ theme }) => ({}))
+const ProjectsTitle = styled('h1')(({ theme }) => ({
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'space-between',
+}))
 
 export default Database
