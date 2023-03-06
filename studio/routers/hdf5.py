@@ -2,9 +2,9 @@ from typing import List
 import h5py
 from fastapi import APIRouter
 
-from studio.api.dir_path import DIRPATH
-from studio.api.utils.filepath_creater import join_filepath
-from studio.routers.model import HDF5Node
+from optinist.api.dir_path import DIRPATH
+from optinist.api.utils.filepath_creater import join_filepath
+from optinist.routers.model import HDF5Node
 
 router = APIRouter()
 
@@ -78,7 +78,7 @@ class HDF5Getter:
                 ))
 
 
-@router.get("/hdf5/{file_path:path}")
+@router.get("/hdf5/{file_path:path}", response_model=List[HDF5Node], tags=['outputs'])
 async def get_files(file_path: str):
     file_path = join_filepath([DIRPATH.INPUT_DIR, file_path])
     return HDF5Getter.get(file_path)

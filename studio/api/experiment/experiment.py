@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict
 
-from studio.api.workflow.workflow import Edge, Node
+from optinist.api.workflow.workflow import Edge, Node
 
 
 @dataclass
@@ -19,5 +19,10 @@ class ExptConfig:
     unique_id: str
     hasNWB: bool
     function: Dict[str, ExptFunction]
+    nodeDict: Dict[str, Node]
+    edgeDict: Dict[str, Edge]
+
+@dataclass
+class ExptImportData:
     nodeDict: Dict[str, Node]
     edgeDict: Dict[str, Edge]
