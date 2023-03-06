@@ -3,7 +3,7 @@ import React, {FC, useState} from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import { useDrag } from "react-dnd";
 
 type Column = {
   width?: number | string
@@ -30,32 +30,56 @@ const renderCol = (col: Column, item: any, index: number) => {
   return value || null
 }
 
-const renderColumn = (column: Column[], item: any, index: number, dropDown?: any, click?: any, show?: boolean) => (
-  <Tr key={item.id || index}>
-    {column.map((col, iCol) => (
-      <Td
-        key={col.dataIndex || col.name || iCol}
-        style={{cursor:col.name === dropDown ? 'pointer' : 'inherit'}}
-        onClick={click ? click : null}
-      >
-        {
-          col.name === dropDown ? show ?
-            <ArrowDropUpIcon style={{marginBottom: '-8px', marginLeft:'-24px'}} /> :
-            <ArrowDropDownIcon style={{marginBottom: '-8px', marginLeft:'-24px'}} /> : null
-        }
-        {renderCol(col, item, index)}
-      </Td>
-    ))}
-  </Tr>
-)
+const RenderColumn = (
+  {column, item, index, dropDown, click,show}
+  : {column: Column[], item: any, index: number, dropDown?: any, click?: any, show?: boolean}
+) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "image",
+    item: {id: index},
+    collect: (monitor) => ({
+      isDragging: false,
+    }),
+  }));
+  return (
+    <Tr key={item.id || index} ref={drag}>
+      {column.map((col, iCol) => (
+        <Td
+          key={col.dataIndex || col.name || iCol}
+          style={{cursor:col.name === dropDown ? 'pointer' : 'inherit'}}
+          onClick={click ? click : null}
+        >
+          {
+            col.name === dropDown ? show ?
+              <ArrowDropUpIcon style={{marginBottom: '-8px', marginLeft:'-24px'}} /> :
+              <ArrowDropDownIcon style={{marginBottom: '-8px', marginLeft:'-24px'}} /> : null
+          }
+          {renderCol(col, item, index)}
+        </Td>
+      ))}
+    </Tr>
+  )
+}
 
 const RenderDataset = ({column, item, index} : {column: Column[], item: any, index: number}) => {
   const [show, setShow] = useState<boolean>(false);
   return (
     <>
-      {renderColumn(column,item, index, item?.dataset ? 'dataset_title' : '', () => setShow(!show), show)}
+      <RenderColumn
+        column={column}
+        item={item}
+        index={index}
+        dropDown={item?.dataset ? 'dataset_title' : ''}
+        click={() => setShow(!show)}
+        show={show}
+      />
       {
-        item?.dataset && show ? item.dataset.map((itemData: any, idx: number) => renderColumn(column,itemData, idx)) : null
+        !(item?.dataset && show) ? null : item.dataset.map((itemData: any, idx: number) =>
+          <RenderColumn
+            column={column}
+            item={itemData}
+            index={idx}
+          />)
       }
     </>
   )
@@ -65,7 +89,14 @@ const RenderSectionColumn = ({column, item, index} : {column: Column[], item: an
   const [show, setShow] = useState<boolean>(false);
   return (
     <>
-      {renderColumn(column, item, index, item?.dataset ? 'session_name' : '', () => setShow(!show), show)}
+      <RenderColumn
+        column={column}
+        item={item}
+        index={index}
+        dropDown={item?.dataset ? 'session_name' : ''}
+        click={() => setShow(!show)}
+        show={show}
+      />
       {
         item?.dataset && show ? item.dataset.map((itemData: any, idx: number) => <RenderDataset
           item={itemData}
@@ -83,7 +114,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   
   return (
     <TableWrap className={className}>
-      <DataTable>
+      <DataTable style={{width: 150 * columns.length}}>
         <Thead>
           <Tr>
             {columns.map((col, iCol) => (
@@ -119,7 +150,6 @@ const DataTable = styled('table')({
   boxSizing: 'border-box',
   minWidth: '100%',
   borderCollapse: 'collapse',
-  width: 1500,
 })
 
 const Thead = styled('thead')({})

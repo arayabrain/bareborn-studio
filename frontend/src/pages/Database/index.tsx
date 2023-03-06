@@ -18,84 +18,86 @@ const PopupSearch = () => {
   )
 }
 
+export const defaultDatabase = [
+  {
+    id: '1',
+    lab_name: 'lab1',
+    user_name: 'hope',
+    date: '2023/02/24',
+  },
+  {
+    id: '2',
+    lab_name: '',
+    user_name: '',
+    date: '',
+    session_name: 'sess 1',
+    dataset: [
+      {
+        id: '9',
+        dataset_title: 'anat',
+        dataset: [
+          {
+            id: '3',
+            lab_name: '',
+            user_name: '',
+            date: '',
+            session_name: '',
+            dataset: {},
+            type: 'T2_RARE',
+            protocol: 'aaaaaaaa',
+            size: '1234',
+            voxel_size: '1234',
+            control: true
+          },
+          {
+            id: '4',
+            lab_name: '',
+            user_name: '',
+            date: '',
+            session_name: '',
+            dataset: {},
+            type: 'T2_RARE',
+            protocol: 'aaaaaaaa',
+            size: '1234',
+            voxel_size: '1234',
+            control: true
+          },
+        ]
+      },
+      {
+        id: '10',
+        dataset_title: 'anat 2',
+        dataset: [
+          {
+            id: '7',
+            lab_name: '',
+            user_name: '',
+            date: '',
+            session_name: '',
+            dataset: {},
+            type: 'T2_RARE',
+            protocol: 'aaaaaaaa',
+            size: '1234',
+            voxel_size: '1234',
+            control: true
+          },
+        ]
+      }
+    ]
+  },
+  {
+    id: '5',
+    lab_name: '',
+    user_name: '',
+    date: '',
+    session_name: 'sess 2',
+    dataset: null
+  },
+]
+
 const Database = () => {
     const [openPopup, setOpenPopup] = useState(false)
-    const [data, setData] = useState([
-        {
-          id: '1',
-          lab_name: 'lab1',
-          user_name: 'hope',
-          date: '2023/02/24',
-        },
-        {
-          id: '2',
-          lab_name: '',
-          user_name: '',
-          date: '',
-          session_name: 'sess 1',
-          dataset: [
-            {
-              id: '9',
-              dataset_title: 'anat',
-              dataset: [
-                {
-                  id: '3',
-                  lab_name: '',
-                  user_name: '',
-                  date: '',
-                  session_name: '',
-                  dataset: {},
-                  type: 'T2_RARE',
-                  protocol: 'aaaaaaaa',
-                  size: '1234',
-                  voxel_size: '1234',
-                  control: true
-                },
-                {
-                  id: '4',
-                  lab_name: '',
-                  user_name: '',
-                  date: '',
-                  session_name: '',
-                  dataset: {},
-                  type: 'T2_RARE',
-                  protocol: 'aaaaaaaa',
-                  size: '1234',
-                  voxel_size: '1234',
-                  control: true
-                },
-              ]
-            },
-            {
-              id: '10',
-              dataset_title: 'anat 2',
-              dataset: [
-                {
-                  id: '7',
-                  lab_name: '',
-                  user_name: '',
-                  date: '',
-                  session_name: '',
-                  dataset: {},
-                  type: 'T2_RARE',
-                  protocol: 'aaaaaaaa',
-                  size: '1234',
-                  voxel_size: '1234',
-                  control: true
-                },
-              ]
-            }
-          ]
-        },
-        {
-          id: '5',
-          lab_name: '',
-          user_name: '',
-          date: '',
-          session_name: 'sess 2',
-          dataset: null
-        },
-    ])
+    const [data, setData] = useState(defaultDatabase)
 
     const columns = useMemo(
       () => [

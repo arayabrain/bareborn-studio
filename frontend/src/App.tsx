@@ -13,31 +13,37 @@ import Projects from './pages/Projects'
 import Database from './pages/Database'
 import Login from 'pages/Login'
 import Signup from 'pages/Signup'
+import ProjectFormComponent from "./pages/Projects/ProjectForm";
+import {DndProvider} from "react-dnd";
+import {HTML5Backend} from "react-dnd-html5-backend";
 
 const App: React.FC = () => {
   return (
-    <SnackbarProvider
-      maxSnack={5}
-      action={(snackbarKey) => (
-        <SnackbarCloseButton snackbarKey={snackbarKey} />
-      )}
-    >
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/workflow" element={<Project />} />
-            <Route path="/account-manager" element={<AccountManager />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/database" element={<Database />} />
-            <Route path="/project" element={<Project />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </SnackbarProvider>
+    <DndProvider backend={HTML5Backend}>
+      <SnackbarProvider
+        maxSnack={5}
+        action={(snackbarKey) => (
+          <SnackbarCloseButton snackbarKey={snackbarKey} />
+        )}
+      >
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/workflow" element={<Project />} />
+              <Route path="/account-manager" element={<AccountManager />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/database" element={<Database />} />
+              <Route path="/project" element={<Project />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/project/new-project" element={<ProjectFormComponent />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </SnackbarProvider>
+    </DndProvider>
   )
 }
 
