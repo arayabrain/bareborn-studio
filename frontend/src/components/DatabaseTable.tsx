@@ -1,8 +1,8 @@
 import { Box, styled, Typography } from '@mui/material'
-import {FC, useState} from 'react'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { FC, useState } from 'react'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
 type Column = {
   width?: number | string
@@ -21,6 +21,9 @@ type TableComponentProps = {
   data?: any[]
   className?: string
   columns?: Column[]
+  orderBy?: 'ASC' | 'DESC'
+  orderKey?: string
+  onSort?: (orderKey: string, orderBy: string) => any
 }
 
 const renderCol = (col: Column, item: any, index: number) => {
@@ -29,23 +32,40 @@ const renderCol = (col: Column, item: any, index: number) => {
   return value || null
 }
 
-const RenderColumn = (
-  {column, item, index, dropDown, click,show}
-  : {column: Column[], item: any, index: number, dropDown?: any, click?: any, show?: boolean}
-) => {
+const RenderColumn = ({
+  column,
+  item,
+  index,
+  dropDown,
+  click,
+  show,
+}: {
+  column: Column[]
+  item: any
+  index: number
+  dropDown?: any
+  click?: any
+  show?: boolean
+}) => {
   return (
     <Tr key={item.id || index}>
       {column.map((col, iCol) => (
         <Td
           key={col.dataIndex || col.name || iCol}
-          style={{cursor:col.name === dropDown ? 'pointer' : 'inherit'}}
+          style={{ cursor: col.name === dropDown ? 'pointer' : 'inherit' }}
           onClick={click ? click : null}
         >
-          {
-            col.name === dropDown ? show ?
-              <ArrowDropUpIcon style={{marginBottom: '-8px', marginLeft:'-24px'}} /> :
-              <ArrowDropDownIcon style={{marginBottom: '-8px', marginLeft:'-24px'}} /> : null
-          }
+          {col.name === dropDown ? (
+            show ? (
+              <ArrowDropUpIcon
+                style={{ marginBottom: '-8px', marginLeft: '-24px' }}
+              />
+            ) : (
+              <ArrowDropDownIcon
+                style={{ marginBottom: '-8px', marginLeft: '-24px' }}
+              />
+            )
+          ) : null}
           {renderCol(col, item, index)}
         </Td>
       ))}
@@ -53,8 +73,16 @@ const RenderColumn = (
   )
 }
 
-const RenderDataset = ({column, item, index} : {column: Column[], item: any, index: number}) => {
-  const [show, setShow] = useState<boolean>(false);
+const RenderDataset = ({
+  column,
+  item,
+  index,
+}: {
+  column: Column[]
+  item: any
+  index: number
+}) => {
+  const [show, setShow] = useState<boolean>(false)
   return (
     <>
       <RenderColumn
@@ -65,20 +93,30 @@ const RenderDataset = ({column, item, index} : {column: Column[], item: any, ind
         click={() => setShow(!show)}
         show={show}
       />
-      {
-        !(item?.dataset && show) ? null : item.dataset.map((itemData: any, idx: number) =>
-          <RenderColumn
-            column={column}
-            item={itemData}
-            index={idx}
-          />)
-      }
+      {!(item?.dataset && show)
+        ? null
+        : item.dataset.map((itemData: any, idx: number) => (
+            <RenderColumn
+              key={idx}
+              column={column}
+              item={itemData}
+              index={idx}
+            />
+          ))}
     </>
   )
 }
 
-const RenderSectionColumn = ({column, item, index} : {column: Column[], item: any, index: number}) => {
-  const [show, setShow] = useState<boolean>(false);
+const RenderSectionColumn = ({
+  column,
+  item,
+  index,
+}: {
+  column: Column[]
+  item: any
+  index: number
+}) => {
+  const [show, setShow] = useState<boolean>(false)
   return (
     <>
       <RenderColumn
@@ -89,44 +127,71 @@ const RenderSectionColumn = ({column, item, index} : {column: Column[], item: an
         click={() => setShow(!show)}
         show={show}
       />
-      {
-        item?.dataset && show ? item.dataset.map((itemData: any, idx: number) => <RenderDataset
-          item={itemData}
-          index={idx}
-          key={itemData.id || index}
-          column={column}
-        />) : null
-      }
+      {item?.dataset && show
+        ? item.dataset.map((itemData: any, idx: number) => (
+            <RenderDataset
+              item={itemData}
+              index={idx}
+              key={itemData.id || index}
+              column={column}
+            />
+          ))
+        : null}
     </>
   )
 }
 
 const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
-  const { data = [], columns = [], className } = props
-  
+  const {
+    data = [],
+    columns = [],
+    className,
+    orderKey,
+    orderBy,
+    onSort,
+  } = props
   return (
     <TableWrap className={className}>
-      <DataTable style={{width: 150 * columns.length}}>
+      <DataTable style={{ width: 150 * columns.length }}>
         <Thead>
           <Tr>
             {columns.map((col, iCol) => (
               <Th
-                style={{ width: col.width, cursor: col?.filter? 'pointer' : 'inherit'}}
+                onClick={() =>
+                  col.filter &&
+                  onSort?.(
+                    col.name || col.dataIndex || '',
+                    orderBy === 'ASC' ? 'DESC' : 'ASC',
+                  )
+                }
+                style={{
+                  width: col.width,
+                  cursor: col?.filter ? 'pointer' : 'inherit',
+                }}
                 key={col.dataIndex || col.name || iCol}
               >
                 {col.title}
-                {col?.filter ? <ArrowDownwardIcon style={{width: 16, height: 16}}/> : null}
+                {col?.filter ? (
+                  <ArrowDownwardIconOrder
+                    style={{
+                      transform: `rotate(${orderBy === 'ASC' ? 180 : 0}deg)`,
+                      opacity: orderKey === col.name ? 1 : 0.4,
+                    }}
+                  />
+                ) : null}
               </Th>
             ))}
           </Tr>
         </Thead>
         <TBody>
-          {data.map((item, index) => <RenderSectionColumn
-            item={item}
-            index={index}
-            column={columns}
-            key={item.id || index}
-          />)}
+          {data.map((item, index) => (
+            <RenderSectionColumn
+              item={item}
+              index={index}
+              column={columns}
+              key={item.id || index}
+            />
+          ))}
         </TBody>
       </DataTable>
       {!data.length ? <NoData>No Data</NoData> : null}
@@ -135,13 +200,14 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
 }
 
 const TableWrap = styled(Box)({
-  overflowX: "scroll",
+  overflowX: 'scroll',
 })
 
 const DataTable = styled('table')({
   boxSizing: 'border-box',
   minWidth: '100%',
   borderCollapse: 'collapse',
+  border: '1px solid rgba(224, 224, 224, 1)',
 })
 
 const Thead = styled('thead')({})
@@ -151,10 +217,10 @@ const Tr = styled('tr')({})
 const Th = styled('th')(({ theme }) => ({
   padding: theme.spacing(2),
   textAlign: 'left',
-  backgroundColor: '#E1DEDB',
+  backgroundColor: 'none',
   color: 'rgba(0,0,0,.88)',
   fontWeight: 600,
-  borderBottom: '1px solid #f0f0f0',
+  border: '1px solid rgba(224, 224, 224, 1)',
   ':first-of-type': {
     borderTopLeftRadius: 4,
   },
@@ -167,7 +233,7 @@ const TBody = styled('tbody')(() => ({}))
 
 const Td = styled('td')(({ theme }) => ({
   padding: theme.spacing(2),
-  borderBottom: '1px solid #f0f0f0',
+  borderBottom: '1px solid rgba(224, 224, 224, 1)',
   width: 118,
 }))
 
@@ -176,6 +242,14 @@ const NoData = styled(Typography)({
   fontWeight: '600',
   fontSize: 20,
   paddingTop: 16,
+})
+
+const ArrowDownwardIconOrder = styled(ArrowDownwardIcon)({
+  width: 16,
+  height: 16,
+  transition: 'all 0.3s',
+  marginBottom: -3,
+  marginLeft: 5,
 })
 
 export default DatabaseTableComponent
