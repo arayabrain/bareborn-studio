@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 
 const AccountManager = () => {
   const [openDelete, setOpenDelete] = useState(false)
-  const [data, setData] = useState([
+  const [data, /*setData*/] = useState([
     {
       name: 'Title',
       address: 'Mail Address',

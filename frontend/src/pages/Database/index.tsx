@@ -1,8 +1,9 @@
-import {Box, Button, IconButton, Input, styled} from "@mui/material";
-import React, {useMemo, useState} from 'react'
-import DatabaseTableComponent from "./DatabaseTable";
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Button, IconButton, Input, styled } from '@mui/material'
+import { useMemo, useState } from 'react'
+import DatabaseTableComponent from '../../components/DatabaseTable'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import ImageView from 'components/ImageView'
 
 const PopupSearch = () => {
   return (
@@ -96,24 +97,101 @@ export const defaultDatabase = [
 ]
 
 const Database = () => {
-    const [openPopup, setOpenPopup] = useState(false)
-    const [data, setData] = useState(defaultDatabase)
-
-    const columns = useMemo(
-      () => [
-        { title: 'Lab', name: 'lab_name' },
-        { title: 'User', name: 'user_name' },
-        { title: 'Date', name: 'date' },
-        { title: 'Session', name: 'session_name'},
-        { title: 'Dataset', name: 'dataset_title'},
-        { title: 'Type', name: 'type', filter: true},
-        { title: 'Protocol', name: 'protocol'},
-        { title: 'Size', name: 'size'},
-        { title: 'Voxel size', name: 'voxel_size'},
+  const [openPopup, setOpenPopup] = useState(false)
+  const [openViewer, setOpenViewer] = useState(false)
+  const [data /*setData*/] = useState([
+    {
+      id: '1',
+      lab_name: 'lab1',
+      user_name: 'hope',
+      date: '2023/02/24',
+    },
+    {
+      id: '2',
+      lab_name: '',
+      user_name: '',
+      date: '',
+      session_name: 'sess 1',
+      dataset: [
         {
-          title: '',
-          name: 'action',
-          render: (data: any) => data.control ? (
+          id: '9',
+          dataset_title: 'anat',
+          dataset: [
+            {
+              id: '3',
+              lab_name: '',
+              user_name: '',
+              date: '',
+              session_name: '',
+              dataset: {},
+              type: 'T2_RARE',
+              protocol: 'aaaaaaaa',
+              size: '1234',
+              voxel_size: '1234',
+              control: true,
+            },
+            {
+              id: '4',
+              lab_name: '',
+              user_name: '',
+              date: '',
+              session_name: '',
+              dataset: {},
+              type: 'T2_RARE',
+              protocol: 'aaaaaaaa',
+              size: '1234',
+              voxel_size: '1234',
+              control: true,
+            },
+          ],
+        },
+        {
+          id: '10',
+          dataset_title: 'anat 2',
+          dataset: [
+            {
+              id: '7',
+              lab_name: '',
+              user_name: '',
+              date: '',
+              session_name: '',
+              dataset: {},
+              type: 'T2_RARE',
+              protocol: 'aaaaaaaa',
+              size: '1234',
+              voxel_size: '1234',
+              control: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: '5',
+      lab_name: '',
+      user_name: '',
+      date: '',
+      session_name: 'sess 2',
+      dataset: null,
+    },
+  ])
+
+  const columns = useMemo(
+    () => [
+      { title: 'Lab', name: 'lab_name' },
+      { title: 'User', name: 'user_name' },
+      { title: 'Date', name: 'date' },
+      { title: 'Session', name: 'session_name' },
+      { title: 'Dataset', name: 'dataset_title' },
+      { title: 'Type', name: 'type', filter: true },
+      { title: 'Protocol', name: 'protocol' },
+      { title: 'Size', name: 'size' },
+      { title: 'Voxel size', name: 'voxel_size' },
+      {
+        title: '',
+        name: 'action',
+        render: (data: any) =>
+          data.control ? (
             <BoxButton>
               <ButtonControl aria-label="Example">
                 <EditIcon color={'inherit'} />
@@ -123,54 +201,56 @@ const Database = () => {
               </ButtonControl>
             </BoxButton>
           ) : null,
-        },
-      ],
-      [],
-    )
+      },
+    ],
+    [],
+  )
 
-    return (
-        <DatabaseWrapper>
-          <ProjectsTitle><span>Database</span><ButtonFilter onClick={()=> setOpenPopup(true)}>Search</ButtonFilter></ProjectsTitle>
-          {
-            openPopup && <PopupSearch />
-          }
-          <DatabaseTableComponent
-            data={data}
-            columns={columns}
-          />
-        </DatabaseWrapper>
-    )
-};
+  const onCloseImageView = () => {
+    setOpenViewer(false)
+  }
+
+  return (
+    <DatabaseWrapper>
+      <ProjectsTitle>
+        <span>Database</span>
+        <ButtonFilter onClick={() => setOpenViewer(true)}>Search</ButtonFilter>
+      </ProjectsTitle>
+      {openPopup && <PopupSearch />}
+      <DatabaseTableComponent data={data} columns={columns} />
+      <ImageView open={openViewer} onClose={onCloseImageView} />
+    </DatabaseWrapper>
+  )
+}
 
 const DatabaseWrapper = styled(Box)(({ theme }) => ({
-    width: '100%',
-    padding: theme.spacing(2),
+  width: '100%',
+  padding: theme.spacing(2),
 }))
 
-const Popup = styled(Box)(({ theme }) => ({
+const Popup = styled(Box)(() => ({
   position: 'fixed',
   top: 0,
   left: 0,
   width: '100%',
   height: '100vh',
   display: 'flex',
-  justifyContent:'center',
+  justifyContent: 'center',
   alignItems: 'center',
   backgroundColor: '#cccccc80',
 }))
 
 const PopupInner = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2,3),
+  padding: theme.spacing(2, 3),
   backgroundColor: '#fff',
   borderRadius: theme.spacing(1),
 }))
 
 const InputSearch = styled(Input)(({ theme }) => ({
-  padding: theme.spacing(2,3),
+  padding: theme.spacing(2, 3),
   backgroundColor: '#fff',
   borderRadius: theme.spacing(1),
 }))
-
 
 const BoxButton = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -181,12 +261,12 @@ const BoxButton = styled(Box)(({ theme }) => ({
 const ButtonFilter = styled(Button)(({ theme }) => ({
   margin: theme.spacing(2, 0),
   minWidth: 80,
-  paddingLeft: theme.spacing( 2),
-  paddingRight: theme.spacing( 2)
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
 }))
 
 const ButtonControl = styled(IconButton)(({ theme }) => ({
-  padding: theme.spacing(0, 1)
+  padding: theme.spacing(0, 1),
 }))
 
 const ProjectsTitle = styled('h1')(({ theme }) => ({}))

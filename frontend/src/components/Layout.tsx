@@ -8,14 +8,14 @@ import HomeIcon from '@mui/icons-material/Home'
 import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { getAuth } from 'firebase/auth'
+import { Link, useLocation } from 'react-router-dom'
+// import { getAuth } from 'firebase/auth'
 
 const Layout: FC = ({ children }) => {
   const location = useLocation()
   const [width, setWidth] = useState(drawerWidth)
-  const auth = getAuth()
-  const navigate = useNavigate()
+  // const auth = getAuth()
+  // const navigate = useNavigate()
 
   const onResize = () => {
     setWidth(width === drawerWidth ? 54 : drawerWidth)
@@ -31,14 +31,14 @@ const Layout: FC = ({ children }) => {
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname])
 
-  const checkkAuth = () => {
-    if (
-      !auth.currentUser &&
-      !['/login', '/signup'].includes(window.location.pathname)
-    ) {
-      navigate('/login')
-    }
-  }
+  // const checkkAuth = () => {
+  //   if (
+  //     !auth.currentUser &&
+  //     !['/login', '/signup'].includes(window.location.pathname)
+  //   ) {
+  //     navigate('/login')
+  //   }
+  // }
 
   return (
     <LayoutWrapper>

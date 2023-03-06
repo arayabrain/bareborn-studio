@@ -1,6 +1,6 @@
 import {Box, Button, FormControlLabel, Radio, RadioGroup, styled} from "@mui/material";
+import DatabaseTableComponent from "components/DatabaseTable";
 import React, {useMemo, useState} from "react";
-import DatabaseTableComponent from "../Database/DatabaseTable";
 import {defaultDatabase} from "../Database";
 
 const RenderBetweenComponent = ({data, level}: {data?: any, level: string}) => {

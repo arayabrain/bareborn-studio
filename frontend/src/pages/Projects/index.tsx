@@ -1,5 +1,5 @@
 import {Box, Button, styled} from "@mui/material";
-import React, {useMemo, useState} from 'react'
+import {useMemo, useState} from 'react'
 import TableComponent from "../../components/Table";
 import {useNavigate} from "react-router-dom";
 
