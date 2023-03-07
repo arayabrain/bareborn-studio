@@ -1,4 +1,4 @@
-import { Box, styled, SxProps, Theme, Typography } from '@mui/material'
+import { Box, styled, Typography } from '@mui/material'
 import {
   FC,
   MouseEvent,
@@ -15,15 +15,16 @@ type ChangeDragProps = {
   onChange: (value: number) => void
   className?: string
   max?: number
+  min?: number
+  onChangeMin?: (v: number) => any
+  onChangeMax?: (v: number) => any
+  showInputMax?: boolean
+  showInputMin?: boolean
 }
 
-const ChangeDrag: FC<ChangeDragProps> = ({
-  title,
-  value,
-  onChange,
-  className,
-  max = 2,
-}) => {
+const ChangeDrag: FC<ChangeDragProps> = (props) => {
+  const { title, value, onChange, className, max = 2, min = 0 } = props
+  const { onChangeMin, onChangeMax, showInputMax } = props
   const [width, setWidth] = useState(0)
   const mouseDown = useRef(0)
 
@@ -32,7 +33,7 @@ const ChangeDrag: FC<ChangeDragProps> = ({
 
   useEffect(() => {
     setTimeout(() => {
-      setWidth(refDrag.current.clientWidth)
+      setWidth(refDrag.current.clientWidth - 24)
     }, 1000)
   }, [])
 
@@ -51,10 +52,10 @@ const ChangeDrag: FC<ChangeDragProps> = ({
   const onMouseMove = (event: MouseEvent<HTMLDivElement>) => {
     if (!mouseDown.current) return
     const mouseInit = refDrag.current.getBoundingClientRect().x
-    const mouseMove = event.pageX - mouseInit
+    const mouseMove = event.pageX - mouseInit - 12
     let scale = (mouseMove * max) / width
     if (scale > max) scale = max
-    if (scale < 0) scale = 0
+    if (scale < min) scale = min
     onChange(Number(scale.toFixed(2)))
   }
 
@@ -64,7 +65,7 @@ const ChangeDrag: FC<ChangeDragProps> = ({
     const mouseMove = event.touches[0].pageX - mouseInit
     let scale = (mouseMove * max) / width
     if (scale > max) scale = max
-    if (scale < 0) scale = 0
+    if (scale < min) scale = min
     onChange(Number(scale.toFixed(2)))
   }
 
@@ -73,8 +74,6 @@ const ChangeDrag: FC<ChangeDragProps> = ({
     refDrag.current.style.cursor = 'default'
     refDot.current.style.cursor = ''
   }, [])
-
-  console.log('width',value * (width / max))
 
   return (
     <ScaleWrapper
@@ -86,14 +85,27 @@ const ChangeDrag: FC<ChangeDragProps> = ({
       onMouseUp={onMouseLeave}
     >
       <TitleScale>{title}</TitleScale>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Input
+          value={value}
+          onChange={(e) => onChangeMin?.(Number(e.target.value))}
+        />
+        {showInputMax ? (
+          <Input
+            style={{ textAlign: 'right' }}
+            value={max}
+            onChange={(e) => onChangeMax?.(Number(e.target.value))}
+          />
+        ) : null}
+      </div>
       <BoxWrapper>
-        <BoxLine sx={{ width: value * (width / max) }} />
+        <BoxLine style={{ width: value * (width / max) }} />
         <Dot
           ref={refDot}
           onMouseDown={onMouseDown}
           onTouchEnd={onMouseLeave}
           onTouchStart={onTouchStart}
-          sx={{ left: value * (width / max) - 14 }}
+          style={{ left: value * (width / max) }}
         />
       </BoxWrapper>
     </ScaleWrapper>
@@ -111,16 +123,15 @@ const BoxWrapper = styled(Box)(() => ({
 
 const Dot = styled(Box)(() => ({
   position: 'absolute',
-  width: 28,
-  height: 28,
-  background: '#ffffff',
+  width: 24,
+  height: 24,
+  background: '#7a7a7a',
   borderRadius: 100,
-  top: -12,
+  top: -11,
   cursor: 'pointer',
 }))
 
 const TitleScale = styled(Typography)(() => ({
-  color: '#ffffff',
   fontSize: 14,
   fontWeight: 700,
 }))
@@ -133,10 +144,17 @@ const BoxLine = styled(Box)(() => ({
 }))
 
 const ScaleWrapper = styled(Box)(({ theme }) => ({
-  paddingTop: theme.spacing(5),
+  paddingBottom: 20,
   '@media (max-width: 809px)': {
     paddingTop: theme.spacing(2),
   },
 }))
+
+const Input = styled('input')({
+  border: 'none',
+  outline: 'none',
+  width: 50,
+  marginBottom: 20,
+})
 
 export default ChangeDrag

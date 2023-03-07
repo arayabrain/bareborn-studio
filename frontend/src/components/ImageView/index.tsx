@@ -15,6 +15,9 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
   const [values, setValues] = useState(0)
   const [opacity, setOpacity] = useState(0)
   const [thresholds, setThresholds] = useState(0)
+  const [maxThres, setMaxThres] = useState(0)
+  const [contracts, setContracts] = useState(1)
+  const [brightness, setBrightness] = useState(0)
   const volumes = useRef<any>()
 
   useEffect(() => {
@@ -28,7 +31,34 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
 
   const onChangeThreshold = (num: number) => {
     if (!volumes.current) return
-    setThresholds(num)
+    volumes.current.intensity_min = num
+    viewerRef.current.redrawVolumes()
+  }
+
+  const onChangeContract = (num: number) => {
+    if (!volumes.current) return
+    setContracts(num)
+    volumes.current.display.setContrast(num)
+    volumes.current.display.refreshPanels()
+    viewerRef.current.redrawVolumes()
+  }
+
+  const onChangeBrightness = (num: number) => {
+    if (!volumes.current) return
+    setBrightness(num)
+    volumes.current.display.setBrightness(num)
+    volumes.current.display.refreshPanels()
+    viewerRef.current.redrawVolumes()
+  }
+
+  const onChangeMaxThresh = (num: number) => {
+    if (!volumes.current) return
+    volumes.current.intensity_max = num
+    viewerRef.current.redrawVolumes()
+  }
+
+  const onChangeMinThresh = (num: number) => {
+    if (!volumes.current) return
     volumes.current.intensity_min = num
     viewerRef.current.redrawVolumes()
   }
@@ -39,13 +69,15 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
     viewerRef.current = brainbrowser.VolumeViewer.start(
       'brainbrowser',
       (viewer: any) => {
-        viewer.addEventListener('volumeloaded', function (event: any) {
+        viewer.addEventListener('volumeloaded', function () {
           setOpacity(1)
         })
         viewer.addEventListener('sliceupdate', function (event: any) {
           // const panel = event.target
           const { volume } = event
           volumes.current = volume
+          setThresholds(volumes.current.intensity_min)
+          setMaxThres(volumes.current.intensity_max)
           setValues(volume.getIntensityValue())
           if (brainbrowser.utils.isFunction(volume.getWorldCoords)) {
             setWorldCoords(volume.getWorldCoords())
@@ -99,7 +131,7 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
               <div id="brainbrowser"></div>
             </div>
             <BoxContentData>
-              <p>World Coordinates:</p>
+              <p style={{ margin: 0, padding: '20px 0' }}>World Coordinates:</p>
               <span>X: {worldCoords.x.toPrecision(4)}</span>
               <span style={{ marginLeft: 20 }}>
                 Y: {worldCoords.y.toPrecision(4)}
@@ -113,10 +145,25 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
               <span style={{ marginLeft: 20 }}>K: {voxelCoords.k}</span>
               <p>Value: {values}</p>
               <ChangeDrag
-                max={255}
+                onChangeMax={onChangeMaxThresh}
+                onChangeMin={onChangeMinThresh}
+                max={maxThres}
+                min={thresholds < 0 ? thresholds : 0}
                 title={'Threshold'}
                 value={thresholds}
+                showInputMax
+                showInputMin
                 onChange={onChangeThreshold}
+              />
+              <ChangeDrag
+                title={'Contrast (0.0 to 2.0)'}
+                value={contracts}
+                onChange={onChangeContract}
+              />
+              <ChangeDrag
+                title={'Brightness (-1 to 1):'}
+                value={brightness}
+                onChange={onChangeBrightness}
               />
             </BoxContentData>
           </div>
@@ -142,6 +189,10 @@ const ImageViewWrapper = styled(Box)({
   background: 'rgba(255,255,255,0.8)',
 })
 
-const BoxContentData = styled(Box)({})
+const BoxContentData = styled(Box)({
+  margin: '-5px 0 0',
+  padding: '10px',
+  background: '#ffffff',
+})
 
 export default ImageView

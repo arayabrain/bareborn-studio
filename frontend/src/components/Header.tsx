@@ -41,7 +41,7 @@ const Header: FC = () => {
             <BoxMenuItem>
               <PortraitIcon /> Profile
             </BoxMenuItem>
-            <BoxMenuItem style={{ color: 'red', fontWeight: 600 }}>
+            <BoxMenuItem style={{ color: 'red', fontWeight: 600, marginTop: 30 }}>
               <LogoutIcon />
               SIGN OUT
             </BoxMenuItem>
@@ -64,9 +64,9 @@ const BoxDropdown = styled(Box)({
   outline: 'none',
   boxShadow:
     '0 6px 16px 0 rgb(0 0 0 / 8%), 0 3px 6px -4px rgb(0 0 0 / 12%), 0 9px 28px 8px rgb(0 0 0 / 5%)',
-  minWidth: 120,
   cursor: 'default',
   zIndex: 1,
+  minWidth: 250,
 })
 
 const Image = styled('img')({
