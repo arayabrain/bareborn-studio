@@ -1,20 +1,27 @@
 import { Box, Button, Modal, styled, Typography } from '@mui/material'
 import { Input } from 'components/common/Input'
-import { FC } from 'react'
+import {FC, useState} from 'react'
 
 type ModalDeleteAccountProps = {
   onClose: () => void
   open: boolean
   onSubmit: () => void
-  titleSubmit: string
+  titleSubmit: string,
 }
-
 const ModalDeleteAccount: FC<ModalDeleteAccountProps> = ({
   onClose,
   open,
   onSubmit,
   titleSubmit,
 }) => {
+  const [textDelete, setTextDelete] = useState("")
+
+  const onConfirm = () => {
+    if(textDelete !== "DELETE") return
+    onSubmit?.()
+    setTextDelete('')
+  }
+
   return (
     <Modal
       open={open}
@@ -29,8 +36,8 @@ const ModalDeleteAccount: FC<ModalDeleteAccountProps> = ({
           <span style={{ fontWeight: 600 }}>DELETE</span>" in the box below:
         </Typography>
         <BoxConfirm>
-          <Input placeholder="DELETE" />
-          <ButtonConfirm onClick={onSubmit}>{titleSubmit}</ButtonConfirm>
+          <Input placeholder="DELETE" value={textDelete} onChange={(e) => setTextDelete(e.target.value)}/>
+          <ButtonConfirm onClick={onConfirm}>{titleSubmit}</ButtonConfirm>
         </BoxConfirm>
         <Button onClick={onClose}>
           <Typography
