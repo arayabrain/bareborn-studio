@@ -13,6 +13,7 @@ import Projects from './pages/Projects'
 import Database from './pages/Database'
 import Login from 'pages/Login'
 import Signup from 'pages/Signup'
+import ProjectFormComponent from "./pages/Projects/ProjectForm";
 
 const App: React.FC = () => {
   return (
@@ -34,6 +35,8 @@ const App: React.FC = () => {
             <Route path="/project" element={<Project />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/account-deleted" element={<AccountDelete />} />
+            <Route path="/project/new-project" element={<ProjectFormComponent />} />
           </Routes>
         </Layout>
       </BrowserRouter>

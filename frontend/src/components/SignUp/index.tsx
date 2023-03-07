@@ -1,4 +1,4 @@
-import { Box, MenuItem, Stack, styled, Typography } from '@mui/material'
+import { Box, Stack, styled, Typography } from '@mui/material'
 import { ChangeEvent, FC, FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Select from 'react-select'

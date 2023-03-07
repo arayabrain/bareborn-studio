@@ -1,8 +1,10 @@
 import {Box, Button, styled} from "@mui/material";
-import React, {useMemo, useState} from 'react'
+import {useMemo, useState} from 'react'
 import TableComponent from "../../components/Table";
+import {useNavigate} from "react-router-dom";
 
 const Projects = () => {
+  const navigate = useNavigate()
     const [data, setData] = useState([
         {
             id: '1',
@@ -30,6 +32,10 @@ const Projects = () => {
 
     const onResults = (id : any) => {
         console.log('Results: ', id)
+    }
+    
+    const addNewProject = () => {
+      navigate('/project/new-project')
     }
 
     const columns = useMemo(
@@ -59,7 +65,7 @@ const Projects = () => {
         <ProjectsWrapper>
             <ProjectsTitle>Projects</ProjectsTitle>
             <BoxButton>
-                <ButtonAdd variant="contained">Add</ButtonAdd>
+                <ButtonAdd variant="contained" onClick={addNewProject}>Add</ButtonAdd>
                 <ButtonAdd variant="contained">Project</ButtonAdd>
             </BoxButton>
             <TableComponent
