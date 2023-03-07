@@ -28,14 +28,19 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
   const [width, setWidth] = useState(0)
   const mouseDown = useRef(0)
 
+  const allNumber = max
+
   const refDrag = useRef<any>()
   const refDot = useRef<any>()
 
   useEffect(() => {
-    setTimeout(() => {
-      setWidth(refDrag.current.clientWidth - 24)
-    }, 1000)
+    getWidth()
   }, [])
+
+  const getWidth = () => {
+    if (!refDrag.current) getWidth()
+    setWidth(refDrag.current.clientWidth - 24)
+  }
 
   const onMouseDown = useCallback((event: MouseEvent<HTMLDivElement>) => {
     mouseDown.current = event.pageX
@@ -53,7 +58,7 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
     if (!mouseDown.current) return
     const mouseInit = refDrag.current.getBoundingClientRect().x
     const mouseMove = event.pageX - mouseInit - 12
-    let scale = (mouseMove * max) / width
+    let scale = mouseMove / width
     if (scale > max) scale = max
     if (scale < min) scale = min
     onChange(Number(scale.toFixed(2)))
@@ -63,7 +68,7 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
     if (!mouseDown.current) return
     const mouseInit = refDrag.current.getBoundingClientRect().x
     const mouseMove = event.touches[0].pageX - mouseInit
-    let scale = (mouseMove * max) / width
+    let scale = mouseMove / width
     if (scale > max) scale = max
     if (scale < min) scale = min
     onChange(Number(scale.toFixed(2)))
@@ -74,6 +79,8 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
     refDrag.current.style.cursor = 'default'
     refDot.current.style.cursor = ''
   }, [])
+
+  console.log('value', value)
 
   return (
     <ScaleWrapper
@@ -99,13 +106,15 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
         ) : null}
       </div>
       <BoxWrapper>
-        <BoxLine style={{ width: value * (width / max) }} />
+        <BoxLine
+          style={{ width: (Math.abs(value - min) / allNumber) * width }}
+        />
         <Dot
           ref={refDot}
           onMouseDown={onMouseDown}
-          onTouchEnd={onMouseLeave}
-          onTouchStart={onTouchStart}
-          style={{ left: value * (width / max) }}
+          // onTouchEnd={onMouseLeave}
+          // onTouchStart={onTouchStart}
+          style={{ left: (Math.abs(value - min) / allNumber) * width }}
         />
       </BoxWrapper>
     </ScaleWrapper>

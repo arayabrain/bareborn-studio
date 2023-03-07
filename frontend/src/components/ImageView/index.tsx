@@ -121,54 +121,73 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
-      <ImageViewWrapper sx={{ opacity }}>
-        <ButtonClose onClick={onClose}>
-          <CloseIcon />
-        </ButtonClose>
-        <div>
-          <div id="brainbrowser-wrapper">
-            <div id="volume-viewer">
-              <div id="brainbrowser"></div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <ImageViewWrapper sx={{ opacity }}>
+          <ButtonClose onClick={onClose}>
+            <CloseIcon />
+          </ButtonClose>
+          <div style={{ display: 'flex', alignItems: 'stretch' }}>
+            <div id="brainbrowser-wrapper">
+              <div id="volume-viewer">
+                <div id="brainbrowser"></div>
+              </div>
+              {opacity ? (
+                <BoxContentData>
+                  <p style={{ margin: 0, padding: '20px 0' }}>
+                    World Coordinates:
+                  </p>
+                  <span>X: {worldCoords.x.toPrecision(4)}</span>
+                  <span style={{ marginLeft: 20 }}>
+                    Y: {worldCoords.y.toPrecision(4)}
+                  </span>
+                  <span style={{ marginLeft: 20 }}>
+                    Z: {worldCoords.z.toPrecision(4)}
+                  </span>
+                  <p>Voxel Coordinates:</p>
+                  <span>I: {voxelCoords.i}</span>
+                  <span style={{ marginLeft: 20 }}>J: {voxelCoords.j}</span>
+                  <span style={{ marginLeft: 20 }}>K: {voxelCoords.k}</span>
+                  <p>Value: {values}</p>
+                  <ChangeDrag
+                    onChangeMax={onChangeMaxThresh}
+                    onChangeMin={onChangeMinThresh}
+                    max={maxThres}
+                    min={thresholds < 0 ? thresholds : 0}
+                    title={'Threshold'}
+                    value={thresholds}
+                    showInputMax
+                    showInputMin
+                    onChange={onChangeThreshold}
+                  />
+                  <ChangeDrag
+                    title={'Contrast (0.0 to 2.0)'}
+                    value={contracts}
+                    onChange={onChangeContract}
+                  />
+                  <ChangeDrag
+                    title={'Brightness (-1 to 1):'}
+                    value={brightness}
+                    min={-1}
+                    max={1}
+                    onChange={onChangeBrightness}
+                  />
+                </BoxContentData>
+              ) : null}
             </div>
-            <BoxContentData>
-              <p style={{ margin: 0, padding: '20px 0' }}>World Coordinates:</p>
-              <span>X: {worldCoords.x.toPrecision(4)}</span>
-              <span style={{ marginLeft: 20 }}>
-                Y: {worldCoords.y.toPrecision(4)}
-              </span>
-              <span style={{ marginLeft: 20 }}>
-                Z: {worldCoords.z.toPrecision(4)}
-              </span>
-              <p>Voxel Coordinates:</p>
-              <span>I: {voxelCoords.i}</span>
-              <span style={{ marginLeft: 20 }}>J: {voxelCoords.j}</span>
-              <span style={{ marginLeft: 20 }}>K: {voxelCoords.k}</span>
-              <p>Value: {values}</p>
-              <ChangeDrag
-                onChangeMax={onChangeMaxThresh}
-                onChangeMin={onChangeMinThresh}
-                max={maxThres}
-                min={thresholds < 0 ? thresholds : 0}
-                title={'Threshold'}
-                value={thresholds}
-                showInputMax
-                showInputMin
-                onChange={onChangeThreshold}
-              />
-              <ChangeDrag
-                title={'Contrast (0.0 to 2.0)'}
-                value={contracts}
-                onChange={onChangeContract}
-              />
-              <ChangeDrag
-                title={'Brightness (-1 to 1):'}
-                value={brightness}
-                onChange={onChangeBrightness}
-              />
-            </BoxContentData>
+            <WrapperJson>
+              <TextArea>JSON Preview and edit</TextArea>
+            </WrapperJson>
           </div>
-        </div>
-      </ImageViewWrapper>
+        </ImageViewWrapper>
+      </div>
     </Modal>
   )
 }
@@ -182,17 +201,28 @@ const ButtonClose = styled(IconButton)({
 })
 
 const ImageViewWrapper = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: '100%',
+  marginTop: 48,
   background: 'rgba(255,255,255,0.8)',
+  overflow: 'auto',
+  margin: 'auto',
 })
 
 const BoxContentData = styled(Box)({
   margin: '-5px 0 0',
   padding: '10px',
   background: '#ffffff',
+})
+
+const WrapperJson = styled(Box)({
+  minWidth: 300,
+})
+
+const TextArea = styled('textarea')({
+  height: 'calc(100% - 7px)',
+  width: '100%',
+  outline: 'none !important',
+  border: 'none',
+  borderLeft: '1px solid',
 })
 
 export default ImageView

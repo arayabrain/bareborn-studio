@@ -1,11 +1,11 @@
 import { Box, Button, styled } from '@mui/material'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import TableComponent from '../../components/Table'
 import { useNavigate } from 'react-router-dom'
 
 const Projects = () => {
   const navigate = useNavigate()
-  const [data, setData] = useState([
+  const [data /*setData*/] = useState([
     {
       id: '1',
       name: 'prj name 1',
@@ -22,22 +22,25 @@ const Projects = () => {
     },
   ])
 
-  const onEdit = (id: any) => {
+  const onEdit = useCallback((id: any) => {
     console.log('edit: ', id)
-  }
+  }, [])
 
-  const onWorkflow = (id: any) => {
+  const onWorkflow = useCallback((id: any) => {
     console.log('Workflow: ', id)
     navigate('/workflow')
-  }
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const onResults = (id: any) => {
+  const onResults = useCallback((id: any) => {
     console.log('Results: ', id)
-  }
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const addNewProject = () => {
+  const addNewProject = useCallback(() => {
     navigate('/project/new-project')
-  }
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const columns = useMemo(
     () => [
@@ -68,7 +71,7 @@ const Projects = () => {
         ),
       },
     ],
-    [],
+    [onWorkflow, onResults, onEdit],
   )
   return (
     <ProjectsWrapper>

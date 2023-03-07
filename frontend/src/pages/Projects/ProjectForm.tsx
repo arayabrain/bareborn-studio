@@ -21,7 +21,7 @@ const RenderBetweenComponent = ({data, level}: {data?: any, level: string}) => {
   )
 }
 const RenderBoxDrop = ({data, level}: {data?: any, level?: string}) => {
-  const [withinData, setWithinData] = useState(data || {
+  const [withinData, /*setWithinData*/] = useState(data || {
     name: 'Within Factor Name 1'
   })
   
@@ -44,9 +44,7 @@ const RenderBoxDrop = ({data, level}: {data?: any, level?: string}) => {
 const ProjectFormComponent = () => {
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState('factor')
-  const [project, setProject] = useState([
-  
-  ])
+  // const [project, setProject] = useState([])
   const columns = useMemo(
     () => [
       { title: 'User', name: 'user_name' },
