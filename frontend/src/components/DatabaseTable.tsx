@@ -24,6 +24,31 @@ type TableComponentProps = {
   orderBy?: 'ASC' | 'DESC'
   orderKey?: string
   onSort?: (orderKey: string, orderBy: string) => any
+  rowClick?: (row: any) => any
+}
+
+type RenderSectionColumnProps = {
+  column: Column[]
+  item: any
+  index: number
+  rowClick?: (row?: any) => any
+}
+
+type RenderColumnProps = {
+  column: Column[]
+  item: any
+  index: number
+  dropDown?: any
+  click?: any
+  show?: boolean
+  rowClick?: (row?: any) => any
+}
+
+type RenderDatasetProps = {
+  column: Column[]
+  item: any
+  index: number
+  rowClick?: (row?: any) => any
 }
 
 const renderCol = (col: Column, item: any, index: number) => {
@@ -32,28 +57,21 @@ const renderCol = (col: Column, item: any, index: number) => {
   return value || null
 }
 
-const RenderColumn = ({
-  column,
-  item,
-  index,
-  dropDown,
-  click,
-  show,
-}: {
-  column: Column[]
-  item: any
-  index: number
-  dropDown?: any
-  click?: any
-  show?: boolean
-}) => {
+const RenderColumn = (props: RenderColumnProps) => {
+  const { column, item, index, dropDown, click, show, rowClick } = props
   return (
-    <Tr key={item.id || index}>
+    <Tr key={item.id || index} onClick={() => rowClick?.(item)}>
       {column.map((col, iCol) => (
         <Td
           key={col.dataIndex || col.name || iCol}
           style={{ cursor: col.name === dropDown ? 'pointer' : 'inherit' }}
-          onClick={click ? click : null}
+          onClick={(event) => {
+            if (col.name === dropDown && click) {
+              event.preventDefault()
+              event.stopPropagation()
+              click()
+            }
+          }}
         >
           {col.name === dropDown ? (
             show ? (
@@ -73,15 +91,8 @@ const RenderColumn = ({
   )
 }
 
-const RenderDataset = ({
-  column,
-  item,
-  index,
-}: {
-  column: Column[]
-  item: any
-  index: number
-}) => {
+const RenderDataset = (props: RenderDatasetProps) => {
+  const { column, item, index, rowClick } = props
   const [show, setShow] = useState<boolean>(false)
   return (
     <>
@@ -92,34 +103,30 @@ const RenderDataset = ({
         dropDown={item?.dataset ? 'dataset_title' : ''}
         click={() => setShow(!show)}
         show={show}
+        rowClick={rowClick}
       />
-      {!(item?.dataset && show)
-        ? null
-        : item.dataset.map((itemData: any, idx: number) => (
+      {show
+        ? item.dataset?.map((itemData: any, idx: number) => (
             <RenderColumn
+              rowClick={rowClick}
               key={idx}
               column={column}
               item={itemData}
               index={idx}
             />
-          ))}
+          ))
+        : null}
     </>
   )
 }
 
-const RenderSectionColumn = ({
-  column,
-  item,
-  index,
-}: {
-  column: Column[]
-  item: any
-  index: number
-}) => {
+const RenderSectionColumn = (props: RenderSectionColumnProps) => {
+  const { column, item, index, rowClick } = props
   const [show, setShow] = useState<boolean>(false)
   return (
     <>
       <RenderColumn
+        rowClick={rowClick}
         column={column}
         item={item}
         index={index}
@@ -127,9 +134,10 @@ const RenderSectionColumn = ({
         click={() => setShow(!show)}
         show={show}
       />
-      {item?.dataset && show
-        ? item.dataset.map((itemData: any, idx: number) => (
+      {show
+        ? item.dataset?.map((itemData: any, idx: number) => (
             <RenderDataset
+              rowClick={rowClick}
               item={itemData}
               index={idx}
               key={itemData.id || index}
@@ -149,6 +157,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     orderKey,
     orderBy,
     onSort,
+    rowClick,
   } = props
   return (
     <TableWrap className={className}>
@@ -186,6 +195,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
         <TBody>
           {data.map((item, index) => (
             <RenderSectionColumn
+              rowClick={rowClick}
               item={item}
               index={index}
               column={columns}

@@ -207,10 +207,10 @@ const Database = () => {
           data.control ? (
             <BoxButton>
               <ButtonControl aria-label="Example">
-                <EditIcon color={'inherit'} />
+                <EditIcon fontSize="small" color={'inherit'} />
               </ButtonControl>
               <ButtonControl aria-label="Example">
-                <DeleteIcon sx={{ color: 'red' }} />
+                <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
               </ButtonControl>
             </BoxButton>
           ) : null,
@@ -221,6 +221,11 @@ const Database = () => {
 
   const onCloseImageView = () => {
     setOpenViewer(false)
+  }
+
+  const rowClick = (row: any) => {
+    console.log('row', row)
+    setOpenViewer(true)
   }
 
   return (
@@ -236,7 +241,11 @@ const Database = () => {
         </ButtonFilter>
       </ProjectsTitle>
       {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
-      <DatabaseTableComponent data={data} columns={columns} />
+      <DatabaseTableComponent
+        rowClick={rowClick}
+        data={data}
+        columns={columns}
+      />
       <ImageView open={openViewer} onClose={onCloseImageView} />
     </DatabaseWrapper>
   )
@@ -293,6 +302,11 @@ const ButtonFilter = styled(Button)(({ theme }) => ({
 
 const ButtonControl = styled(IconButton)(({ theme }) => ({
   padding: theme.spacing(0, 1),
+  width: 40,
+  height: 40,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 }))
 
 const ProjectsTitle = styled('h1')(({ theme }) => ({

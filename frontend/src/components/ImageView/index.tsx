@@ -1,5 +1,7 @@
-import { Box, Modal, styled } from '@mui/material'
+import { Box, IconButton, Modal, styled } from '@mui/material'
 import { FC, useEffect, useRef, useState } from 'react'
+import CloseIcon from '@mui/icons-material/Close'
+import ChangeDrag from './ChangeSize'
 
 type ImageViewProps = {
   open: boolean
@@ -11,13 +13,25 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
   const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
   const [voxelCoords, setVoxelCoords] = useState({ i: 0, j: 0, k: 0 })
   const [values, setValues] = useState(0)
+  const [opacity, setOpacity] = useState(0)
+  const [thresholds, setThresholds] = useState(0)
+  const volumes = useRef<any>()
 
   useEffect(() => {
-    if (open)
-      setTimeout(() => {
-        loadFile()
-      }, 500)
+    if (open) {
+      setTimeout(loadFile, 0)
+      return
+    }
+    setOpacity(0)
+    setThresholds(0)
   }, [open])
+
+  const onChangeThreshold = (num: number) => {
+    if (!volumes.current) return
+    setThresholds(num)
+    volumes.current.intensity_min = num
+    viewerRef.current.redrawVolumes()
+  }
 
   const loadFile = () => {
     const brainbrowser = (window as any).BrainBrowser
@@ -26,12 +40,12 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
       'brainbrowser',
       (viewer: any) => {
         viewer.addEventListener('volumeloaded', function (event: any) {
-          console.log('render')
+          setOpacity(1)
         })
         viewer.addEventListener('sliceupdate', function (event: any) {
           // const panel = event.target
           const { volume } = event
-          console.log('volume', volume)
+          volumes.current = volume
           setValues(volume.getIntensityValue())
           if (brainbrowser.utils.isFunction(volume.getWorldCoords)) {
             setWorldCoords(volume.getWorldCoords())
@@ -75,7 +89,10 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
-      <ImageViewWrapper>
+      <ImageViewWrapper sx={{ opacity }}>
+        <ButtonClose onClick={onClose}>
+          <CloseIcon />
+        </ButtonClose>
         <div>
           <div id="brainbrowser-wrapper">
             <div id="volume-viewer">
@@ -95,6 +112,12 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
               <span style={{ marginLeft: 20 }}>J: {voxelCoords.j}</span>
               <span style={{ marginLeft: 20 }}>K: {voxelCoords.k}</span>
               <p>Value: {values}</p>
+              <ChangeDrag
+                max={255}
+                title={'Threshold'}
+                value={thresholds}
+                onChange={onChangeThreshold}
+              />
             </BoxContentData>
           </div>
         </div>
@@ -103,12 +126,20 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
   )
 }
 
+const ButtonClose = styled(IconButton)({
+  width: 50,
+  height: 50,
+  position: 'absolute',
+  top: '10%',
+  right: '10%',
+})
+
 const ImageViewWrapper = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   height: '100%',
-  background: 'rgba(255,255,255,0.7)',
+  background: 'rgba(255,255,255,0.8)',
 })
 
 const BoxContentData = styled(Box)({})
