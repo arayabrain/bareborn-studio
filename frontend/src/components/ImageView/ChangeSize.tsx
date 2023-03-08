@@ -28,13 +28,12 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
   const [width, setWidth] = useState(0)
   const mouseDown = useRef(0)
 
-  const allNumber = max
-
   const refDrag = useRef<any>()
   const refDot = useRef<any>()
 
   useEffect(() => {
     getWidth()
+    //eslint-disable-next-line
   }, [])
 
   const getWidth = () => {
@@ -58,7 +57,7 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
     if (!mouseDown.current) return
     const mouseInit = refDrag.current.getBoundingClientRect().x
     const mouseMove = event.pageX - mouseInit - 12
-    let scale = mouseMove / width
+    let scale = (mouseMove / width) * (max - min) + min
     if (scale > max) scale = max
     if (scale < min) scale = min
     onChange(Number(scale.toFixed(2)))
@@ -68,7 +67,7 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
     if (!mouseDown.current) return
     const mouseInit = refDrag.current.getBoundingClientRect().x
     const mouseMove = event.touches[0].pageX - mouseInit
-    let scale = mouseMove / width
+    let scale = (mouseMove / width) * (max - min) + min
     if (scale > max) scale = max
     if (scale < min) scale = min
     onChange(Number(scale.toFixed(2)))
@@ -79,8 +78,6 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
     refDrag.current.style.cursor = 'default'
     refDot.current.style.cursor = ''
   }, [])
-
-  console.log('value', value)
 
   return (
     <ScaleWrapper
@@ -106,15 +103,13 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
         ) : null}
       </div>
       <BoxWrapper>
-        <BoxLine
-          style={{ width: (Math.abs(value - min) / allNumber) * width }}
-        />
+        <BoxLine style={{ width: ((value - min) * width) / (max - min) }} />
         <Dot
           ref={refDot}
           onMouseDown={onMouseDown}
-          // onTouchEnd={onMouseLeave}
-          // onTouchStart={onTouchStart}
-          style={{ left: (Math.abs(value - min) / allNumber) * width }}
+          onTouchEnd={onMouseLeave}
+          onTouchStart={onTouchStart}
+          style={{ left: ((value - min) * width) / (max - min) }}
         />
       </BoxWrapper>
     </ScaleWrapper>

@@ -2,6 +2,8 @@ import { Box, IconButton, Modal, styled } from '@mui/material'
 import { FC, useEffect, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import ChangeDrag from './ChangeSize'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 
 type ImageViewProps = {
   open: boolean
@@ -26,7 +28,8 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
       return
     }
     setOpacity(0)
-    setThresholds(0)
+    setContracts(1)
+    setBrightness(0)
   }, [open])
 
   const onChangeThreshold = (num: number) => {
@@ -62,6 +65,10 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
     volumes.current.intensity_min = num
     viewerRef.current.redrawVolumes()
   }
+
+  const onNext = () => {}
+
+  const onPrevious = () => {}
 
   const loadFile = () => {
     const brainbrowser = (window as any).BrainBrowser
@@ -131,9 +138,6 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
         }}
       >
         <ImageViewWrapper sx={{ opacity }}>
-          <ButtonClose onClick={onClose}>
-            <CloseIcon />
-          </ButtonClose>
           <div style={{ display: 'flex', alignItems: 'stretch' }}>
             <div id="brainbrowser-wrapper">
               <div id="volume-viewer">
@@ -185,6 +189,15 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
             <WrapperJson>
               <TextArea>JSON Preview and edit</TextArea>
             </WrapperJson>
+            <ButtonClose onClick={onClose}>
+              <CloseIconWrapper />
+            </ButtonClose>
+            <ButtonNext onClick={onNext}>
+              <ArrowForwardIosIconWrapper />
+            </ButtonNext>
+            <ButtonPrevious onClick={onPrevious}>
+              <ArrowBackIosIconWrapper />
+            </ButtonPrevious>
           </div>
         </ImageViewWrapper>
       </div>
@@ -200,9 +213,24 @@ const ButtonClose = styled(IconButton)({
   right: '10%',
 })
 
+const ButtonNext = styled(ButtonClose)({
+  width: 50,
+  height: 50,
+  position: 'absolute',
+  top: '50%',
+  right: '10%',
+})
+
+const ButtonPrevious = styled(ButtonClose)({
+  width: 50,
+  height: 50,
+  position: 'absolute',
+  top: '50%',
+  left: '10%',
+})
+
 const ImageViewWrapper = styled(Box)({
   marginTop: 48,
-  background: 'rgba(255,255,255,0.8)',
   overflow: 'auto',
   margin: 'auto',
 })
@@ -215,6 +243,7 @@ const BoxContentData = styled(Box)({
 
 const WrapperJson = styled(Box)({
   minWidth: 300,
+  background: '#ffffff',
 })
 
 const TextArea = styled('textarea')({
@@ -223,6 +252,19 @@ const TextArea = styled('textarea')({
   outline: 'none !important',
   border: 'none',
   borderLeft: '1px solid',
+})
+
+const CloseIconWrapper = styled(CloseIcon)({
+  color: '#ffffff',
+})
+
+const ArrowBackIosIconWrapper = styled(ArrowBackIosIcon)({
+  color: '#ffffff',
+  marginLeft: 10,
+})
+
+const ArrowForwardIosIconWrapper = styled(ArrowForwardIosIcon)({
+  color: '#ffffff',
 })
 
 export default ImageView
