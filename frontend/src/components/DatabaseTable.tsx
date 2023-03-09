@@ -25,6 +25,9 @@ type TableComponentProps = {
   orderKey?: string
   onSort?: (orderKey: string, orderBy: string) => any
   rowClick?: (row: any) => any
+  draggable?: boolean
+  onDrag?: (row?: any) => any
+  onDragEnd?: (row?: any) => any
 }
 
 type RenderSectionColumnProps = {
@@ -32,6 +35,9 @@ type RenderSectionColumnProps = {
   item: any
   index: number
   rowClick?: (row?: any) => any
+  draggable?: boolean
+  onDrag?: (row?: any) => any
+  onDragEnd?: (row?: any) => any
 }
 
 type RenderColumnProps = {
@@ -42,6 +48,9 @@ type RenderColumnProps = {
   click?: any
   show?: boolean
   rowClick?: (row?: any) => any
+  draggable?: boolean
+  onDrag?: (row?: any) => any
+  onDragEnd?: (row?: any) => any
 }
 
 type RenderDatasetProps = {
@@ -49,6 +58,9 @@ type RenderDatasetProps = {
   item: any
   index: number
   rowClick?: (row?: any) => any
+  draggable?: boolean
+  onDrag?: (row?: any) => any
+  onDragEnd?: (row?: any) => any
 }
 
 const renderCol = (col: Column, item: any, index: number) => {
@@ -58,9 +70,31 @@ const renderCol = (col: Column, item: any, index: number) => {
 }
 
 const RenderColumn = (props: RenderColumnProps) => {
-  const { column, item, index, dropDown, click, show, rowClick } = props
+  const {
+    column,
+    item,
+    index,
+    dropDown,
+    click,
+    show,
+    rowClick,
+    draggable,
+    onDrag,
+    onDragEnd,
+  } = props
+
+  const onDragRow = () => {
+    onDrag?.(item)
+  }
+
   return (
-    <Tr key={item.id || index} onClick={() => rowClick?.(item)}>
+    <Tr
+      draggable={draggable}
+      key={item.id || index}
+      onDragStart={onDragRow}
+      onDragEnd={onDragEnd}
+      onClick={() => rowClick?.(item)}
+    >
       {column.map((col, iCol) => (
         <Td
           key={col.dataIndex || col.name || iCol}
@@ -92,12 +126,15 @@ const RenderColumn = (props: RenderColumnProps) => {
 }
 
 const RenderDataset = (props: RenderDatasetProps) => {
-  const { column, item, index, rowClick } = props
+  const { column, item, index, rowClick, draggable, onDrag, onDragEnd } = props
   const [show, setShow] = useState<boolean>(false)
   return (
     <>
       <RenderColumn
+        draggable={draggable}
         column={column}
+        onDrag={onDrag}
+        onDragEnd={onDragEnd}
         item={item}
         index={index}
         dropDown={item?.dataset ? 'dataset_title' : ''}
@@ -108,6 +145,8 @@ const RenderDataset = (props: RenderDatasetProps) => {
       {show
         ? item.dataset?.map((itemData: any, idx: number) => (
             <RenderColumn
+              onDrag={onDrag}
+              onDragEnd={onDragEnd}
               rowClick={rowClick}
               key={idx}
               column={column}
@@ -121,13 +160,16 @@ const RenderDataset = (props: RenderDatasetProps) => {
 }
 
 const RenderSectionColumn = (props: RenderSectionColumnProps) => {
-  const { column, item, index, rowClick } = props
+  const { column, item, index, rowClick, draggable, onDrag, onDragEnd } = props
   const [show, setShow] = useState<boolean>(false)
   return (
     <>
       <RenderColumn
+        onDrag={onDrag}
+        onDragEnd={onDragEnd}
         rowClick={rowClick}
         column={column}
+        draggable={draggable}
         item={item}
         index={index}
         dropDown={item?.dataset ? 'session_name' : ''}
@@ -137,6 +179,9 @@ const RenderSectionColumn = (props: RenderSectionColumnProps) => {
       {show
         ? item.dataset?.map((itemData: any, idx: number) => (
             <RenderDataset
+              onDrag={onDrag}
+              onDragEnd={onDragEnd}
+              draggable={draggable}
               rowClick={rowClick}
               item={itemData}
               index={idx}
@@ -158,6 +203,9 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     orderBy,
     onSort,
     rowClick,
+    draggable,
+    onDrag,
+    onDragEnd,
   } = props
   return (
     <TableWrap className={className}>
@@ -195,11 +243,14 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
         <TBody>
           {data.map((item, index) => (
             <RenderSectionColumn
+              onDrag={onDrag}
+              onDragEnd={onDragEnd}
               rowClick={rowClick}
               item={item}
               index={index}
               column={columns}
               key={item.id || index}
+              draggable={draggable}
             />
           ))}
         </TBody>
