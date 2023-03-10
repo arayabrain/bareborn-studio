@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import DatabaseTableComponent from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -32,192 +32,141 @@ const PopupSearch = ({ onClose }: { onClose: any }) => {
   )
 }
 
+export type DataDatabase = {
+  id: number
+  lab_name: string
+  user_name: string
+  sample_name: string
+  recording_time: string
+  sessions: [
+    {
+      id: number
+      parent_id: number
+      label: string
+      datatypes: [
+        {
+          id: number
+          parent_id: number
+          label: string
+          images: [
+            {
+              id: number
+              parent_id: number
+              image_url: string
+              attributes: {}
+            },
+          ]
+        },
+      ]
+    },
+  ]
+}
+
 export const defaultDatabase = [
   {
-    id: '1',
-    lab_name: 'lab1',
-    user_name: 'hope',
-    date: '2023/02/24',
+    id: 3,
+    lab_name: 'string',
+    user_name: 'string',
+    sample_name: 'string',
+    recording_time: '2023-03-10',
   },
   {
-    id: '2',
-    lab_name: '',
-    user_name: '',
-    date: '',
-    session_name: 'sess 1',
-    dataset: [
+    id: 0,
+    lab_name: 'string',
+    user_name: 'string',
+    sample_name: 'string',
+    recording_time: '2023-03-10',
+    sessions: [
       {
-        id: '9',
-        dataset_title: 'anat',
-        dataset: [
+        id: 0,
+        parent_id: 0,
+        label: 'string',
+        datatypes: [
           {
-            id: '3',
-            lab_name: '',
-            user_name: '',
-            date: '',
-            session_name: '',
-            dataset: {},
-            type: 'T2_RARE',
-            protocol: 'aaaaaaaa',
-            size: '1234',
-            voxel_size: '1234',
-            control: true,
-          },
-          {
-            id: '4',
-            lab_name: '',
-            user_name: '',
-            date: '',
-            session_name: '',
-            dataset: {},
-            type: 'T2_RARE',
-            protocol: 'aaaaaaaa',
-            size: '1234',
-            voxel_size: '1234',
-            control: true,
-          },
-        ],
-      },
-      {
-        id: '10',
-        dataset_title: 'anat 2',
-        dataset: [
-          {
-            id: '7',
-            lab_name: '',
-            user_name: '',
-            date: '',
-            session_name: '',
-            dataset: {},
-            type: 'T2_RARE',
-            protocol: 'aaaaaaaa',
-            size: '1234',
-            voxel_size: '1234',
-            control: true,
+            id: 0,
+            parent_id: 0,
+            label: 'string',
+            protocol: 'protocol',
+            size: '8MB',
+            voxel_size: 'voxel_size',
+            images: [
+              {
+                id: 0,
+                parent_id: 0,
+                image_url: 'string',
+                attributes: {},
+              },
+            ],
           },
         ],
       },
     ],
   },
   {
-    id: '5',
-    lab_name: '',
-    user_name: '',
-    date: '',
-    session_name: 'sess 2',
-    dataset: null,
+    id: 1,
+    lab_name: 'string 1',
+    user_name: 'string 1',
+    sample_name: 'string 1',
+    recording_time: '2023-03-10',
+    sessions: [
+      {
+        id: 1,
+        parent_id: 0,
+        label: 'string 1',
+        datatypes: [
+          {
+            id: 1,
+            parent_id: 0,
+            label: 'string 1',
+            protocol: 'protocol 1',
+            size: '8MB',
+            voxel_size: 'voxel_size 1',
+            images: [
+              {
+                id: 1,
+                parent_id: 0,
+                image_url: 'string 1',
+                attributes: {},
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+]
+
+export const columns = [
+  { title: 'Lab', name: 'lab_name' },
+  { title: 'User', name: 'user_name' },
+  { title: 'Date', name: 'recording_time' },
+  { title: 'Session', name: 'sessions', child: 'label' },
+  { title: 'Dataset', name: 'datatypes', child: 'label' },
+  { title: 'Type', name: 'type', filter: true },
+  { title: 'Protocol', name: 'protocol' },
+  { title: 'Size', name: 'size' },
+  { title: 'Voxel size', name: 'voxel_size' },
+  {
+    title: '',
+    name: 'action',
+    render: (data: any) =>
+      data.control ? (
+        <BoxButton>
+          <ButtonControl aria-label="Example">
+            <EditIcon fontSize="small" color={'inherit'} />
+          </ButtonControl>
+          <ButtonControl aria-label="Example">
+            <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+          </ButtonControl>
+        </BoxButton>
+      ) : null,
   },
 ]
 
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [openViewer, setOpenViewer] = useState(false)
-  const [data /*setData*/] = useState([
-    {
-      id: '1',
-      lab_name: 'lab1',
-      user_name: 'hope',
-      date: '2023/02/24',
-    },
-    {
-      id: '2',
-      lab_name: '',
-      user_name: '',
-      date: '',
-      session_name: 'sess 1',
-      dataset: [
-        {
-          id: '9',
-          dataset_title: 'anat',
-          dataset: [
-            {
-              id: '3',
-              lab_name: '',
-              user_name: '',
-              date: '',
-              session_name: '',
-              dataset: {},
-              type: 'T2_RARE',
-              protocol: 'aaaaaaaa',
-              size: '1234',
-              voxel_size: '1234',
-              control: true,
-            },
-            {
-              id: '4',
-              lab_name: '',
-              user_name: '',
-              date: '',
-              session_name: '',
-              dataset: {},
-              type: 'T2_RARE',
-              protocol: 'aaaaaaaa',
-              size: '1234',
-              voxel_size: '1234',
-              control: true,
-            },
-          ],
-        },
-        {
-          id: '10',
-          dataset_title: 'anat 2',
-          dataset: [
-            {
-              id: '7',
-              lab_name: '',
-              user_name: '',
-              date: '',
-              session_name: '',
-              dataset: {},
-              type: 'T2_RARE',
-              protocol: 'aaaaaaaa',
-              size: '1234',
-              voxel_size: '1234',
-              control: true,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: '5',
-      lab_name: '',
-      user_name: '',
-      date: '',
-      session_name: 'sess 2',
-      dataset: null,
-    },
-  ])
-
-  const columns = useMemo(
-    () => [
-      { title: 'Lab', name: 'lab_name' },
-      { title: 'User', name: 'user_name' },
-      { title: 'Date', name: 'date' },
-      { title: 'Session', name: 'session_name' },
-      { title: 'Dataset', name: 'dataset_title' },
-      { title: 'Type', name: 'type', filter: true },
-      { title: 'Protocol', name: 'protocol' },
-      { title: 'Size', name: 'size' },
-      { title: 'Voxel size', name: 'voxel_size' },
-      {
-        title: '',
-        name: 'action',
-        render: (data: any) =>
-          data.control ? (
-            <BoxButton>
-              <ButtonControl aria-label="Example">
-                <EditIcon fontSize="small" color={'inherit'} />
-              </ButtonControl>
-              <ButtonControl aria-label="Example">
-                <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-              </ButtonControl>
-            </BoxButton>
-          ) : null,
-      },
-    ],
-    [],
-  )
+  const [data /*setData*/] = useState(defaultDatabase)
 
   const onCloseImageView = () => {
     setOpenViewer(false)
@@ -245,6 +194,7 @@ const Database = () => {
         rowClick={rowClick}
         data={data}
         columns={columns}
+        expands={['sessions', 'datatypes']}
       />
       <ImageView open={openViewer} onClose={onCloseImageView} />
     </DatabaseWrapper>

@@ -1,7 +1,6 @@
 import { Box, styled, Typography } from '@mui/material'
-import { FC, useState } from 'react'
+import { MouseEvent, FC, Fragment, useState } from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
 type Column = {
@@ -9,6 +8,7 @@ type Column = {
   title: string
   dataIndex?: string
   name?: string
+  child?: string
   filter?: boolean
   render?: (
     item?: any,
@@ -28,185 +28,123 @@ type TableComponentProps = {
   draggable?: boolean
   onDrag?: (row?: any) => any
   onDragEnd?: (row?: any) => any
-}
-
-type RenderSectionColumnProps = {
-  column: Column[]
-  item: any
-  index: number
-  rowClick?: (row?: any) => any
-  draggable?: boolean
-  onDrag?: (row?: any) => any
-  onDragEnd?: (row?: any) => any
+  expands?: string[]
 }
 
 type RenderColumnProps = {
-  column: Column[]
   item: any
-  index: number
-  dropDown?: any
-  click?: any
-  show?: boolean
-  rowClick?: (row?: any) => any
+  columns: Column[]
+  orderBy?: 'ASC' | 'DESC'
+  orderKey?: string
+  onSort?: (orderKey: string, orderBy: string) => any
+  rowClick?: (row: any) => any
   draggable?: boolean
   onDrag?: (row?: any) => any
   onDragEnd?: (row?: any) => any
-}
-
-type RenderDatasetProps = {
-  column: Column[]
-  item: any
+  expands?: string[]
   index: number
-  rowClick?: (row?: any) => any
-  draggable?: boolean
-  onDrag?: (row?: any) => any
-  onDragEnd?: (row?: any) => any
 }
 
-const renderCol = (col: Column, item: any, index: number) => {
-  const value = item[col.name || col.dataIndex || '']
+const renderCol = (col: Column, item: any, index: number, child?: boolean) => {
+  const key = col.name || col.dataIndex || ''
+  const value = item[child ? col.child || key : key]
   if (col.render) return col.render(item, value, index)
-  return value || null
+  return (
+    (typeof value === 'object' || Array.isArray(value)
+      ? col.child
+        ? null
+        : JSON.stringify(value)
+      : value) || null
+  )
+}
+
+const ChildCol = (props: RenderColumnProps & { keyExpand: string }) => {
+  const { columns, item, index, rowClick, keyExpand } = props
+  const { draggable, onDrag, onDragEnd } = props
+  const [show, setShow] = useState<boolean>(false)
+
+  const onClickCol = (event: MouseEvent<HTMLTableDataCellElement>) => {
+    event.preventDefault()
+    setShow(!show)
+  }
+
+  return (
+    <Fragment>
+      <Tr
+        onClick={rowClick}
+        draggable={draggable}
+        onDragStart={onDrag}
+        onDragEnd={onDragEnd}
+      >
+        {columns.map((column) => {
+          const key = column.name || column.dataIndex
+          return (
+            <Td
+              key={`row_child_${column.name || column.dataIndex}`}
+              onClick={key === keyExpand ? onClickCol : undefined}
+              style={{ cursor: key === keyExpand ? 'pointer' : 'default' }}
+            >
+              <ElementFlex>
+                {key === keyExpand ? (
+                  <ArrowDropDownIconWrap
+                    style={{ transform: `rotate(${show ? 180 : 0}deg)` }}
+                  />
+                ) : null}
+                {key === keyExpand
+                  ? renderCol(column, item, index, key === keyExpand)
+                  : null}
+              </ElementFlex>
+            </Td>
+          )
+        })}
+      </Tr>
+      {show ? <RenderColumn {...props} item={item} /> : null}
+    </Fragment>
+  )
 }
 
 const RenderColumn = (props: RenderColumnProps) => {
-  const {
-    column,
-    item,
-    index,
-    dropDown,
-    click,
-    show,
-    rowClick,
-    draggable,
-    onDrag,
-    onDragEnd,
-  } = props
+  const { columns, item, index, rowClick } = props
+  const { draggable, onDrag, onDragEnd, expands } = props
 
-  const onDragRow = () => {
-    onDrag?.(item)
+  const getKeyExpand = () => {
+    if (!Array.isArray(expands) || !expands?.length) return false
+    return expands.find((el) => Array.isArray(item[el]))
+  }
+
+  const keyExpand = getKeyExpand()
+
+  if (keyExpand) {
+    const itemData = item[keyExpand]
+    return itemData.map((i: any, index: number) => (
+      <ChildCol
+        key={`col_${i.id || index}`}
+        {...props}
+        item={i}
+        keyExpand={keyExpand}
+      />
+    ))
   }
 
   return (
     <Tr
+      onClick={rowClick}
       draggable={draggable}
-      key={item.id || index}
-      onDragStart={onDragRow}
+      onDragStart={onDrag}
       onDragEnd={onDragEnd}
-      onClick={() => rowClick?.(item)}
     >
-      {column.map((col, iCol) => (
-        <Td
-          key={col.dataIndex || col.name || iCol}
-          style={{ cursor: col.name === dropDown ? 'pointer' : 'inherit' }}
-          onClick={(event) => {
-            if (col.name === dropDown && click) {
-              event.preventDefault()
-              event.stopPropagation()
-              click()
-            }
-          }}
-        >
-          {col.name === dropDown ? (
-            show ? (
-              <ArrowDropUpIcon
-                style={{ marginBottom: '-8px', marginLeft: '-24px' }}
-              />
-            ) : (
-              <ArrowDropDownIcon
-                style={{ marginBottom: '-8px', marginLeft: '-24px' }}
-              />
-            )
-          ) : null}
-          {renderCol(col, item, index)}
+      {columns.map((column) => (
+        <Td key={`col_${column.name || column.dataIndex}`}>
+          {renderCol(column, item, index)}
         </Td>
       ))}
     </Tr>
   )
 }
 
-const RenderDataset = (props: RenderDatasetProps) => {
-  const { column, item, index, rowClick, draggable, onDrag, onDragEnd } = props
-  const [show, setShow] = useState<boolean>(false)
-  return (
-    <>
-      <RenderColumn
-        draggable={draggable}
-        column={column}
-        onDrag={onDrag}
-        onDragEnd={onDragEnd}
-        item={item}
-        index={index}
-        dropDown={item?.dataset ? 'dataset_title' : ''}
-        click={() => setShow(!show)}
-        show={show}
-        rowClick={rowClick}
-      />
-      {show
-        ? item.dataset?.map((itemData: any, idx: number) => (
-            <RenderColumn
-              onDrag={onDrag}
-              onDragEnd={onDragEnd}
-              rowClick={rowClick}
-              key={idx}
-              column={column}
-              item={itemData}
-              index={idx}
-            />
-          ))
-        : null}
-    </>
-  )
-}
-
-const RenderSectionColumn = (props: RenderSectionColumnProps) => {
-  const { column, item, index, rowClick, draggable, onDrag, onDragEnd } = props
-  const [show, setShow] = useState<boolean>(false)
-  return (
-    <>
-      <RenderColumn
-        onDrag={onDrag}
-        onDragEnd={onDragEnd}
-        rowClick={rowClick}
-        column={column}
-        draggable={draggable}
-        item={item}
-        index={index}
-        dropDown={item?.dataset ? 'session_name' : ''}
-        click={() => setShow(!show)}
-        show={show}
-      />
-      {show
-        ? item.dataset?.map((itemData: any, idx: number) => (
-            <RenderDataset
-              onDrag={onDrag}
-              onDragEnd={onDragEnd}
-              draggable={draggable}
-              rowClick={rowClick}
-              item={itemData}
-              index={idx}
-              key={itemData.id || index}
-              column={column}
-            />
-          ))
-        : null}
-    </>
-  )
-}
-
 const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
-  const {
-    data = [],
-    columns = [],
-    className,
-    orderKey,
-    orderBy,
-    onSort,
-    rowClick,
-    draggable,
-    onDrag,
-    onDragEnd,
-  } = props
+  const { className, orderKey, orderBy, onSort, ...p } = props
+  const { data = [], columns = [] } = props
   return (
     <TableWrap className={className}>
       <DataTable style={{ width: 150 * columns.length }}>
@@ -242,15 +180,12 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
         </Thead>
         <TBody>
           {data.map((item, index) => (
-            <RenderSectionColumn
-              onDrag={onDrag}
-              onDragEnd={onDragEnd}
-              rowClick={rowClick}
+            <RenderColumn
               item={item}
               index={index}
-              column={columns}
-              key={item.id || index}
-              draggable={draggable}
+              columns={columns}
+              {...p}
+              key={`row_table_${item.id}_${index}`}
             />
           ))}
         </TBody>
@@ -259,6 +194,15 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     </TableWrap>
   )
 }
+
+const ArrowDropDownIconWrap = styled(ArrowDropDownIcon)({
+  transition: 'transform 0.3s',
+})
+
+const ElementFlex = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+})
 
 const TableWrap = styled(Box)({
   overflowX: 'scroll',

@@ -3,22 +3,31 @@ import { useCallback, useMemo, useState } from 'react'
 import TableComponent from '../../components/Table'
 import { useNavigate } from 'react-router-dom'
 
+type DataProject = {
+  id: number
+  project_name: string
+  project_type: number
+  image_count: number
+  created_time: Date
+  updated_time: Date
+}
+
 const Projects = () => {
   const navigate = useNavigate()
   const [data /*setData*/] = useState([
     {
       id: '1',
       name: 'prj name 1',
-      created: '2023/02/24',
-      updated: '2023/02/24',
-      images: ['', '', ''],
+      created_time: '2023-03-10T09:19:38.080Z',
+      updated_time: '2023-03-10T09:19:38.080Z',
+      image_count: 3,
     },
     {
       id: '2',
       name: 'prj name 2',
-      created: '2023/02/24',
-      updated: '2023/02/24',
-      images: ['', '', '', ''],
+      created_time: '2023-03-10T09:19:38.080Z',
+      updated_time: '2023-03-10T09:19:38.080Z',
+      image_count: 3,
     },
   ])
 
@@ -45,13 +54,9 @@ const Projects = () => {
   const columns = useMemo(
     () => [
       { title: 'Project Name', name: 'name' },
-      { title: 'Created', name: 'created' },
-      { title: 'Updated', name: 'updated' },
-      {
-        title: 'Images',
-        name: 'images',
-        render: (data: any) => <p>({data.images.length})</p>,
-      },
+      { title: 'Created', name: 'created_time' },
+      { title: 'Updated', name: 'updated_time' },
+      { title: 'Images', name: 'image_count', align: 'center' },
       {
         title: '',
         name: 'action',

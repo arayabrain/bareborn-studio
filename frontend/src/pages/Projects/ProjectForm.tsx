@@ -7,8 +7,17 @@ import {
   styled,
 } from '@mui/material'
 import DatabaseTableComponent from 'components/DatabaseTable'
-import React, { useMemo, useState, DragEvent } from 'react'
+import React, { useState, DragEvent } from 'react'
 import { defaultDatabase } from '../Database'
+
+const columns = [
+  { title: 'User', name: 'user_name' },
+  { title: 'Date', name: 'recording_time' },
+  { title: 'Session', name: 'sessions', child: 'label' },
+  { title: 'Dataset', name: 'datatypes', child: 'label' },
+  { title: 'Type', name: 'type', filter: true },
+  { title: 'Protocol', name: 'protocol' },
+]
 
 type BoxDrop = {
   data?: any
@@ -62,22 +71,6 @@ const RenderBoxDrop = ({ data, level, onDrop }: BoxDrop) => {
 const ProjectFormComponent = () => {
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState('factor')
-  // const [project, setProject] = useState([])
-  const columns = useMemo(
-    () => [
-      { title: 'User', name: 'user_name' },
-      { title: 'Date', name: 'date' },
-      { title: 'Session', name: 'session_name' },
-      { title: 'Dataset', name: 'dataset_title' },
-      { title: 'Type', name: 'type' },
-      { title: 'Protocol', name: 'protocol' },
-      {
-        title: '',
-        name: 'action',
-      },
-    ],
-    [],
-  )
   const onChangeName = (e: any) => {
     setProjectName(e.target.value)
   }
@@ -100,12 +93,10 @@ const ProjectFormComponent = () => {
 
   const onDragOver = (event: DragEvent<HTMLButtonElement>) => {
     event.preventDefault()
-    console.log('onDragOver')
   }
 
   const onDragLeave = (event: DragEvent<HTMLButtonElement>) => {
     event.preventDefault()
-    console.log('onDragLeave')
   }
 
   return (
@@ -131,7 +122,11 @@ const ProjectFormComponent = () => {
       <DropAndDropBox>
         <DragBox>
           <RenderBetweenComponent onDrop={onDropData} level={projectLevel} />
-          <NewRowButton onDragLeave={onDragLeave} onDragOver={onDragOver} onDrop={onDropData}>
+          <NewRowButton
+            onDragLeave={onDragLeave}
+            onDragOver={onDragOver}
+            onDrop={onDropData}
+          >
             + Add Between Factor
           </NewRowButton>
         </DragBox>
@@ -142,6 +137,7 @@ const ProjectFormComponent = () => {
             draggable
             data={defaultDatabase}
             columns={columns}
+            expands={['sessions', 'datatypes']}
           />
         </DropBox>
       </DropAndDropBox>
@@ -188,6 +184,7 @@ const DragBox = styled(Box)(({ theme }) => ({
 const DropBox = styled(Box)(({ theme }) => ({
   width: '60%',
   padding: theme.spacing(1, 2),
+  border: '1px solid #dedede',
 }))
 
 const BetweenComponent = styled(Box)(({ theme }) => ({

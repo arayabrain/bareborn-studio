@@ -9,6 +9,7 @@ type Column = {
   title: string
   dataIndex?: string
   name?: string
+  align?: string
   render?: (
     item?: any,
     value?: any,
@@ -50,7 +51,7 @@ const TableComponent: FC<TableComponentProps> = (props) => {
           <Tr>
             {columns.map((col, iCol) => (
               <Th
-                style={{ width: col.width }}
+                style={{ width: col.width, textAlign: col.align as any }}
                 key={col.dataIndex || col.name || iCol}
               >
                 {col.title}
@@ -62,7 +63,10 @@ const TableComponent: FC<TableComponentProps> = (props) => {
           {data.map((item, index) => (
             <Tr key={item.id || index}>
               {columns.map((col, iCol) => (
-                <Td key={col.dataIndex || col.name || iCol}>
+                <Td
+                  style={{ textAlign: col.align as any }}
+                  key={col.dataIndex || col.name || iCol}
+                >
                   {renderCol(col, item, index)}
                 </Td>
               ))}
