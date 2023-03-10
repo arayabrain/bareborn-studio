@@ -23,10 +23,11 @@ async def authenticate(user: UserAuth):
     try:
         from . import pb
         user = pb.auth().sign_in_with_email_and_password(user.email, user.password)
-        jwt = user['idToken']
-        token = Token(access_token=jwt, token_type='bearer')
-    except:
-        return None, make_response(HTTPStatus.INTERNAL_SERVER_ERROR, code.E_FAIL)
+        access_token = user['idToken']
+        refresh_token = user['refreshToken']
+        token = Token(access_token=access_token, refresh_token=refresh_token, token_type='bearer')
+    except Exception as e:
+        return None, make_response(HTTPStatus.INTERNAL_SERVER_ERROR, code.E_FAIL, str(e))
     return token, None
 
 
