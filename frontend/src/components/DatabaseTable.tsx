@@ -29,6 +29,8 @@ type TableComponentProps = {
   onDrag?: (row?: any) => any
   onDragEnd?: (row?: any) => any
   expands?: string[]
+  defaultExpand?: boolean
+  showBorderDrag?: boolean
 }
 
 type RenderColumnProps = {
@@ -43,6 +45,9 @@ type RenderColumnProps = {
   onDragEnd?: (row?: any) => any
   expands?: string[]
   index: number
+  defaultExpand?: boolean
+  draggableProps?: boolean
+  showBorderDrag?: boolean
 }
 
 const renderCol = (col: Column, item: any, index: number, child?: boolean) => {
@@ -59,23 +64,18 @@ const renderCol = (col: Column, item: any, index: number, child?: boolean) => {
 }
 
 const ChildCol = (props: RenderColumnProps & { keyExpand: string }) => {
-  const { columns, item, index, rowClick, keyExpand } = props
-  const { draggable, onDrag, onDragEnd } = props
-  const [show, setShow] = useState<boolean>(false)
+  const { columns, item, index, rowClick, keyExpand, defaultExpand } = props
+  const [show, setShow] = useState<boolean>(!!defaultExpand)
 
   const onClickCol = (event: MouseEvent<HTMLTableDataCellElement>) => {
     event.preventDefault()
+    event.stopPropagation()
     setShow(!show)
   }
 
   return (
     <Fragment>
-      <Tr
-        onClick={rowClick}
-        draggable={draggable}
-        onDragStart={onDrag}
-        onDragEnd={onDragEnd}
-      >
+      <Tr onClick={rowClick}>
         {columns.map((column) => {
           const key = column.name || column.dataIndex
           return (
@@ -98,13 +98,15 @@ const ChildCol = (props: RenderColumnProps & { keyExpand: string }) => {
           )
         })}
       </Tr>
-      {show ? <RenderColumn {...props} item={item} /> : null}
+      {show ? (
+        <RenderColumn {...props} draggable={props.draggableProps} item={item} />
+      ) : null}
     </Fragment>
   )
 }
 
 const RenderColumn = (props: RenderColumnProps) => {
-  const { columns, item, index, rowClick } = props
+  const { columns, item, index, rowClick, showBorderDrag } = props
   const { draggable, onDrag, onDragEnd, expands } = props
 
   const getKeyExpand = () => {
@@ -132,6 +134,12 @@ const RenderColumn = (props: RenderColumnProps) => {
       draggable={draggable}
       onDragStart={onDrag}
       onDragEnd={onDragEnd}
+      style={{
+        borderStyle: "dashed",
+        borderColor: "#1976d2",
+        borderWidth: showBorderDrag && draggable ?  2 : 0,
+        transition: 'all 0.3s',
+      }}
     >
       {columns.map((column) => (
         <Td key={`col_${column.name || column.dataIndex}`}>
@@ -143,7 +151,7 @@ const RenderColumn = (props: RenderColumnProps) => {
 }
 
 const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
-  const { className, orderKey, orderBy, onSort, ...p } = props
+  const { className, orderKey, orderBy, onSort, draggable, ...p } = props
   const { data = [], columns = [] } = props
   return (
     <TableWrap className={className}>
@@ -185,6 +193,8 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
               index={index}
               columns={columns}
               {...p}
+              draggable={false}
+              draggableProps={draggable}
               key={`row_table_${item.id}_${index}`}
             />
           ))}

@@ -7,8 +7,8 @@ import {
   styled,
 } from '@mui/material'
 import DatabaseTableComponent from 'components/DatabaseTable'
-import React, { useState, DragEvent } from 'react'
-import { defaultDatabase } from '../Database'
+import React, { useState, DragEvent, useRef } from 'react'
+import { defaultDatabase, PopupSearch } from '../Database'
 
 const columns = [
   { title: 'User', name: 'user_name' },
@@ -23,9 +23,10 @@ type BoxDrop = {
   data?: any
   level: string
   onDrop?: (event: DragEvent<HTMLDivElement | HTMLButtonElement>) => any
+  onClick?: () => any
 }
 
-const RenderBetweenComponent = ({ data, level, onDrop }: BoxDrop) => {
+const RenderBetweenComponent = ({ data, level, onDrop, onClick }: BoxDrop) => {
   const [betweenData, setBetweenData] = useState(
     data || {
       name: 'Between Factor Name 1',
@@ -39,20 +40,20 @@ const RenderBetweenComponent = ({ data, level, onDrop }: BoxDrop) => {
     <BetweenComponent>
       <InputName value={betweenData.name} onChange={onChangeName} />
       <BetweenContent>
-        <RenderBoxDrop onDrop={onDrop} level={level} />
+        <RenderBoxDrop onClick={onClick} onDrop={onDrop} level={level} />
       </BetweenContent>
     </BetweenComponent>
   )
 }
-const RenderBoxDrop = ({ data, level, onDrop }: BoxDrop) => {
-  const [withinData /*setWithinData*/] = useState(
+const RenderBoxDrop = ({ data, level, onDrop, onClick }: BoxDrop) => {
+  const [withinData, setWithinData] = useState(
     data || {
       name: 'Within Factor Name 1',
     },
   )
 
   const onChangeName = (e: any) => {
-    withinData({ ...withinData, name: e.target.value })
+    setWithinData({ ...withinData, name: e.target.value })
   }
 
   return (
@@ -62,7 +63,9 @@ const RenderBoxDrop = ({ data, level, onDrop }: BoxDrop) => {
       )}
       <DropBoxContent></DropBoxContent>
       {level === 'factor' ? null : (
-        <NewRowButton onDrop={onDrop}>+ Add Within Factor</NewRowButton>
+        <NewRowButton onClick={onClick} onDrop={onDrop}>
+          + Add Within Factor
+        </NewRowButton>
       )}
     </BetweenComponent>
   )
@@ -71,6 +74,11 @@ const RenderBoxDrop = ({ data, level, onDrop }: BoxDrop) => {
 const ProjectFormComponent = () => {
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState('factor')
+  const [showBorderDrag, setShowBorderDrag] = useState(false)
+  const [openFilter, setOpenFilter] = useState(false)
+
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   const onChangeName = (e: any) => {
     setProjectName(e.target.value)
   }
@@ -99,8 +107,20 @@ const ProjectFormComponent = () => {
     event.preventDefault()
   }
 
+  const onClickDrag = () => {
+    setShowBorderDrag(true)
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    timeoutRef.current = setTimeout(() => {
+      setShowBorderDrag(false)
+      timeoutRef.current = null
+    }, 1000)
+  }
+
   return (
     <ProjectsWrapper>
+      {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
       <InputName value={projectName} onChange={onChangeName} />
       <BoxOptions
         aria-labelledby="demo-radio-buttons-group-label"
@@ -121,8 +141,13 @@ const ProjectFormComponent = () => {
       </BoxOptions>
       <DropAndDropBox>
         <DragBox>
-          <RenderBetweenComponent onDrop={onDropData} level={projectLevel} />
+          <RenderBetweenComponent
+            onClick={onClickDrag}
+            onDrop={onDropData}
+            level={projectLevel}
+          />
           <NewRowButton
+            onClick={onClickDrag}
             onDragLeave={onDragLeave}
             onDragOver={onDragOver}
             onDrop={onDropData}
@@ -131,7 +156,18 @@ const ProjectFormComponent = () => {
           </NewRowButton>
         </DragBox>
         <DropBox>
+          <BoxFilter>
+            <ButtonFilter
+              variant="contained"
+              onClick={() => setOpenFilter(true)}
+              style={{ margin: '0 26px 0 0' }}
+            >
+              Filter
+            </ButtonFilter>
+          </BoxFilter>
           <DatabaseTableComponent
+            showBorderDrag={showBorderDrag}
+            defaultExpand
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
             draggable
@@ -212,5 +248,18 @@ const NewRowButton = styled(Button)(({ theme }) => ({
   borderWidth: 1,
   margin: theme.spacing(1, 0),
 }))
+
+const ButtonFilter = styled(Button)(({ theme }) => ({
+  margin: theme.spacing(2, 0),
+  minWidth: 80,
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+}))
+
+const BoxFilter = styled(Box)({
+  display: 'flex',
+  marginBottom: 10,
+  justifyContent: 'flex-end',
+})
 
 export default ProjectFormComponent

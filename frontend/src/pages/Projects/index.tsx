@@ -4,30 +4,32 @@ import TableComponent from '../../components/Table'
 import { useNavigate } from 'react-router-dom'
 
 type DataProject = {
-  id: number
+  id: number | string
   project_name: string
   project_type: number
   image_count: number
-  created_time: Date
-  updated_time: Date
+  created_time: string
+  updated_time: string
 }
 
 const Projects = () => {
   const navigate = useNavigate()
-  const [data /*setData*/] = useState([
+  const [data /*setData*/] = useState<DataProject[]>([
     {
       id: '1',
-      name: 'prj name 1',
+      project_name: 'prj name 1',
       created_time: '2023-03-10T09:19:38.080Z',
       updated_time: '2023-03-10T09:19:38.080Z',
       image_count: 3,
+      project_type: 0,
     },
     {
       id: '2',
-      name: 'prj name 2',
+      project_name: 'prj name 2',
       created_time: '2023-03-10T09:19:38.080Z',
       updated_time: '2023-03-10T09:19:38.080Z',
       image_count: 3,
+      project_type: 1,
     },
   ])
 

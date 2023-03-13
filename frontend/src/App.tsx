@@ -13,7 +13,7 @@ import Projects from './pages/Projects'
 import Database from './pages/Database'
 import Login from 'pages/Login'
 import Signup from 'pages/Signup'
-import ProjectFormComponent from "./pages/Projects/ProjectForm";
+import ProjectFormComponent from "./pages/Projects/Create";
 
 const App: React.FC = () => {
   return (

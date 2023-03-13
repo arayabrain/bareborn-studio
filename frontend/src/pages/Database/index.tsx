@@ -1,14 +1,33 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import DatabaseTableComponent from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import ImageView from 'components/ImageView'
 
-const PopupSearch = ({ onClose }: { onClose: any }) => {
+type PopupSearchProps = {
+  onClose?: () => any
+  onFilter?: (values: { [key: string]: string }) => any
+  defaultValue?: { [key: string]: string }
+}
+
+export const PopupSearch = ({
+  onClose,
+  defaultValue = {},
+  onFilter,
+}: PopupSearchProps) => {
+  const [values, setValues] = useState(defaultValue)
+
   const handleFilter = () => {
-    onClose()
+    onFilter?.(values)
+    onClose?.()
+  }
+
+  const onChange = (
+    event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
+    setValues({ ...values, [event.target.name]: event.target.value })
   }
 
   return (
@@ -20,10 +39,30 @@ const PopupSearch = ({ onClose }: { onClose: any }) => {
             <CloseIcon />
           </ButtonControl>
         </HeaderTitle>
-        <InputSearch name={'session'} label="Session" variant="outlined" />
-        <InputSearch name={'dataset'} label="Dataset" variant="outlined" />
-        <InputSearch name={'type'} label="Type" variant="outlined" />
-        <InputSearch name={'protocol'} label="Protocol" variant="outlined" />
+        <InputSearch
+          onChange={onChange}
+          name={'session'}
+          label="Session"
+          variant="outlined"
+        />
+        <InputSearch
+          onChange={onChange}
+          name={'dataset'}
+          label="Dataset"
+          variant="outlined"
+        />
+        <InputSearch
+          onChange={onChange}
+          name={'type'}
+          label="Type"
+          variant="outlined"
+        />
+        <InputSearch
+          onChange={onChange}
+          name={'protocol'}
+          label="Protocol"
+          variant="outlined"
+        />
         <Button variant="contained" onClick={handleFilter}>
           Filter
         </Button>
@@ -206,13 +245,13 @@ const DatabaseWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
 }))
 
-const HeaderTitle = styled('h1')(({ theme }) => ({
+const HeaderTitle = styled('h1')(() => ({
   width: '100%',
   display: 'flex',
   justifyContent: 'space-between',
 }))
 
-const Popup = styled(Box)(({ theme }) => ({
+const Popup = styled(Box)(() => ({
   position: 'fixed',
   top: 0,
   left: 0,
@@ -222,6 +261,7 @@ const Popup = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
   backgroundColor: '#cccccc80',
+  zIndex: 9999,
 }))
 
 const PopupInner = styled(Box)(({ theme }) => ({
@@ -233,7 +273,7 @@ const PopupInner = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
 }))
 
-const InputSearch = styled(TextField)(({ theme }) => ({
+const InputSearch = styled(TextField)(() => ({
   minWidth: 250,
 }))
 
@@ -259,7 +299,7 @@ const ButtonControl = styled(IconButton)(({ theme }) => ({
   justifyContent: 'center',
 }))
 
-const ProjectsTitle = styled('h1')(({ theme }) => ({
+const ProjectsTitle = styled('h1')(() => ({
   width: '100%',
   display: 'flex',
   justifyContent: 'space-between',
