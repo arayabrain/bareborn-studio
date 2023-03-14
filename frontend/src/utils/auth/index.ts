@@ -4,3 +4,6 @@ export const saveToken = (access_token: string) => {
 export const getToken = () => {
   return localStorage.getItem('access_token')
 }
+export const removeToken = () => {
+  return localStorage.removeItem('access_token')
+}

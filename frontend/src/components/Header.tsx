@@ -6,9 +6,12 @@ import PortraitIcon from '@mui/icons-material/Portrait'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useUser } from 'providers'
+import { removeToken } from 'utils/auth'
+import { useNavigate } from 'react-router-dom'
 
 const Header: FC = () => {
   const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
   const { user } = useUser()
 
   const refMenu = useRef<HTMLDivElement | null>(null)
@@ -24,6 +27,11 @@ const Header: FC = () => {
       return refMenu.current?.blur?.()
     }
     setOpen(true)
+  }
+
+  const onLogout = () => {
+    removeToken()
+    navigate('/login')
   }
 
   return (
@@ -50,6 +58,7 @@ const Header: FC = () => {
               <PortraitIcon /> Profile
             </BoxMenuItem>
             <BoxMenuItem
+              onClick={onLogout}
               style={{ color: 'red', fontWeight: 600, marginTop: 30 }}
             >
               <LogoutIcon />
