@@ -1,8 +1,14 @@
 import { Box, Stack, styled, Typography } from '@mui/material'
+import { getMe, login } from 'api/auth'
+import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { saveToken } from 'utils/auth'
 
 const Login = () => {
+  const { setUser } = useUser()
+  const navigate = useNavigate()
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({
     email: '',
     password: '',
@@ -12,9 +18,35 @@ const Login = () => {
     password: '',
   })
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    //todo call api.
+    const errorCheck = validateSubmit()
+    if (errors.email || errors.password || errorCheck) return
+    try {
+      const { access_token } = await login(values)
+      saveToken(access_token)
+      getUser()
+    } catch (e) {
+      setErrors({ email: 'Email or password wrong', password: '' })
+    }
+  }
+
+  const getUser = async () => {
+    const data = await getMe()
+    setUser(data)
+    navigate('/')
+  }
+
+  const validateSubmit = () => {
+    let errors = { email: '', password: '' }
+    if (!values.email) {
+      errors.email = 'This field is required'
+    }
+    if (!values.password) {
+      errors.password = 'This field is required'
+    }
+    setErrors(errors)
+    return errors.password || errors.email
   }
 
   const onChangeValue = (event: ChangeEvent<HTMLInputElement>) => {

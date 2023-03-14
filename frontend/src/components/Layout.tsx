@@ -8,50 +8,72 @@ import HomeIcon from '@mui/icons-material/Home'
 import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
-import { Link, useLocation } from 'react-router-dom'
-// import { getAuth } from 'firebase/auth'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { UserContext, useUser } from 'providers'
+import { getToken } from 'utils/auth'
+import { getMe } from 'api/auth'
+
+const ignorePaths = ['/login', '/account-delete']
 
 const Layout: FC = ({ children }) => {
+  const [user, setUser] = useState()
   const location = useLocation()
   const [width, setWidth] = useState(drawerWidth)
-  // const auth = getAuth()
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
 
   const onResize = () => {
     setWidth(width === drawerWidth ? 54 : drawerWidth)
   }
 
   useEffect(() => {
-    // checkkAuth()
+    checkkAuth()
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    // checkkAuth()
+    checkkAuth()
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname])
 
-  // const checkkAuth = () => {
-  //   if (
-  //     !auth.currentUser &&
-  //     !['/login', '/signup'].includes(window.location.pathname)
-  //   ) {
-  //     navigate('/login')
-  //   }
-  // }
+  const checkkAuth = async () => {
+    if (user) return
+    const token = getToken()
+    try {
+      if (token) {
+        const data = await getMe()
+        return setUser(data)
+      }
+      if (
+        // !auth.currentUser &&
+        !['/login', '/signup'].includes(window.location.pathname)
+      ) {
+        navigate('/login')
+      }
+    } catch {
+      navigate('/login')
+    }
+  }
 
   return (
-    <LayoutWrapper>
-      <Header />
-      <ContentBodyWrapper>
-        {location.pathname === '/account-delete' ? null : (
-          <MenuLeft onResize={onResize} width={width} />
-        )}
-        <ChildrenWrapper style={{ width: `calc(100% - ${width + 10}px)` }}>
-          {children}
-        </ChildrenWrapper>
-      </ContentBodyWrapper>
-    </LayoutWrapper>
+    <UserContext.Provider value={{ user, setUser }}>
+      <LayoutWrapper>
+        {ignorePaths.includes(location.pathname) ? null : <Header />}
+        <ContentBodyWrapper>
+          {ignorePaths.includes(location.pathname) ? null : (
+            <MenuLeft onResize={onResize} width={width} />
+          )}
+          <ChildrenWrapper
+            style={{
+              width: `calc(100% - ${
+                ignorePaths.includes(location.pathname) ? 0 : width + 10
+              }px)`,
+            }}
+          >
+            {children}
+          </ChildrenWrapper>
+        </ContentBodyWrapper>
+      </LayoutWrapper>
+    </UserContext.Provider>
   )
 }
 
@@ -59,6 +81,7 @@ const MenuLeft: FC<{ onResize: any; width: number }> = ({
   onResize,
   width,
 }) => {
+  const { user } = useUser()
   const { pathname } = useLocation()
   const isClose = width !== drawerWidth
   return (
@@ -97,14 +120,21 @@ const MenuLeft: FC<{ onResize: any; width: number }> = ({
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
-        <LinkWrapper to="/account-manager">
-          <MenuItem isClose={isClose} active={pathname === '/account-manager'}>
-            <GroupIcon />
-            <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-              Account Manager
-            </TypographyMenu>
-          </MenuItem>
-        </LinkWrapper>
+        {user?.role === 'ADMIN' ? (
+          <LinkWrapper to="/account-manager">
+            <MenuItem
+              isClose={isClose}
+              active={pathname === '/account-manager'}
+            >
+              <GroupIcon />
+              <TypographyMenu
+                style={{ opacity: Number(width === drawerWidth) }}
+              >
+                Account Manager
+              </TypographyMenu>
+            </MenuItem>
+          </LinkWrapper>
+        ) : null}
         <LinkWrapper to="/workflow">
           <MenuItem isClose={isClose} active={pathname === '/workflow'}>
             <SourceIcon />

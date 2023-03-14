@@ -4,8 +4,10 @@ import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
 import { Link } from 'react-router-dom'
+import { useUser } from 'providers'
 
 const Dashboard = () => {
+  const { user } = useUser()
   return (
     <DashboardWrapper>
       <DashboardContent>
@@ -33,14 +35,16 @@ const Dashboard = () => {
             </Box>
           </BoxMenu>
         </LinkWrapper>
-        <LinkWrapper to="/account-management">
-          <BoxMenu>
-            <Box>
-              <TitleMenu>Account Management</TitleMenu>
-              <GroupIcon fontSize="large" />
-            </Box>
-          </BoxMenu>
-        </LinkWrapper>
+        {user?.role === 'ADMIN' ? (
+          <LinkWrapper to="/account-management">
+            <BoxMenu>
+              <Box>
+                <TitleMenu>Account Management</TitleMenu>
+                <GroupIcon fontSize="large" />
+              </Box>
+            </BoxMenu>
+          </LinkWrapper>
+        ) : null}
       </DashboardContent>
     </DashboardWrapper>
   )

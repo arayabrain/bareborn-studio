@@ -5,9 +5,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import PortraitIcon from '@mui/icons-material/Portrait'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import LogoutIcon from '@mui/icons-material/Logout'
+import { useUser } from 'providers'
 
 const Header: FC = () => {
   const [open, setOpen] = useState(false)
+  const { user } = useUser()
 
   const refMenu = useRef<HTMLDivElement | null>(null)
 
@@ -31,17 +33,25 @@ const Header: FC = () => {
         <TitleLogo>Studio</TitleLogo>
       </BoxWrapper>
       <BoxMenu ref={refMenu} tabIndex={1} onClick={onClick} onBlur={closeMenu}>
-        <Typography>Admin</Typography>
+        <Typography>
+          {user?.display_name || `${user?.email.substring(0, 7)}...`}
+        </Typography>
         <ExpandMoreIcon />
         {open && (
           <BoxDropdown>
             <BoxInfo>
-              <AccountCircleIcon /> Admin
+              <AccountCircleIcon />
+              <Box>
+                <Typography>{user?.display_name}</Typography>
+                <Typography>{user?.email}</Typography>
+              </Box>
             </BoxInfo>
             <BoxMenuItem>
               <PortraitIcon /> Profile
             </BoxMenuItem>
-            <BoxMenuItem style={{ color: 'red', fontWeight: 600, marginTop: 30 }}>
+            <BoxMenuItem
+              style={{ color: 'red', fontWeight: 600, marginTop: 30 }}
+            >
               <LogoutIcon />
               SIGN OUT
             </BoxMenuItem>
