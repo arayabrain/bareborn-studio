@@ -104,27 +104,41 @@ export type DataDatabase = {
 export const defaultDatabase = [
   {
     id: 3,
-    lab_name: 'string',
-    user_name: 'string',
-    sample_name: 'string',
+    lab_name: 'lab 1',
+    user_name: 'hoge',
+    sample_name: 'hoge',
+    recording_time: '2023-03-10',
+  },
+  {
+    id: 4,
+    lab_name: 'lab 4',
+    user_name: 'hoge 4',
+    sample_name: 'hoge 4',
+    recording_time: '2023-03-10',
+  },
+  {
+    id: 5,
+    lab_name: 'lab 5',
+    user_name: 'hoge 5',
+    sample_name: 'hoge 5',
     recording_time: '2023-03-10',
   },
   {
     id: 0,
-    lab_name: 'string',
-    user_name: 'string',
-    sample_name: 'string',
+    lab_name: 'lab 2',
+    user_name: 'hoge 2',
+    sample_name: 'hoge 2',
     recording_time: '2023-03-10',
     sessions: [
       {
         id: 0,
         parent_id: 0,
-        label: 'string',
+        label: 'session 1',
         datatypes: [
           {
             id: 0,
             parent_id: 0,
-            label: 'string',
+            label: 'anat',
             protocol: 'protocol',
             size: '8MB',
             voxel_size: 'voxel_size',
@@ -132,7 +146,13 @@ export const defaultDatabase = [
               {
                 id: 0,
                 parent_id: 0,
-                image_url: 'string',
+                image_url: 'lib/functional.nii',
+                attributes: {},
+              },
+              {
+                id: 1,
+                parent_id: 0,
+                image_url: 'lib/test.nii',
                 attributes: {},
               },
             ],
@@ -143,8 +163,8 @@ export const defaultDatabase = [
   },
   {
     id: 1,
-    lab_name: 'string 1',
-    user_name: 'string 1',
+    lab_name: 'lab 3',
+    user_name: 'hoge 3',
     sample_name: 'string 1',
     recording_time: '2023-03-10',
     sessions: [
@@ -156,7 +176,7 @@ export const defaultDatabase = [
           {
             id: 1,
             parent_id: 0,
-            label: 'string 1',
+            label: 'anat 1',
             protocol: 'protocol 1',
             size: '8MB',
             voxel_size: 'voxel_size 1',
@@ -164,7 +184,13 @@ export const defaultDatabase = [
               {
                 id: 1,
                 parent_id: 0,
-                image_url: 'string 1',
+                image_url: 'lib/functional.nii',
+                attributes: {},
+              },
+              {
+                id: 1,
+                parent_id: 0,
+                image_url: 'lib/test.nii',
                 attributes: {},
               },
             ],
@@ -204,16 +230,19 @@ export const columns = [
 
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
-  const [openViewer, setOpenViewer] = useState(false)
+  const [viewer, setViewer] = useState({ open: false, urls: [] })
   const [data /*setData*/] = useState(defaultDatabase)
 
   const onCloseImageView = () => {
-    setOpenViewer(false)
+    setViewer({ open: false, urls: [] })
   }
 
   const rowClick = (row: any) => {
-    console.log('row', row)
-    setOpenViewer(true)
+    if (!row?.images?.length) return
+    setViewer({
+      open: true,
+      urls: row.images.map((e: { image_url: string }) => e.image_url),
+    })
   }
 
   return (
@@ -235,7 +264,7 @@ const Database = () => {
         columns={columns}
         expands={['sessions', 'datatypes']}
       />
-      <ImageView open={openViewer} onClose={onCloseImageView} />
+      <ImageView {...viewer} onClose={onCloseImageView} />
     </DatabaseWrapper>
   )
 }

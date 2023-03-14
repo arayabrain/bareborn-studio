@@ -1,11 +1,12 @@
 import { Box, Button, styled } from '@mui/material'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import TableComponent from 'components/Table'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InputError from '../../components/common/InputError'
 import SelectError from '../../components/common/SelectError'
+import { listUser } from 'api/auth'
 
 const ModalComponent = ({
   data,
@@ -192,6 +193,15 @@ const AccountManager = () => {
       confirmPassword: 'abcxyz',
     },
   ])
+
+  useEffect(() => {
+    getList()
+  }, [])
+
+  const getList = async () => {
+    const data = await listUser()
+    console.log('data', data)
+  }
 
   const onOpenModal = (type: string) => {
     setIsOpenModal(true)

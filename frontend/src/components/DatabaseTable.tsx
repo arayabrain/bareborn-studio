@@ -75,7 +75,7 @@ const ChildCol = (props: RenderColumnProps & { keyExpand: string }) => {
 
   return (
     <Fragment>
-      <Tr onClick={rowClick}>
+      <Tr onClick={() => rowClick?.(item)}>
         {columns.map((column) => {
           const key = column.name || column.dataIndex
           return (
@@ -130,14 +130,14 @@ const RenderColumn = (props: RenderColumnProps) => {
 
   return (
     <Tr
-      onClick={rowClick}
+      onClick={() => rowClick?.(item)}
       draggable={draggable}
       onDragStart={onDrag}
       onDragEnd={onDragEnd}
       style={{
-        borderStyle: "dashed",
-        borderColor: "#1976d2",
-        borderWidth: showBorderDrag && draggable ?  2 : 0,
+        borderStyle: 'dashed',
+        borderColor: '#1976d2',
+        borderWidth: showBorderDrag && draggable ? 2 : 0,
         transition: 'all 0.3s',
       }}
     >

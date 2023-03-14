@@ -8,9 +8,10 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 type ImageViewProps = {
   open: boolean
   onClose?: () => void
+  urls?: string[]
 }
 
-const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
+const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   const viewerRef = useRef<any>()
   const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
   const [voxelCoords, setVoxelCoords] = useState({ i: 0, j: 0, k: 0 })
@@ -21,15 +22,18 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
   const [contracts, setContracts] = useState(1)
   const [brightness, setBrightness] = useState(0)
   const volumes = useRef<any>()
+  const indexImage = useRef(0)
 
   useEffect(() => {
     if (open) {
       setTimeout(loadFile, 0)
       return
     }
+    indexImage.current = 0
     setOpacity(0)
     setContracts(1)
     setBrightness(0)
+    //eslint-disable-next-line
   }, [open])
 
   const onChangeThreshold = (num: number) => {
@@ -66,11 +70,51 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
     viewerRef.current.redrawVolumes()
   }
 
-  const onNext = () => {}
+  const onNext = () => {
+    let nextIndex = indexImage.current + 1
+    if (nextIndex > (urls || [])?.length - 1) {
+      nextIndex = 0
+    }
+    indexImage.current = nextIndex
+    loadFileIndex()
+  }
 
-  const onPrevious = () => {}
+  const onPrevious = () => {
+    let nextIndex = indexImage.current - 1
+    if (nextIndex < 0) {
+      nextIndex = (urls || [])?.length - 1
+    }
+    indexImage.current = nextIndex
+    loadFileIndex()
+  }
+
+  const loadFileIndex = () => {
+    if (!urls?.length) return
+    if (!viewerRef.current) return
+    viewerRef.current.clearVolumes()
+    viewerRef.current.loadVolumes({
+      volumes: [
+        {
+          type: 'nifti1',
+          nii_url: urls[indexImage.current],
+          template: {
+            element_id: 'volume-ui-template',
+            viewer_insert_className: 'volume-viewer-display',
+          },
+          overlay: {
+            template: {
+              element_id: 'overlay-ui-template',
+              viewer_insert_className: 'overlay-viewer-display',
+            },
+          },
+          complete: function () {},
+        },
+      ],
+    })
+  }
 
   const loadFile = () => {
+    if (!urls?.length) return
     const brainbrowser = (window as any).BrainBrowser
     const color_map_config = brainbrowser.config.get('color_maps')[2]
     viewerRef.current = brainbrowser.VolumeViewer.start(
@@ -96,13 +140,13 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
         const { url, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(url, cursor_color)
         viewer.setDefaultPanelSize(256, 256)
-        viewer.clearVolumes()
         viewer.render()
+        viewer.clearVolumes()
         viewer.loadVolumes({
           volumes: [
             {
               type: 'nifti1',
-              nii_url: 'lib/functional.nii',
+              nii_url: urls[0],
               template: {
                 element_id: 'volume-ui-template',
                 viewer_insert_className: 'volume-viewer-display',
@@ -140,7 +184,10 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose }) => {
         <ImageViewWrapper sx={{ opacity }}>
           <div style={{ display: 'flex', alignItems: 'stretch' }}>
             <div id="brainbrowser-wrapper">
-              <div id="volume-viewer">
+              <div
+                id="volume-viewer"
+                style={{ minWidth: 768, minHeight: 256, background: '#ffffff' }}
+              >
                 <div id="brainbrowser"></div>
               </div>
               {opacity ? (

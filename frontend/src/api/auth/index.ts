@@ -9,3 +9,8 @@ export const getMe = async () => {
   const response = await axios.get('/auth/me')
   return response.data
 }
+
+export const listUser = async () => {
+  const response = await axios.get('/admin/user')
+  return response.data
+}
