@@ -1,24 +1,22 @@
+import argparse
+import os
+
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
-import os
-import argparse
-import uvicorn
 from starlette.middleware.cors import CORSMiddleware
-from studio.routers import (
-    files,
-    run,
-    params,
-    outputs,
-    algolist,
-    hdf5,
-    experiment,
-)
+
+from backend.routers import auth, user_manage
+from studio.routers import (algolist, experiment, files, hdf5, outputs, params,
+                            run)
+
 
 DIRPATH = os.path.dirname(os.path.abspath(__file__))
 
 app = FastAPI(docs_url="/docs", openapi_url="/openapi")
+app.include_router(auth.router, prefix='/auth', tags=['auth'])
+app.include_router(user_manage.router, prefix='/admin/user', tags=['admin'])
 app.include_router(algolist.router)
 app.include_router(files.router)
 app.include_router(outputs.router)
