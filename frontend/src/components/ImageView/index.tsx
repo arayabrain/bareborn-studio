@@ -88,6 +88,8 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
     loadFileIndex()
   }
 
+  const onChangeJson = () => {}
+
   const loadFileIndex = () => {
     if (!urls?.length) return
     if (!viewerRef.current) return
@@ -234,7 +236,10 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
               ) : null}
             </div>
             <WrapperJson>
-              <TextArea>JSON Preview and edit</TextArea>
+              <TextArea
+                onChange={onChangeJson}
+                defaultValue="JSON Preview and edit"
+              />
             </WrapperJson>
             <ButtonClose onClick={onClose}>
               <CloseIconWrapper />

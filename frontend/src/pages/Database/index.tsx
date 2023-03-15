@@ -5,6 +5,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import ImageView from 'components/ImageView'
+import ModalDeleteAccount from 'components/ModalDeleteAccount'
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -142,6 +143,7 @@ export const defaultDatabase = [
             protocol: 'protocol',
             size: '8MB',
             voxel_size: 'voxel_size',
+            type: 'TYPE_RATE',
             images: [
               {
                 id: 0,
@@ -159,36 +161,28 @@ export const defaultDatabase = [
           },
         ],
       },
-    ],
-  },
-  {
-    id: 1,
-    lab_name: 'lab 3',
-    user_name: 'hoge 3',
-    sample_name: 'string 1',
-    recording_time: '2023-03-10',
-    sessions: [
       {
-        id: 1,
+        id: 0,
         parent_id: 0,
-        label: 'string 1',
+        label: 'session 3',
         datatypes: [
           {
-            id: 1,
+            id: 0,
             parent_id: 0,
-            label: 'anat 1',
-            protocol: 'protocol 1',
+            label: 'anat3',
+            protocol: 'protocol 3',
             size: '8MB',
-            voxel_size: 'voxel_size 1',
+            voxel_size: '8MB',
+            type: 'TYPE_RATE',
             images: [
               {
-                id: 1,
+                id: 3,
                 parent_id: 0,
                 image_url: 'lib/functional.nii',
                 attributes: {},
               },
               {
-                id: 1,
+                id: 6,
                 parent_id: 0,
                 image_url: 'lib/test.nii',
                 attributes: {},
@@ -201,30 +195,51 @@ export const defaultDatabase = [
   },
 ]
 
-export const columns = [
+export const columns = (rowClick: Function, setOpenDelete: Function) => [
   { title: 'Lab', name: 'lab_name' },
   { title: 'User', name: 'user_name' },
   { title: 'Date', name: 'recording_time' },
   { title: 'Session', name: 'sessions', child: 'label' },
   { title: 'Dataset', name: 'datatypes', child: 'label' },
-  { title: 'Type', name: 'type', filter: true },
+  {
+    title: 'Type',
+    name: 'type',
+    filter: true,
+    render: (_: any, value: string) => value,
+  },
   { title: 'Protocol', name: 'protocol' },
   { title: 'Size', name: 'size' },
   { title: 'Voxel size', name: 'voxel_size' },
   {
     title: '',
     name: 'action',
-    render: (data: any) =>
-      data.control ? (
+    render: (data: any) => {
+      if (!data?.images?.length) return null
+      return (
         <BoxButton>
-          <ButtonControl aria-label="Example">
+          <ButtonControl
+            aria-label="Example"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              rowClick?.(data)
+            }}
+          >
             <EditIcon fontSize="small" color={'inherit'} />
           </ButtonControl>
-          <ButtonControl aria-label="Example">
+          <ButtonControl
+            aria-label="Example"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              setOpenDelete?.(true)
+            }}
+          >
             <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
           </ButtonControl>
         </BoxButton>
-      ) : null,
+      )
+    },
   },
 ]
 
@@ -232,6 +247,7 @@ const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState({ open: false, urls: [] })
   const [data /*setData*/] = useState(defaultDatabase)
+  const [openDelete, setOpenDelete] = useState(false)
 
   const onCloseImageView = () => {
     setViewer({ open: false, urls: [] })
@@ -245,8 +261,23 @@ const Database = () => {
     })
   }
 
+  const handleCloseDelete = () => {
+    setOpenDelete(false)
+  }
+
+  const onDelete = () => {
+    setOpenDelete(false)
+  }
+
   return (
     <DatabaseWrapper>
+      <ModalDeleteAccount
+        titleSubmit="Delete Project"
+        description={`Are you sure delete?\n`}
+        onClose={handleCloseDelete}
+        open={openDelete}
+        onSubmit={onDelete}
+      />
       <ProjectsTitle>
         <span>Database</span>
         <ButtonFilter
@@ -261,7 +292,7 @@ const Database = () => {
       <DatabaseTableComponent
         rowClick={rowClick}
         data={data}
-        columns={columns}
+        columns={columns(rowClick, setOpenDelete)}
         expands={['sessions', 'datatypes']}
       />
       <ImageView {...viewer} onClose={onCloseImageView} />
@@ -272,6 +303,7 @@ const Database = () => {
 const DatabaseWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
+  overflow: 'auto',
 }))
 
 const HeaderTitle = styled('h1')(() => ({

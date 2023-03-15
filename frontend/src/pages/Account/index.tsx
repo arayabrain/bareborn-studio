@@ -2,9 +2,11 @@ import { Box, Button, styled, Typography } from '@mui/material'
 import { Input } from 'components/common/Input'
 import ModalChangePassword from 'components/ModalChangePassword'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
+import { useUser } from 'providers'
 import { useState } from 'react'
 
 const Account = () => {
+  const { user } = useUser()
   const [isEditName, setIsEditName] = useState(false)
   const [openDelete, setOpenDelete] = useState(false)
   const [openChangePw, setOpenChangePw] = useState(false)
@@ -55,16 +57,21 @@ const Account = () => {
       <Title>Account Profile</Title>
       <BoxFlex>
         <TitleData>Account ID</TitleData>
-        <BoxData>XXXX-XXXX-XXXX-XXXX</BoxData>
+        <BoxData>{user?.uid}</BoxData>
       </BoxFlex>
       <BoxFlex>
         <TitleData sx={{ marginTop: isEditName ? -2 : 0 }}>Full name</TitleData>
         <BoxData>
           {isEditName ? (
-            <Input autoFocus onBlur={onEditName} placeholder="Full name" />
+            <Input
+              autoFocus
+              defaultValue={user?.display_name || ''}
+              onBlur={onEditName}
+              placeholder="Full name"
+            />
           ) : (
             <>
-              XXXX-XXXX-XXXX-XXXX
+              {user?.display_name || "--"}
               <Button sx={{ ml: 1 }} onClick={() => setIsEditName(true)}>
                 Edit
               </Button>
@@ -74,11 +81,11 @@ const Account = () => {
       </BoxFlex>
       <BoxFlex>
         <TitleData>Email</TitleData>
-        <BoxData>XXXX@XXXX.XXX</BoxData>
+        <BoxData>{user?.email}</BoxData>
       </BoxFlex>
       <BoxFlex>
         <TitleData>Role</TitleData>
-        <BoxData>XXXX-XXXX-XXXX-XXXX</BoxData>
+        <BoxData>{user?.role}</BoxData>
       </BoxFlex>
       <BoxFlex sx={{ justifyContent: 'space-between', mt: 10 }}>
         <ButtonSubmit onClick={onConfirmChangePw}>Change Password</ButtonSubmit>

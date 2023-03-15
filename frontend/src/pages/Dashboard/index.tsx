@@ -1,54 +1,62 @@
 import { Box, styled, Typography } from '@mui/material'
-import HomeIcon from '@mui/icons-material/Home'
 import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link } from 'react-router-dom'
 import { useUser } from 'providers'
 
 const Dashboard = () => {
   const { user } = useUser()
   return (
-    <DashboardWrapper>
-      <DashboardContent>
-        <LinkWrapper to="/project">
-          <BoxMenu>
-            <Box>
-              <TitleMenu>Project</TitleMenu>
-              <StorageIcon fontSize="large" />
-            </Box>
-          </BoxMenu>
-        </LinkWrapper>
-        <LinkWrapper to="/database">
-          <BoxMenu>
-            <Box>
-              <TitleMenu>Database</TitleMenu>
-              <SourceIcon fontSize="large" />
-            </Box>
-          </BoxMenu>
-        </LinkWrapper>
-        <LinkWrapper to="/account">
-          <BoxMenu>
-            <Box>
-              <TitleMenu>Account</TitleMenu>
-              <HomeIcon fontSize="large" />
-            </Box>
-          </BoxMenu>
-        </LinkWrapper>
-        {user?.role === 'ADMIN' ? (
-          <LinkWrapper to="/account-management">
+    <BoxWrapper>
+      <h1 style={{ paddingLeft: 16 }}>Dashboard</h1>
+      <DashboardWrapper>
+        <DashboardContent>
+          <LinkWrapper to="/database">
             <BoxMenu>
               <Box>
-                <TitleMenu>Account Management</TitleMenu>
-                <GroupIcon fontSize="large" />
+                <SourceIcon fontSize="large" />
+                <TitleMenu>Database</TitleMenu>
               </Box>
             </BoxMenu>
           </LinkWrapper>
-        ) : null}
-      </DashboardContent>
-    </DashboardWrapper>
+          <LinkWrapper to="/projects">
+            <BoxMenu>
+              <Box>
+                <StorageIcon fontSize="large" />
+                <TitleMenu>Workspace</TitleMenu>
+              </Box>
+            </BoxMenu>
+          </LinkWrapper>
+          <LinkWrapper to="/account">
+            <BoxMenu>
+              <Box>
+                <AccountCircleIcon fontSize="large" />
+                <TitleMenu>Account</TitleMenu>
+              </Box>
+            </BoxMenu>
+          </LinkWrapper>
+          {user?.role === 'ADMIN' ? (
+            <LinkWrapper to="/account-manager">
+              <BoxMenu>
+                <Box>
+                  <GroupIcon fontSize="large" />
+                  <TitleMenu>Account Manager</TitleMenu>
+                </Box>
+              </BoxMenu>
+            </LinkWrapper>
+          ) : null}
+        </DashboardContent>
+      </DashboardWrapper>
+    </BoxWrapper>
   )
 }
+
+const BoxWrapper = styled(Box)({
+  width: '100%',
+  height: '100%',
+})
 
 const LinkWrapper = styled(Link)(() => ({
   textDecoration: 'none',
@@ -91,7 +99,7 @@ const BoxMenu = styled(Box)(() => ({
 
 const TitleMenu = styled(Typography)(() => ({
   fontSize: 24,
-  marginBottom: 40,
+  marginTop: 30,
 }))
 
 export default Dashboard

@@ -45,6 +45,7 @@ const Projects = () => {
 
   const onResults = useCallback((id: any) => {
     console.log('Results: ', id)
+    navigate('/workflow?tab=2')
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -85,9 +86,8 @@ const Projects = () => {
       <ProjectsTitle>Projects</ProjectsTitle>
       <BoxButton>
         <ButtonAdd variant="contained" onClick={addNewProject}>
-          Add
+          Add Project
         </ButtonAdd>
-        <ButtonAdd variant="contained">Project</ButtonAdd>
       </BoxButton>
       <TableComponent
         paginate={{ total: 100, page: 1, page_size: 10 }}

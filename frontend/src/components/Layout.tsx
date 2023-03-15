@@ -116,7 +116,7 @@ const MenuLeft: FC<{ onResize: any; width: number }> = ({
           <MenuItem isClose={isClose} active={pathname === '/projects'}>
             <SourceIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-              Project
+              Workspace
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
@@ -135,14 +135,6 @@ const MenuLeft: FC<{ onResize: any; width: number }> = ({
             </MenuItem>
           </LinkWrapper>
         ) : null}
-        <LinkWrapper to="/workflow">
-          <MenuItem isClose={isClose} active={pathname === '/workflow'}>
-            <SourceIcon />
-            <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-              Workflow
-            </TypographyMenu>
-          </MenuItem>
-        </LinkWrapper>
       </MenuList>
     </MenuLeftWrapper>
   )

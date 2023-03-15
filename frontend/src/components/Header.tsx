@@ -1,10 +1,8 @@
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { FC, useRef, useState } from 'react'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import PortraitIcon from '@mui/icons-material/Portrait'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import LogoutIcon from '@mui/icons-material/Logout'
 import { useUser } from 'providers'
 import { removeToken } from 'utils/auth'
 import { useNavigate } from 'react-router-dom'
@@ -34,6 +32,10 @@ const Header: FC = () => {
     navigate('/login')
   }
 
+  const onNavigateAccount = () => {
+    navigate('/account')
+  }
+
   return (
     <HeaderWrapper>
       <BoxWrapper>
@@ -41,10 +43,7 @@ const Header: FC = () => {
         <TitleLogo>Studio</TitleLogo>
       </BoxWrapper>
       <BoxMenu ref={refMenu} tabIndex={1} onClick={onClick} onBlur={closeMenu}>
-        <Typography>
-          {user?.display_name || `${user?.email.substring(0, 7)}...`}
-        </Typography>
-        <ExpandMoreIcon />
+        <AccountCircleIcon />
         {open && (
           <BoxDropdown>
             <BoxInfo>
@@ -54,16 +53,12 @@ const Header: FC = () => {
                 <Typography>{user?.email}</Typography>
               </Box>
             </BoxInfo>
-            <BoxMenuItem>
+            <BoxMenuItem onClick={onNavigateAccount}>
               <PortraitIcon /> Profile
             </BoxMenuItem>
-            <BoxMenuItem
-              onClick={onLogout}
-              style={{ color: 'red', fontWeight: 600, marginTop: 30 }}
-            >
-              <LogoutIcon />
+            <BoxMenuItemLogout onClick={onLogout}>
               SIGN OUT
-            </BoxMenuItem>
+            </BoxMenuItemLogout>
           </BoxDropdown>
         )}
       </BoxMenu>
@@ -116,6 +111,16 @@ const BoxMenuItem = styled(BoxWrapper)({
   transition: 'all 0.3s',
   '&:hover': {
     transform: 'scale(1.05) translateX(5px)',
+  },
+})
+
+const BoxMenuItemLogout = styled(BoxMenuItem)({
+  color: '#1a73e8',
+  fontWeight: 600,
+  marginTop: 30,
+  justifyContent: 'flex-end',
+  '&:hover': {
+    transform: 'scale(1.02)',
   },
 })
 

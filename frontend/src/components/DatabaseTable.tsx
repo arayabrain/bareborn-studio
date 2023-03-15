@@ -14,7 +14,7 @@ type Column = {
     item?: any,
     value?: any,
     index?: number,
-  ) => JSX.Element | null | undefined
+  ) => JSX.Element | null | undefined | string | number
 }
 
 type TableComponentProps = {
@@ -46,6 +46,7 @@ type RenderColumnProps = {
   expands?: string[]
   index: number
   defaultExpand?: boolean
+  dataShow?: boolean
   draggableProps?: boolean
   showBorderDrag?: boolean
 }
@@ -75,7 +76,10 @@ const ChildCol = (props: RenderColumnProps & { keyExpand: string }) => {
 
   return (
     <Fragment>
-      <Tr onClick={() => rowClick?.(item)}>
+      <Tr
+        onClick={() => rowClick?.(item)}
+        style={{ backgroundColor: 'rgb(238, 238, 238)' }}
+      >
         {columns.map((column) => {
           const key = column.name || column.dataIndex
           return (
@@ -99,14 +103,19 @@ const ChildCol = (props: RenderColumnProps & { keyExpand: string }) => {
         })}
       </Tr>
       {show ? (
-        <RenderColumn {...props} draggable={props.draggableProps} item={item} />
+        <RenderColumn
+          {...props}
+          draggable={props.draggableProps}
+          item={item}
+          dataShow
+        />
       ) : null}
     </Fragment>
   )
 }
 
 const RenderColumn = (props: RenderColumnProps) => {
-  const { columns, item, index, rowClick, showBorderDrag } = props
+  const { columns, item, index, rowClick, showBorderDrag, dataShow } = props
   const { draggable, onDrag, onDragEnd, expands } = props
 
   const getKeyExpand = () => {
@@ -139,6 +148,7 @@ const RenderColumn = (props: RenderColumnProps) => {
         borderColor: '#1976d2',
         borderWidth: showBorderDrag && draggable ? 2 : 0,
         transition: 'all 0.3s',
+        backgroundColor: dataShow ? 'transparent' : 'rgb(238, 238, 238)',
       }}
     >
       {columns.map((column) => (

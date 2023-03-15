@@ -13,10 +13,12 @@ import FlowChart from './FlowChart/FlowChart'
 import Visualize from './Visualize/Visualize'
 import Experiment from './Experiment/Experiment'
 import { Box } from '@mui/material'
+import { useSearchParams } from 'react-router-dom'
 // import studioLogo from './studio.png'
 
 const Project: React.FC = () => {
-  const [value, setValue] = React.useState(0)
+  const [searchParams] = useSearchParams()
+  const [value, setValue] = React.useState(Number(searchParams.get('tab') || 0))
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue)
   }

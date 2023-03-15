@@ -1,23 +1,25 @@
 import { Box, Button, Modal, styled, Typography } from '@mui/material'
 import { Input } from 'components/common/Input'
-import {FC, useState} from 'react'
+import { FC, useState } from 'react'
 
 type ModalDeleteAccountProps = {
   onClose: () => void
   open: boolean
   onSubmit: () => void
-  titleSubmit: string,
+  titleSubmit: string
+  description?: string
 }
 const ModalDeleteAccount: FC<ModalDeleteAccountProps> = ({
   onClose,
   open,
   onSubmit,
   titleSubmit,
+  description,
 }) => {
-  const [textDelete, setTextDelete] = useState("")
+  const [textDelete, setTextDelete] = useState('')
 
   const onConfirm = () => {
-    if(textDelete !== "DELETE") return
+    if (textDelete !== 'DELETE') return
     onSubmit?.()
     setTextDelete('')
   }
@@ -30,13 +32,17 @@ const ModalDeleteAccount: FC<ModalDeleteAccountProps> = ({
       aria-describedby="modal-modal-description"
     >
       <ContentDelete>
-        <Typography>
-          Delete account will erase all of your data. This operation cannot be
-          undone. To continue, type "
+        <Typography style={{ whiteSpace: 'pre-wrap' }}>
+          {description || 'Delete account will erase all of your data.'}This
+          operation cannot be undone. To continue, type "
           <span style={{ fontWeight: 600 }}>DELETE</span>" in the box below:
         </Typography>
         <BoxConfirm>
-          <Input placeholder="DELETE" value={textDelete} onChange={(e) => setTextDelete(e.target.value)}/>
+          <Input
+            placeholder="DELETE"
+            value={textDelete}
+            onChange={(e) => setTextDelete(e.target.value)}
+          />
           <ButtonConfirm onClick={onConfirm}>{titleSubmit}</ButtonConfirm>
         </BoxConfirm>
         <Button onClick={onClose}>

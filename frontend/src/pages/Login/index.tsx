@@ -27,7 +27,7 @@ const Login = () => {
       saveToken(access_token)
       getUser()
     } catch (e) {
-      setErrors({ email: 'Email or password wrong', password: '' })
+      setErrors({ email: 'Email or password is wrong', password: '' })
     }
   }
 
@@ -100,11 +100,7 @@ const Login = () => {
             alignItems="center"
             justifyContent="flex-end"
           >
-            {/* <Description>
-              No Account
-              <LinkWrappper to="/signup">Create Account</LinkWrappper>
-            </Description> */}
-            <ButtonLogin type="submit">Sign in</ButtonLogin>
+            <ButtonLogin type="submit">SIGN IN</ButtonLogin>
           </Stack>
         </FormSignUp>
       </LoginContent>
@@ -122,7 +118,7 @@ const LoginWrapper = styled(Box)({
 
 const LoginContent = styled(Box)({
   padding: 30,
-  boxShadow: '0 0 1px 1px rgba(0,0,0,0.1)',
+  boxShadow: '2px 1px 3px 1px rgba(0,0,0,0.1)',
   borderRadius: 4,
 })
 
@@ -154,7 +150,7 @@ const Input = styled('input', {
     border: '1px solid',
     borderColor: error ? 'red' : '#d9d9d9',
     padding: '5px 10px',
-    marginBottom: 16,
+    marginBottom: 22,
     transition: 'all 0.3s',
     outline: 'none',
     ':focus, :hover': {
@@ -188,7 +184,7 @@ const TextError = styled(Typography)({
   fontSize: 12,
   color: 'red',
   position: 'absolute',
-  bottom: -2,
+  bottom: 4,
 })
 
 export default Login

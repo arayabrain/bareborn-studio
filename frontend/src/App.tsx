@@ -32,7 +32,6 @@ const App: React.FC = () => {
             <Route path="/account" element={<Account />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/database" element={<Database />} />
-            <Route path="/project" element={<Project />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/account-deleted" element={<AccountDelete />} />
