@@ -25,7 +25,7 @@ const Dashboard = () => {
             <BoxMenu>
               <Box>
                 <StorageIcon fontSize="large" />
-                <TitleMenu>Workspace</TitleMenu>
+                <TitleMenu>Project</TitleMenu>
               </Box>
             </BoxMenu>
           </LinkWrapper>
@@ -64,7 +64,7 @@ const LinkWrapper = styled(Link)(() => ({
 
 const DashboardWrapper = styled(Box)(() => ({
   width: '100%',
-  height: '100%',
+  height: 'calc(100% - 90px)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

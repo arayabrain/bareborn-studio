@@ -116,7 +116,7 @@ const MenuLeft: FC<{ onResize: any; width: number }> = ({
           <MenuItem isClose={isClose} active={pathname === '/projects'}>
             <SourceIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
-              Workspace
+              Project
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
