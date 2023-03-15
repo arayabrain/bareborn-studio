@@ -35,6 +35,8 @@ const Projects = () => {
 
   const onEdit = useCallback((id: any) => {
     console.log('edit: ', id)
+    navigate('/project/new-project')
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onWorkflow = useCallback((id: any) => {

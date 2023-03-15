@@ -141,7 +141,7 @@ const RenderColumn = (props: RenderColumnProps) => {
     <Tr
       onClick={() => rowClick?.(item)}
       draggable={draggable}
-      onDragStart={onDrag}
+      onDragStart={() => onDrag?.(item)}
       onDragEnd={onDragEnd}
       style={{
         borderStyle: 'dashed',

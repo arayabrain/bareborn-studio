@@ -5,9 +5,12 @@ import {
   Radio,
   RadioGroup,
   styled,
+  SxProps,
+  Theme,
 } from '@mui/material'
 import DatabaseTableComponent from 'components/DatabaseTable'
 import React, { useState, DragEvent, useRef } from 'react'
+import { getNanoId } from 'utils/nanoid/NanoIdUtils'
 import { defaultDatabase, PopupSearch } from '../Database'
 
 const columns = [
@@ -23,10 +26,37 @@ type BoxDrop = {
   data?: any
   level: string
   onDrop?: (event: DragEvent<HTMLDivElement | HTMLButtonElement>) => any
+  onDragLeave?: (event: any) => any
+  onDragOver?: (event: any) => any
   onClick?: () => any
+  renderItems?: () => any
+  style?: SxProps<Theme>
 }
 
-const RenderBetweenComponent = ({ data, level, onDrop, onClick }: BoxDrop) => {
+type ProjectAdd = {
+  project_name: string
+  project_type: number
+  image_count: number
+  protocol: string
+  id: string
+}
+
+type RowDrag = {
+  label: string
+  protocol: string
+  images: any[]
+}
+
+const RenderBetweenComponent = ({
+  data,
+  level,
+  onDrop,
+  onClick,
+  onDragLeave,
+  onDragOver,
+  style,
+  renderItems,
+}: BoxDrop) => {
   const [betweenData, setBetweenData] = useState(
     data || {
       name: 'Between Factor Name 1',
@@ -40,12 +70,29 @@ const RenderBetweenComponent = ({ data, level, onDrop, onClick }: BoxDrop) => {
     <BetweenComponent>
       <InputName value={betweenData.name} onChange={onChangeName} />
       <BetweenContent>
-        <RenderBoxDrop onClick={onClick} onDrop={onDrop} level={level} />
+        <RenderBoxDrop
+          renderItems={renderItems}
+          style={style}
+          onClick={onClick}
+          onDrop={onDrop}
+          level={level}
+          onDragLeave={onDragLeave}
+          onDragOver={onDragOver}
+        />
       </BetweenContent>
     </BetweenComponent>
   )
 }
-const RenderBoxDrop = ({ data, level, onDrop, onClick }: BoxDrop) => {
+const RenderBoxDrop = ({
+  data,
+  level,
+  onDrop,
+  onClick,
+  onDragLeave,
+  onDragOver,
+  style,
+  renderItems,
+}: BoxDrop) => {
   const [withinData, setWithinData] = useState(
     data || {
       name: 'Within Factor Name 1',
@@ -61,11 +108,19 @@ const RenderBoxDrop = ({ data, level, onDrop, onClick }: BoxDrop) => {
       {level === 'factor' ? null : (
         <InputName value={withinData.name} onChange={onChangeName} />
       )}
-      <DropBoxContent></DropBoxContent>
       {level === 'factor' ? null : (
-        <NewRowButton onClick={onClick} onDrop={onDrop}>
-          + Add Within Factor
-        </NewRowButton>
+        <>
+          <Box style={{ marginTop: 8 }}>{renderItems?.()}</Box>
+          <NewRowButton
+            onClick={onClick}
+            onDrop={onDrop}
+            onDragLeave={onDragLeave}
+            onDragOver={onDragOver}
+            sx={style}
+          >
+            + Add Within Factor
+          </NewRowButton>
+        </>
       )}
     </BetweenComponent>
   )
@@ -76,6 +131,8 @@ const ProjectFormComponent = () => {
   const [projectLevel, setProjectLevel] = useState('factor')
   const [showBorderDrag, setShowBorderDrag] = useState(false)
   const [openFilter, setOpenFilter] = useState(false)
+  const [projectAdds, setProjectAdds] = useState<ProjectAdd[]>([])
+  const [rowDrag, setRowDrag] = useState<RowDrag | undefined>()
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -88,15 +145,25 @@ const ProjectFormComponent = () => {
   }
 
   const onDragRow = (row: any) => {
-    console.log('row', row)
+    setRowDrag(row)
   }
 
   const onDragEnd = (row: any) => {
-    console.log('row end', row)
+    setRowDrag(undefined)
   }
 
-  const onDropData = () => {
-    console.log('onDropData')
+  const onDropData = (type: number) => {
+    if (!rowDrag) return
+    setProjectAdds([
+      ...projectAdds,
+      {
+        id: getNanoId(),
+        project_name: rowDrag.label,
+        image_count: rowDrag.images?.length || 0,
+        project_type: type,
+        protocol: rowDrag.protocol,
+      },
+    ])
   }
 
   const onDragOver = (event: DragEvent<HTMLButtonElement>) => {
@@ -116,6 +183,29 @@ const ProjectFormComponent = () => {
       setShowBorderDrag(false)
       timeoutRef.current = null
     }, 1000)
+  }
+
+  const onDelete = (row: ProjectAdd) => {
+    const newProjectAdds = projectAdds.filter((e) => e.id !== row.id)
+    setProjectAdds(newProjectAdds)
+  }
+
+  const renderData = (type: number) => {
+    const dataBetween = projectAdds.filter((e) => e.project_type === type)
+    return dataBetween.map((e, index) => (
+      <BoxItem key={index}>
+        <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
+        <TypographyBoxItem>
+          {e.project_type ? 'TYPE_RATE' : 'TYPE_1'}
+        </TypographyBoxItem>
+        <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
+        <Box
+          style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}
+        >
+          <Button onClick={() => onDelete(e)}>Delete</Button>
+        </Box>
+      </BoxItem>
+    ))
   }
 
   return (
@@ -143,14 +233,22 @@ const ProjectFormComponent = () => {
         <DragBox>
           <RenderBetweenComponent
             onClick={onClickDrag}
-            onDrop={onDropData}
+            onDrop={() => onDropData(1)}
+            onDragLeave={onDragLeave}
+            onDragOver={onDragOver}
+            style={{ borderColor: rowDrag ? 'red' : '' }}
             level={projectLevel}
+            renderItems={() => (
+              <Box style={{ paddingLeft: 36 }}>{renderData(1)}</Box>
+            )}
           />
+          <Box style={{ paddingLeft: 36 }}>{renderData(0)}</Box>
           <NewRowButton
             onClick={onClickDrag}
             onDragLeave={onDragLeave}
             onDragOver={onDragOver}
-            onDrop={onDropData}
+            onDrop={() => onDropData(0)}
+            style={{ borderColor: rowDrag ? 'red' : '' }}
           >
             + Add Between Factor
           </NewRowButton>
@@ -180,6 +278,19 @@ const ProjectFormComponent = () => {
     </ProjectsWrapper>
   )
 }
+
+const BoxItem = styled(Box)({
+  display: 'flex',
+  height: 40,
+  alignItems: 'center',
+  border: '1px solid rgba(0,0,0,0.8)',
+  padding: '0 16px',
+  marginBottom: 4,
+})
+
+const TypographyBoxItem = styled(Box)({
+  minWidth: 120,
+})
 
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -233,12 +344,6 @@ const BetweenComponent = styled(Box)(({ theme }) => ({
 const BetweenContent = styled(Box)(({ theme }) => ({
   width: '100%',
   paddingLeft: theme.spacing(2),
-}))
-
-const DropBoxContent = styled(Box)(({ theme }) => ({
-  width: '100%',
-  paddingLeft: theme.spacing(2),
-  minHeight: 40,
 }))
 
 const NewRowButton = styled(Button)(({ theme }) => ({
