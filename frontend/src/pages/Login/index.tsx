@@ -91,7 +91,7 @@ const Login = () => {
           </Box>
           <Description>
             Forgot your password?
-            <LinkWrappper to="/reset-password">Reset password</LinkWrappper>
+            <LinkWrappperText>Reset password</LinkWrappperText>
           </Description>
           <Stack
             flexDirection="row"
@@ -166,6 +166,11 @@ const Description = styled(Typography)(({ theme }) => ({
 }))
 
 const LinkWrappper = styled(Link)({
+  marginLeft: 6,
+  color: '#1892d1',
+})
+
+const LinkWrappperText = styled(Typography)({
   marginLeft: 6,
   color: '#1892d1',
 })

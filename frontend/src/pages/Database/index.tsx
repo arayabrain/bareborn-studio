@@ -77,6 +77,7 @@ export type DataDatabase = {
   lab_name: string
   user_name: string
   sample_name: string
+  subjects: string
   recording_time: string
   sessions: [
     {
@@ -102,6 +103,59 @@ export type DataDatabase = {
   ]
 }
 
+const dataImages = [
+  {
+    id: 3,
+    lab_name: 'lab 1',
+    user_name: 'hoge',
+    sample_name: 'hoge',
+    recording_time: '2023-03-10',
+    type: 'TYPE_RATE',
+    protocol: 'protocol 3',
+    size: '8MB',
+    voxel_size: '8MB',
+    images: [
+      {
+        id: 0,
+        parent_id: 0,
+        image_url: 'lib/functional.nii',
+        attributes: {},
+      },
+      {
+        id: 1,
+        parent_id: 0,
+        image_url: 'lib/test.nii',
+        attributes: {},
+      },
+    ],
+  },
+  {
+    id: 4,
+    lab_name: 'lab 2',
+    user_name: 'hoge 2',
+    sample_name: 'hoge 2',
+    recording_time: '2023-03-10',
+    type: 'TYPE_2',
+    protocol: 'protocol 3',
+    size: '8MB',
+    voxel_size: '8MB',
+    images: [
+      {
+        id: 0,
+        parent_id: 0,
+        image_url: 'lib/functional.nii',
+        attributes: {},
+      },
+      {
+        id: 1,
+        parent_id: 0,
+        image_url: 'lib/test.nii',
+        attributes: {},
+      },
+    ],
+  },
+]
+
 export const defaultDatabase = [
   {
     id: 3,
@@ -122,6 +176,7 @@ export const defaultDatabase = [
     lab_name: 'lab 5',
     user_name: 'hoge 5',
     sample_name: 'hoge 5',
+    subjects: 'subjects 1',
     recording_time: '2023-03-10',
   },
   {
@@ -134,12 +189,13 @@ export const defaultDatabase = [
       {
         id: 0,
         parent_id: 0,
-        label: 'session 1',
+        sessions: 'session 1',
+        subjects: 'subjects 3',
         datatypes: [
           {
             id: 0,
             parent_id: 0,
-            label: 'anat',
+            datatypes: 'anat',
             protocol: 'protocol',
             size: '8MB',
             voxel_size: 'voxel_size',
@@ -164,12 +220,13 @@ export const defaultDatabase = [
       {
         id: 0,
         parent_id: 0,
-        label: 'session 3',
+        sessions: 'session 3',
+        subjects: 'subjects 3',
         datatypes: [
           {
             id: 0,
             parent_id: 0,
-            label: 'anat3',
+            datatypes: 'anat3',
             protocol: 'protocol 3',
             size: '8MB',
             voxel_size: '8MB',
@@ -196,25 +253,27 @@ export const defaultDatabase = [
 ]
 
 export const columns = (rowClick: Function, setOpenDelete: Function) => [
-  { title: 'Lab', name: 'lab_name' },
-  { title: 'User', name: 'user_name' },
-  { title: 'Date', name: 'recording_time' },
-  { title: 'Session', name: 'sessions', child: 'label' },
-  { title: 'Dataset', name: 'datatypes', child: 'label' },
+  { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
+  { title: 'User', name: 'user_name', filter: true },
+  { title: 'Date', name: 'recording_time', filter: true },
+  { title: 'Subjects', name: 'subjects', filter: true },
   {
-    title: 'Type',
-    name: 'type',
+    title: 'Session',
+    name: 'sessions',
+    child: 'label',
     filter: true,
-    render: (_: any, value: string) => value,
+    width: 100,
   },
-  { title: 'Protocol', name: 'protocol' },
-  { title: 'Size', name: 'size' },
-  { title: 'Voxel size', name: 'voxel_size' },
+  { title: 'Dataset', name: 'datatypes', filter: true, width: 100 },
+  { title: 'Type', name: 'type', filter: true },
+  { title: 'Protocol', name: 'protocol', filter: true },
+  { title: 'Size', name: 'size', filter: true },
+  { title: 'Voxel size', name: 'voxel_size', filter: true },
   {
     title: '',
     name: 'action',
     render: (data: any) => {
-      if (!data?.images?.length) return null
+      if (Array.isArray(data?.images) && !data?.images?.length) return null
       return (
         <BoxButton>
           <ButtonControl
@@ -248,6 +307,9 @@ const Database = () => {
   const [viewer, setViewer] = useState({ open: false, urls: [] })
   const [data /*setData*/] = useState(defaultDatabase)
   const [openDelete, setOpenDelete] = useState(false)
+  const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
+  const [columnSort, setColumnSort] = useState<string>('')
+  const [type, setType] = useState<'tree' | 'image'>('tree')
 
   const onCloseImageView = () => {
     setViewer({ open: false, urls: [] })
@@ -269,6 +331,17 @@ const Database = () => {
     setOpenDelete(false)
   }
 
+  const onSort = (orderKey: string) => {
+    setColumnSort(orderKey)
+    if (!orderBy || orderKey !== columnSort) {
+      setOrdeBy('ASC')
+    } else if (orderBy === 'ASC') {
+      setOrdeBy('DESC')
+    } else {
+      setOrdeBy(undefined)
+    }
+  }
+
   return (
     <DatabaseWrapper>
       <ModalDeleteAccount
@@ -287,12 +360,40 @@ const Database = () => {
           Filter
         </ButtonFilter>
       </ProjectsTitle>
+      <BoxSelectTypeView>
+        <Box
+          onClick={() => setType('tree')}
+          style={{
+            marginRight: 4,
+            fontWeight: type === 'tree' ? 700 : 500,
+            cursor: 'pointer',
+            color: type === 'tree' ? '' : '#4687f4',
+          }}
+        >
+          Tree
+        </Box>
+        /
+        <Box
+          onClick={() => setType('image')}
+          style={{
+            marginLeft: 4,
+            fontWeight: type === 'image' ? 700 : 500,
+            cursor: 'pointer',
+            color: type === 'image' ? '' : '#4687f4',
+          }}
+        >
+          Image
+        </Box>
+      </BoxSelectTypeView>
       {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
       <DatabaseTableComponent
+        previewImage={type === 'image'}
+        onSort={onSort}
         rowClick={rowClick}
-        data={data}
+        orderKey={columnSort}
+        orderBy={orderBy}
+        data={type === 'tree' ? defaultDatabase : dataImages}
         columns={columns(rowClick, setOpenDelete)}
-        expands={['sessions', 'datatypes']}
       />
       <ImageView {...viewer} onClose={onCloseImageView} />
     </DatabaseWrapper>
@@ -349,13 +450,13 @@ const ButtonFilter = styled(Button)(({ theme }) => ({
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
   backgroundColor: '#283237 !important',
-  color: '#ffffff'
+  color: '#ffffff',
 }))
 
 const ButtonControl = styled(IconButton)(({ theme }) => ({
   padding: theme.spacing(0, 1),
-  width: 40,
-  height: 40,
+  width: 30,
+  height: 30,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -366,5 +467,11 @@ const ProjectsTitle = styled('h1')(() => ({
   display: 'flex',
   justifyContent: 'space-between',
 }))
+
+const BoxSelectTypeView = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: 16,
+})
 
 export default Database

@@ -272,7 +272,6 @@ const ProjectFormComponent = () => {
             draggable
             data={defaultDatabase}
             columns={columns}
-            expands={['sessions', 'datatypes']}
           />
         </DropBox>
       </DropAndDropBox>
