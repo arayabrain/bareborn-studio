@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import DatabaseTableComponent from 'components/DatabaseTable'
 import React, { useState, DragEvent, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
 import { defaultDatabase, PopupSearch } from '../Database'
 
@@ -133,6 +134,7 @@ const ProjectFormComponent = () => {
   const [openFilter, setOpenFilter] = useState(false)
   const [projectAdds, setProjectAdds] = useState<ProjectAdd[]>([])
   const [rowDrag, setRowDrag] = useState<RowDrag | undefined>()
+  const navigate = useNavigate()
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -256,7 +258,6 @@ const ProjectFormComponent = () => {
         <DropBox>
           <BoxFilter>
             <ButtonFilter
-              variant="contained"
               onClick={() => setOpenFilter(true)}
               style={{ margin: '0 26px 0 0' }}
             >
@@ -275,6 +276,18 @@ const ProjectFormComponent = () => {
           />
         </DropBox>
       </DropAndDropBox>
+      <Box
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <ButtonFilter onClick={() => navigate('/projects')}>Add</ButtonFilter>
+        <ButtonFilter onClick={() => navigate('/projects')}>
+          Cancel
+        </ButtonFilter>
+      </Box>
     </ProjectsWrapper>
   )
 }
@@ -355,10 +368,15 @@ const NewRowButton = styled(Button)(({ theme }) => ({
 }))
 
 const ButtonFilter = styled(Button)(({ theme }) => ({
-  margin: theme.spacing(2, 0),
+  margin: theme.spacing(2, 1),
   minWidth: 80,
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
+  backgroundColor: '#283237',
+  color: '#ffffff',
+  '&:hover': {
+    backgroundColor: '#283237',
+  },
 }))
 
 const BoxFilter = styled(Box)({

@@ -18,16 +18,16 @@ const Projects = () => {
     {
       id: '1',
       project_name: 'prj name 1',
-      created_time: '2023-03-10T09:19:38.080Z',
-      updated_time: '2023-03-10T09:19:38.080Z',
+      created_time: '2023-03-10 09:19:38',
+      updated_time: '2023-03-10 09:19:38',
       image_count: 3,
       project_type: 0,
     },
     {
       id: '2',
       project_name: 'prj name 2',
-      created_time: '2023-03-10T09:19:38.080Z',
-      updated_time: '2023-03-10T09:19:38.080Z',
+      created_time: '2023-03-10 09:19:38',
+      updated_time: '2023-03-10 09:19:38',
       image_count: 3,
       project_type: 1,
     },
@@ -87,7 +87,11 @@ const Projects = () => {
     <ProjectsWrapper>
       <ProjectsTitle>Projects</ProjectsTitle>
       <BoxButton>
-        <ButtonAdd variant="contained" onClick={addNewProject}>
+        <ButtonAdd
+          variant="contained"
+          onClick={addNewProject}
+          sx={{ marginBottom: 2 }}
+        >
           Add Project
         </ButtonAdd>
       </BoxButton>
@@ -114,10 +118,10 @@ const BoxButton = styled(Box)(({ theme }) => ({
 }))
 
 const ButtonAdd = styled(Button)(({ theme }) => ({
-  margin: theme.spacing(2, 0),
   minWidth: 80,
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
+  backgroundColor: '#283237',
 }))
 
 export default Projects

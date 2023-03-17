@@ -281,7 +281,6 @@ const Database = () => {
       <ProjectsTitle>
         <span>Database</span>
         <ButtonFilter
-          variant="contained"
           onClick={() => setOpenPopup(true)}
           style={{ margin: '0 26px 0 0' }}
         >
@@ -349,6 +348,10 @@ const ButtonFilter = styled(Button)(({ theme }) => ({
   minWidth: 80,
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
+  backgroundColor: '#283237',
+  "&:hover": {
+    backgroundColor: '#283237',
+  }
 }))
 
 const ButtonControl = styled(IconButton)(({ theme }) => ({

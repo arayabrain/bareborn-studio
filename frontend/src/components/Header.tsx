@@ -54,7 +54,7 @@ const Header: FC = () => {
               </Box>
             </BoxInfo>
             <BoxMenuItem onClick={onNavigateAccount}>
-              <PortraitIcon /> Profile
+              <PortraitIcon /> Account Profile
             </BoxMenuItem>
             <BoxMenuItemLogout onClick={onLogout}>
               SIGN OUT

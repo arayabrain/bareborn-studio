@@ -69,7 +69,7 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
         <BoxConfirm>
           <FormInline>
             <Label>
-              Old password <span style={{ color: 'red' }}>*</span>
+              Old Password <span style={{ color: 'red' }}>*</span>
             </Label>
             <InputPassword
               onChange={(e: any) => onChangeValue(e, validatePassword)}

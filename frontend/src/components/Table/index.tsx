@@ -136,8 +136,9 @@ const MyPaginate = styled(ReactPaginate)<any>`
 
 const Table = styled('table')({
   boxSizing: 'border-box',
-  width: '100%',
+  minWidth: '100%',
   borderCollapse: 'collapse',
+  border: '1px solid rgba(224, 224, 224, 1)',
 })
 
 const Thead = styled('thead')({})
@@ -147,10 +148,10 @@ const Tr = styled('tr')({})
 const Th = styled('th')(({ theme }) => ({
   padding: theme.spacing(2),
   textAlign: 'left',
-  backgroundColor: '#E1DEDB',
+  backgroundColor: 'none',
   color: 'rgba(0,0,0,.88)',
   fontWeight: 600,
-  borderBottom: '1px solid #f0f0f0',
+  border: '1px solid rgba(224, 224, 224, 1)',
   ':first-of-type': {
     borderTopLeftRadius: 4,
   },
@@ -163,7 +164,8 @@ const TBody = styled('tbody')(() => ({}))
 
 const Td = styled('td')(({ theme }) => ({
   padding: theme.spacing(2),
-  borderBottom: '1px solid #f0f0f0',
+  borderBottom: '1px solid rgba(224, 224, 224, 1)',
+  width: 118,
 }))
 
 const NoData = styled(Typography)({
