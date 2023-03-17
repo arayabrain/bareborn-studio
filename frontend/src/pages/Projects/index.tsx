@@ -121,7 +121,8 @@ const ButtonAdd = styled(Button)(({ theme }) => ({
   minWidth: 80,
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
-  backgroundColor: '#283237',
+  backgroundColor: '#283237 !important',
+  color: '#ffffff'
 }))
 
 export default Projects

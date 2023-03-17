@@ -157,11 +157,14 @@ const Label = styled(Typography)({
 })
 
 const ButtonConfirm = styled(Button)({
-  backgroundColor: '#283237 !important',
   height: 36,
   color: '#ffffff',
   marginTop: -1,
   width: 90,
+  backgroundColor: '#283237 !important',
+  "&:hover": {
+    backgroundColor: '#283237',
+  }
 })
 
 export default ModalChangePassword

@@ -300,6 +300,8 @@ const BoxButton = styled(Box)({
 const ButtonAdd = styled(Button)(({ theme }) => ({
   margin: theme.spacing(2, 0),
   width: 100,
+  backgroundColor: '#283237 !important',
+  color: '#ffffff'
 }))
 
 const ALink = styled('a')({

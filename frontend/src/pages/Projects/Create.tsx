@@ -372,11 +372,8 @@ const ButtonFilter = styled(Button)(({ theme }) => ({
   minWidth: 80,
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
-  backgroundColor: '#283237',
   color: '#ffffff',
-  '&:hover': {
-    backgroundColor: '#283237',
-  },
+  backgroundColor: '#283237 !important',
 }))
 
 const BoxFilter = styled(Box)({
