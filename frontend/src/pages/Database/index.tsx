@@ -273,7 +273,7 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
     title: '',
     name: 'action',
     render: (data: any) => {
-      if (Array.isArray(data?.images) && !data?.images?.length) return null
+      if (!Array.isArray(data?.images) || !data?.images?.length) return null
       return (
         <BoxButton>
           <ButtonControl
@@ -305,7 +305,7 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState({ open: false, urls: [] })
-  const [data /*setData*/] = useState(defaultDatabase)
+  // const [data /*setData*/] = useState(defaultDatabase)
   const [openDelete, setOpenDelete] = useState(false)
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
   const [columnSort, setColumnSort] = useState<string>('')

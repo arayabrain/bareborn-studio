@@ -2,6 +2,7 @@ import { Box, Button, styled } from '@mui/material'
 import { useCallback, useMemo, useState } from 'react'
 import TableComponent from '../../components/Table'
 import { useNavigate } from 'react-router-dom'
+import ModalDeleteAccount from 'components/ModalDeleteAccount'
 
 type DataProject = {
   id: number | string
@@ -14,7 +15,8 @@ type DataProject = {
 
 const Projects = () => {
   const navigate = useNavigate()
-  const [data /*setData*/] = useState<DataProject[]>([
+  const [idDelete, setIdDelete] = useState<string | undefined>()
+  const [data, setData] = useState<DataProject[]>([
     {
       id: '1',
       project_name: 'prj name 1',
@@ -56,6 +58,20 @@ const Projects = () => {
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const onDelete = (id: string) => {
+    setIdDelete(id)
+  }
+
+  const onDeleteSubmit = () => {
+    const id = idDelete
+    setIdDelete(undefined)
+    setData(data.filter((e) => e.id !== id))
+  }
+
+  const handleCloseDelete = () => {
+    setIdDelete(undefined)
+  }
+
   const columns = useMemo(
     () => [
       { title: 'Project Name', name: 'name' },
@@ -77,6 +93,13 @@ const Projects = () => {
             <ButtonAdd variant="contained" onClick={() => onResults(data.id)}>
               Results
             </ButtonAdd>
+            <ButtonAdd
+              variant="contained"
+              onClick={() => onDelete(data.id)}
+              sx={{ backgroundColor: 'red !important' }}
+            >
+              Del
+            </ButtonAdd>
           </BoxButton>
         ),
       },
@@ -85,6 +108,13 @@ const Projects = () => {
   )
   return (
     <ProjectsWrapper>
+      <ModalDeleteAccount
+        titleSubmit="Delete Project"
+        description="Delete My Project"
+        onClose={handleCloseDelete}
+        open={!!idDelete}
+        onSubmit={onDeleteSubmit}
+      />
       <ProjectsTitle>Projects</ProjectsTitle>
       <BoxButton>
         <ButtonAdd
@@ -122,7 +152,7 @@ const ButtonAdd = styled(Button)(({ theme }) => ({
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
   backgroundColor: '#283237 !important',
-  color: '#ffffff'
+  color: '#ffffff',
 }))
 
 export default Projects

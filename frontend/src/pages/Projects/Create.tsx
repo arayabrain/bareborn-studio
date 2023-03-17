@@ -2,14 +2,14 @@ import {
   Box,
   Button,
   FormControlLabel,
+  Input,
   Radio,
   RadioGroup,
   styled,
-  SxProps,
-  Theme,
 } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 import DatabaseTableComponent from 'components/DatabaseTable'
-import React, { useState, DragEvent, useRef } from 'react'
+import React, { useState, DragEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
 import { defaultDatabase, PopupSearch } from '../Database'
@@ -23,17 +23,6 @@ const columns = [
   { title: 'Protocol', name: 'protocol' },
 ]
 
-type BoxDrop = {
-  data?: any
-  level: string
-  onDrop?: (event: DragEvent<HTMLDivElement | HTMLButtonElement>) => any
-  onDragLeave?: (event: any) => any
-  onDragOver?: (event: any) => any
-  onClick?: () => any
-  renderItems?: () => any
-  style?: SxProps<Theme>
-}
-
 type ProjectAdd = {
   project_name: string
   project_type: number
@@ -42,108 +31,121 @@ type ProjectAdd = {
   id: string
 }
 
+type DataWithin = {
+  id: string
+  data: ProjectAdd[]
+  name: string
+}
+
+type DataFactor = {
+  within: DataWithin[]
+} & DataWithin
+
 type RowDrag = {
   label: string
   protocol: string
   images: any[]
 }
 
-const RenderBetweenComponent = ({
-  data,
-  level,
-  onDrop,
-  onClick,
-  onDragLeave,
-  onDragOver,
-  style,
-  renderItems,
-}: BoxDrop) => {
-  const [betweenData, setBetweenData] = useState(
-    data || {
-      name: 'Between Factor Name 1',
-    },
-  )
-
-  const onChangeName = (e: any) => {
-    setBetweenData({ ...betweenData, name: e.target.value })
-  }
-  return (
-    <BetweenComponent>
-      <InputName value={betweenData.name} onChange={onChangeName} />
-      <BetweenContent>
-        <RenderBoxDrop
-          renderItems={renderItems}
-          style={style}
-          onClick={onClick}
-          onDrop={onDrop}
-          level={level}
-          onDragLeave={onDragLeave}
-          onDragOver={onDragOver}
-        />
-      </BetweenContent>
-    </BetweenComponent>
-  )
-}
-const RenderBoxDrop = ({
-  data,
-  level,
-  onDrop,
-  onClick,
-  onDragLeave,
-  onDragOver,
-  style,
-  renderItems,
-}: BoxDrop) => {
-  const [withinData, setWithinData] = useState(
-    data || {
-      name: 'Within Factor Name 1',
-    },
-  )
-
-  const onChangeName = (e: any) => {
-    setWithinData({ ...withinData, name: e.target.value })
-  }
-
-  return (
-    <BetweenComponent>
-      {level === 'factor' ? null : (
-        <InputName value={withinData.name} onChange={onChangeName} />
-      )}
-      {level === 'factor' ? null : (
-        <>
-          <Box style={{ marginTop: 8 }}>{renderItems?.()}</Box>
-          <NewRowButton
-            onClick={onClick}
-            onDrop={onDrop}
-            onDragLeave={onDragLeave}
-            onDragOver={onDragOver}
-            sx={style}
-          >
-            + Add Within Factor
-          </NewRowButton>
-        </>
-      )}
-    </BetweenComponent>
-  )
-}
+const nameDefault = 'DEFAULT'
 
 const ProjectFormComponent = () => {
   const [projectName, setProjectName] = useState('Prj Name 1')
-  const [projectLevel, setProjectLevel] = useState('factor')
-  const [showBorderDrag, setShowBorderDrag] = useState(false)
+  const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
+    'factor',
+  )
   const [openFilter, setOpenFilter] = useState(false)
-  const [projectAdds, setProjectAdds] = useState<ProjectAdd[]>([])
   const [rowDrag, setRowDrag] = useState<RowDrag | undefined>()
+  const [dataFactors, setDataFactors] = useState<DataFactor[]>([
+    { name: nameDefault, within: [], id: getNanoId(), data: [] },
+  ])
   const navigate = useNavigate()
-
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const onChangeName = (e: any) => {
     setProjectName(e.target.value)
   }
 
   const handleChangeLevel = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setProjectLevel((event.target as HTMLInputElement).value)
+    const type = event.target.value as 'within-factor' | 'factor'
+    setProjectLevel(type)
+    let within: DataWithin[] = []
+    if (type === 'within-factor') {
+      within = [{ name: nameDefault, id: getNanoId(), data: [] }]
+    }
+    setDataFactors([{ name: nameDefault, within, id: getNanoId(), data: [] }])
+  }
+
+  const onAddBetween = () => {
+    setDataFactors((pre) => [
+      ...pre,
+      { name: nameDefault, within: [], id: getNanoId(), data: [] },
+    ])
+  }
+
+  const onAddWithin = () => {
+    setDataFactors((pre) =>
+      pre.map((p, index) => {
+        if (index === pre.length - 1) {
+          return {
+            ...p,
+            within: [
+              ...p.within,
+              { name: nameDefault, within: [], id: getNanoId(), data: [] },
+            ],
+          }
+        }
+        return p
+      }),
+    )
+  }
+
+  const onDeleteFactor = (row: DataFactor) => {
+    setDataFactors((pre) => pre.filter((e) => e.id !== row.id))
+  }
+
+  const onDeleteWithin = (factor: DataFactor, row: DataWithin) => {
+    setDataFactors((pre) =>
+      pre.map((p) => {
+        if (p.id === factor.id) {
+          return { ...p, within: p.within.filter((w) => w.id !== row.id) }
+        }
+        return p
+      }),
+    )
+  }
+
+  const onDeleteDataWithin = (
+    factor: DataFactor,
+    within: DataWithin,
+    row: ProjectAdd,
+  ) => {
+    setDataFactors((pre) =>
+      pre.map((p) => {
+        if (p.id === factor.id) {
+          return {
+            ...p,
+            within: p.within.map((w) => {
+              if (w.id === within.id) {
+                return { ...w, data: w.data.filter((d) => d.id !== row.id) }
+              }
+              return w
+            }),
+          }
+        }
+        return p
+      }),
+    )
+  }
+
+  const onDeleteDataFactor = (factor: DataFactor, row: ProjectAdd) => {
+    setDataFactors((pre) =>
+      pre.map((p) => {
+        if (p.id === factor.id) {
+          return { ...p, data: p.data.filter((d) => d.id !== row.id) }
+        }
+        return p
+      }),
+    )
   }
 
   const onDragRow = (row: any) => {
@@ -154,48 +156,95 @@ const ProjectFormComponent = () => {
     setRowDrag(undefined)
   }
 
-  const onDropData = (type: number) => {
+  const onDropData = (factor: DataFactor, within?: DataWithin) => {
     if (!rowDrag) return
-    setProjectAdds([
-      ...projectAdds,
-      {
-        id: getNanoId(),
-        project_name: rowDrag.label,
-        image_count: rowDrag.images?.length || 0,
-        project_type: type,
-        protocol: rowDrag.protocol,
-      },
-    ])
-  }
-
-  const onDragOver = (event: DragEvent<HTMLButtonElement>) => {
-    event.preventDefault()
-  }
-
-  const onDragLeave = (event: DragEvent<HTMLButtonElement>) => {
-    event.preventDefault()
-  }
-
-  const onClickDrag = () => {
-    setShowBorderDrag(true)
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
+    const newData = {
+      id: getNanoId(),
+      project_name: rowDrag.label,
+      image_count: rowDrag.images?.length || 0,
+      project_type: 0,
+      protocol: rowDrag.protocol,
     }
-    timeoutRef.current = setTimeout(() => {
-      setShowBorderDrag(false)
-      timeoutRef.current = null
-    }, 1000)
+    if (projectLevel !== 'within-factor') {
+      setDataFactors((pre) =>
+        pre.map((p) => {
+          if (p.id === factor.id) {
+            return { ...p, data: [...p.data, newData] }
+          }
+          return p
+        }),
+      )
+      return
+    }
+    if (within) {
+      setDataFactors((pre) =>
+        pre.map((p) => {
+          if (p.id === factor.id) {
+            return {
+              ...p,
+              within: p.within.map((w) => {
+                if (w.id === within.id) {
+                  return { ...w, data: [...w.data, newData] }
+                }
+                return w
+              }),
+            }
+          }
+          return p
+        }),
+      )
+    }
   }
 
-  const onDelete = (row: ProjectAdd) => {
-    const newProjectAdds = projectAdds.filter((e) => e.id !== row.id)
-    setProjectAdds(newProjectAdds)
+  const onDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
   }
 
-  const renderData = (type: number) => {
-    const dataBetween = projectAdds.filter((e) => e.project_type === type)
-    return dataBetween.map((e, index) => (
-      <BoxItem key={index}>
+  const onDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+  }
+
+  const onChangeNameFactor = (factor: DataFactor, value: string) => {
+    setDataFactors((pre) =>
+      pre.map((p) => {
+        if (p.id === factor.id) {
+          return { ...p, name: value }
+        }
+        return p
+      }),
+    )
+  }
+
+  const onChangeNameWithinFactor = (
+    factor: DataFactor,
+    within: DataWithin,
+    value: string,
+  ) => {
+    setDataFactors((pre) =>
+      pre.map((p) => {
+        if (p.id === factor.id) {
+          return {
+            ...p,
+            within: p.within.map((w) => {
+              if (w.id === within.id) {
+                return { ...w, name: value }
+              }
+              return w
+            }),
+          }
+        }
+        return p
+      }),
+    )
+  }
+
+  const renderData = (
+    data: ProjectAdd[],
+    style: any,
+    onDelete?: (row: ProjectAdd) => any,
+  ) => {
+    return data.map((e) => (
+      <BoxItem key={e.id} style={style}>
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
         <TypographyBoxItem>
           {e.project_type ? 'TYPE_RATE' : 'TYPE_1'}
@@ -204,7 +253,9 @@ const ProjectFormComponent = () => {
         <Box
           style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}
         >
-          <Button onClick={() => onDelete(e)}>Delete</Button>
+          <Button onClick={() => onDelete?.(e)}>
+            <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+          </Button>
         </Box>
       </BoxItem>
     ))
@@ -233,25 +284,73 @@ const ProjectFormComponent = () => {
       </BoxOptions>
       <DropAndDropBox>
         <DragBox>
-          <RenderBetweenComponent
-            onClick={onClickDrag}
-            onDrop={() => onDropData(1)}
-            onDragLeave={onDragLeave}
-            onDragOver={onDragOver}
-            style={{ borderColor: rowDrag ? 'red' : '' }}
-            level={projectLevel}
-            renderItems={() => (
-              <Box style={{ paddingLeft: 36 }}>{renderData(1)}</Box>
-            )}
-          />
-          <Box style={{ paddingLeft: 36 }}>{renderData(0)}</Box>
-          <NewRowButton
-            onClick={onClickDrag}
-            onDragLeave={onDragLeave}
-            onDragOver={onDragOver}
-            onDrop={() => onDropData(0)}
-            style={{ borderColor: rowDrag ? 'red' : '' }}
-          >
+          {dataFactors.map((factor, index) => {
+            return (
+              <BoxFactor key={factor.id}>
+                <Input
+                  onChange={(e) => onChangeNameFactor(factor, e.target.value)}
+                  style={{ width: 'calc(100% - 64px)' }}
+                  value={
+                    factor.name === nameDefault
+                      ? `Between factor name ${index}`
+                      : factor.name
+                  }
+                />
+                <Button onClick={() => onDeleteFactor(factor)}>
+                  <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+                </Button>
+                {projectLevel === 'within-factor' ? (
+                  factor.within.map((within, indexWithin) => (
+                    <BoxFactor style={{ marginLeft: 24 }}>
+                      <Input
+                        onChange={(e) =>
+                          onChangeNameWithinFactor(
+                            factor,
+                            within,
+                            e.target.value,
+                          )
+                        }
+                        style={{ width: 'calc(100% - 64px)' }}
+                        value={
+                          within.name === nameDefault
+                            ? `Within factor name ${indexWithin}`
+                            : within.name
+                        }
+                      />
+                      <Button onClick={() => onDeleteWithin(factor, within)}>
+                        <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+                      </Button>
+                      {renderData(within.data, { marginLeft: 48 }, (row) => {
+                        onDeleteDataWithin(factor, within, row)
+                      })}
+                      <BoxDrag
+                        onDrop={() => onDropData(factor, within)}
+                        onDragOver={onDragOver}
+                        onDragLeave={onDragLeave}
+                      />
+                    </BoxFactor>
+                  ))
+                ) : (
+                  <>
+                    {renderData(factor.data, { marginLeft: 24 }, (row) => {
+                      onDeleteDataFactor(factor, row)
+                    })}
+                    <BoxDrag
+                      onDrop={() => onDropData(factor)}
+                      onDragOver={onDragOver}
+                      onDragLeave={onDragLeave}
+                    />
+                  </>
+                )}
+              </BoxFactor>
+            )
+          })}
+          {projectLevel === 'within-factor' && dataFactors.length ? (
+            <NewRowButton onClick={onAddWithin} style={{ marginLeft: 24 }}>
+              + Add Within Factor
+            </NewRowButton>
+          ) : null}
+          <NewRowButton onClick={onAddBetween}>
             + Add Between Factor
           </NewRowButton>
         </DragBox>
@@ -265,7 +364,6 @@ const ProjectFormComponent = () => {
             </ButtonFilter>
           </BoxFilter>
           <DatabaseTableComponent
-            showBorderDrag={showBorderDrag}
             defaultExpand
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
@@ -295,14 +393,21 @@ const BoxItem = styled(Box)({
   display: 'flex',
   height: 40,
   alignItems: 'center',
-  border: '1px solid rgba(0,0,0,0.8)',
-  padding: '0 16px',
+  borderBottom: '1px solid rgba(0,0,0,0.8)',
+  paddingLeft: 16,
   marginBottom: 4,
 })
 
 const TypographyBoxItem = styled(Box)({
   minWidth: 120,
 })
+
+const BoxDrag = styled(Box)({
+  paddingBottom: 24,
+  width: '100%',
+})
+
+const BoxFactor = styled(Box)({})
 
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -344,18 +449,6 @@ const DropBox = styled(Box)(({ theme }) => ({
   width: '60%',
   padding: theme.spacing(1, 2),
   border: '1px solid #dedede',
-}))
-
-const BetweenComponent = styled(Box)(({ theme }) => ({
-  width: '100%',
-  input: {
-    borderBottom: '1px solid #dedede',
-  },
-}))
-
-const BetweenContent = styled(Box)(({ theme }) => ({
-  width: '100%',
-  paddingLeft: theme.spacing(2),
 }))
 
 const NewRowButton = styled(Button)(({ theme }) => ({

@@ -2,7 +2,7 @@ import { Box, Stack, styled, Typography } from '@mui/material'
 import { getMe, login } from 'api/auth'
 import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { saveToken } from 'utils/auth'
 
 const Login = () => {
@@ -165,10 +165,10 @@ const Description = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(1),
 }))
 
-const LinkWrappper = styled(Link)({
-  marginLeft: 6,
-  color: '#1892d1',
-})
+// const LinkWrappper = styled(Link)({
+//   marginLeft: 6,
+//   color: '#1892d1',
+// })
 
 const LinkWrappperText = styled(Typography)({
   marginLeft: 6,

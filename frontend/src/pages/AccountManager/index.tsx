@@ -6,7 +6,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InputError from '../../components/common/InputError'
 import SelectError from '../../components/common/SelectError'
-import { listUser } from 'api/auth'
+// import { listUser } from 'api/auth'
 
 const ModalComponent = ({
   data,
@@ -199,8 +199,7 @@ const AccountManager = () => {
   }, [])
 
   const getList = async () => {
-    const data = await listUser()
-    console.log('data', data)
+    // const data = await listUser()
   }
 
   const onOpenModal = (type: string) => {
