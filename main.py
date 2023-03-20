@@ -68,6 +68,10 @@ async def root(request: Request):
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/account")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 def main():
     parser = argparse.ArgumentParser()

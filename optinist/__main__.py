@@ -70,6 +70,10 @@ async def root(request: Request):
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/account")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 def main():
     uvicorn.run('optinist.__main__:app', port=8000, reload=True)
 
