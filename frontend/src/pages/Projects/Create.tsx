@@ -10,9 +10,10 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete'
 import DatabaseTableComponent from 'components/DatabaseTable'
 import React, { useState, DragEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
 import { defaultDatabase, PopupSearch } from '../Database'
+import ImageView from 'components/ImageView'
 
 const columns = [
   { title: 'User', name: 'user_name' },
@@ -50,6 +51,11 @@ type RowDrag = {
 const nameDefault = 'DEFAULT'
 
 const ProjectFormComponent = () => {
+  const [searchParams] = useSearchParams()
+
+  const idEdit = searchParams.get('id')
+  const [viewer, setViewer] = useState({ open: false, urls: [] })
+
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
     'factor',
@@ -261,9 +267,23 @@ const ProjectFormComponent = () => {
     ))
   }
 
+  const onCloseImageView = () => {
+    setViewer({ open: false, urls: [] })
+  }
+
+  const rowClick = (row: any) => {
+    if (!row?.images?.length) return
+    
+    setViewer({
+      open: true,
+      urls: row.images.map((e: { image_url: string }) => e.image_url),
+    })
+  }
+
   return (
     <ProjectsWrapper>
       {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
+      <ImageView {...viewer} onClose={onCloseImageView} />
       <InputName value={projectName} onChange={onChangeName} />
       <BoxOptions
         aria-labelledby="demo-radio-buttons-group-label"
@@ -324,6 +344,9 @@ const ProjectFormComponent = () => {
                         onDeleteDataWithin(factor, within, row)
                       })}
                       <BoxDrag
+                        style={{
+                          borderBottom: rowDrag ? '1px dashed red' : '',
+                        }}
                         onDrop={() => onDropData(factor, within)}
                         onDragOver={onDragOver}
                         onDragLeave={onDragLeave}
@@ -336,6 +359,9 @@ const ProjectFormComponent = () => {
                       onDeleteDataFactor(factor, row)
                     })}
                     <BoxDrag
+                      style={{
+                        borderBottom: rowDrag ? '1px dashed red' : '',
+                      }}
                       onDrop={() => onDropData(factor)}
                       onDragOver={onDragOver}
                       onDragLeave={onDragLeave}
@@ -364,6 +390,7 @@ const ProjectFormComponent = () => {
             </ButtonFilter>
           </BoxFilter>
           <DatabaseTableComponent
+            rowClick={rowClick}
             defaultExpand
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
@@ -380,7 +407,9 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={() => navigate('/projects')}>Add</ButtonFilter>
+        <ButtonFilter onClick={() => navigate('/projects')}>
+          {idEdit ? 'Ok' : 'Add'}
+        </ButtonFilter>
         <ButtonFilter onClick={() => navigate('/projects')}>
           Cancel
         </ButtonFilter>
@@ -405,6 +434,7 @@ const TypographyBoxItem = styled(Box)({
 const BoxDrag = styled(Box)({
   paddingBottom: 24,
   width: '100%',
+  borderWidth: 1,
 })
 
 const BoxFactor = styled(Box)({})
@@ -412,6 +442,9 @@ const BoxFactor = styled(Box)({})
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
+  overflow: 'auto',
+  height: 'calc(100% - 32px)',
+  marginBottom: theme.spacing(3),
 }))
 
 const BoxOptions = styled(RadioGroup)(({ theme }) => ({

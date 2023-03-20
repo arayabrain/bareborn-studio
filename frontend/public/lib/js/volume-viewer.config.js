@@ -29,27 +29,27 @@
   BrainBrowser.config.set('color_maps', [
     {
       name: 'Spectral',
-      url: 'lib/color-maps/spectral-brainview.txt',
+      url: '/lib/color-maps/spectral-brainview.txt',
       cursor_color: '#FFFFFF',
     },
     {
       name: 'Thermal',
-      url: 'lib/color-maps/thermal.txt',
+      url: '/lib/color-maps/thermal.txt',
       cursor_color: '#FFFFFF',
     },
     {
       name: 'Gray',
-      url: 'lib/color-maps/gray-scale.txt',
+      url: '/lib/color-maps/gray-scale.txt',
       cursor_color: '#FF0000',
     },
     {
       name: 'Blue',
-      url: 'lib/color-maps/blue.txt',
+      url: '/lib/color-maps/blue.txt',
       cursor_color: '#FFFFFF',
     },
     {
       name: 'Green',
-      url: 'lib/color-maps/green.txt',
+      url: '/lib/color-maps/green.txt',
       cursor_color: '#FF0000',
     },
   ])

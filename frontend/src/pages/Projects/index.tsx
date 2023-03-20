@@ -6,7 +6,7 @@ import ModalDeleteAccount from 'components/ModalDeleteAccount'
 
 type DataProject = {
   id: number | string
-  project_name: string
+  name: string
   project_type: number
   image_count: number
   created_time: string
@@ -19,7 +19,7 @@ const Projects = () => {
   const [data, setData] = useState<DataProject[]>([
     {
       id: '1',
-      project_name: 'prj name 1',
+      name: 'prj name 1',
       created_time: '2023-03-10 09:19:38',
       updated_time: '2023-03-10 09:19:38',
       image_count: 3,
@@ -27,7 +27,7 @@ const Projects = () => {
     },
     {
       id: '2',
-      project_name: 'prj name 2',
+      name: 'prj name 2',
       created_time: '2023-03-10 09:19:38',
       updated_time: '2023-03-10 09:19:38',
       image_count: 3,
@@ -36,8 +36,7 @@ const Projects = () => {
   ])
 
   const onEdit = useCallback((id: any) => {
-    console.log('edit: ', id)
-    navigate('/project/new-project')
+    navigate(`/project/new-project?id=${id}`)
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
