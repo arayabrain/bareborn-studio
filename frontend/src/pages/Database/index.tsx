@@ -309,7 +309,7 @@ const Database = () => {
   const [openDelete, setOpenDelete] = useState(false)
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
   const [columnSort, setColumnSort] = useState<string>('')
-  const [type, setType] = useState<'tree' | 'image'>('tree')
+  const [type, setType] = useState<'tree' | 'list'>('tree')
 
   const onCloseImageView = () => {
     setViewer({ open: false, urls: [] })
@@ -374,20 +374,20 @@ const Database = () => {
         </Box>
         /
         <Box
-          onClick={() => setType('image')}
+          onClick={() => setType('list')}
           style={{
             marginLeft: 4,
-            fontWeight: type === 'image' ? 700 : 500,
+            fontWeight: type === 'list' ? 700 : 500,
             cursor: 'pointer',
-            color: type === 'image' ? '' : '#4687f4',
+            color: type === 'list' ? '' : '#4687f4',
           }}
         >
-          Image
+          List
         </Box>
       </BoxSelectTypeView>
       {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
       <DatabaseTableComponent
-        previewImage={type === 'image'}
+        previewImage={type === 'list'}
         onSort={onSort}
         rowClick={rowClick}
         orderKey={columnSort}

@@ -42,12 +42,33 @@ app.mount(
     name="static"
 )
 
+app.mount(
+    "/lib",
+    StaticFiles(directory=f"{DIRPATH}/frontend/build/lib"),
+    name="lib",
+)
+
 templates = Jinja2Templates(directory=f"{DIRPATH}/frontend/build")
 
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/database")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/projects")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/account-manager")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/login")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 def main():
     uvicorn.run('optinist.__main__:app', port=8000, reload=True)
