@@ -25,7 +25,7 @@ const Dashboard = () => {
             <BoxMenu>
               <Box>
                 <StorageIcon fontSize="large" />
-                <TitleMenu>Project</TitleMenu>
+                <TitleMenu>Projects</TitleMenu>
               </Box>
             </BoxMenu>
           </LinkWrapper>
