@@ -44,6 +44,7 @@ type RenderColumnProps = {
   onDrag?: (row?: any) => any
   onDragEnd?: (row?: any) => any
   index: number
+  isData?: boolean
   defaultExpand?: boolean
   dataShow?: boolean
   draggableProps?: boolean
@@ -59,7 +60,7 @@ const renderCol = (col: Column, item: any, index: number, child?: boolean) => {
 }
 
 const ChildCol = (props: RenderColumnProps) => {
-  const { columns, item, index, rowClick, defaultExpand } = props
+  const { columns, item, index, rowClick, defaultExpand, isData } = props
   const [show, setShow] = useState<boolean>(!!defaultExpand)
 
   const onClickCol = (event: MouseEvent<HTMLTableDataCellElement>) => {
@@ -76,7 +77,10 @@ const ChildCol = (props: RenderColumnProps) => {
       >
         {columns.map((column) => {
           const key = column.name || column.dataIndex || ''
-          const value = renderCol(column, item, index)
+          const value =
+            isData && key === 'datatypes'
+              ? item.title
+              : renderCol(column, item, index)
           return (
             <Td
               key={`row_child_${column.name || column.dataIndex}`}
@@ -97,14 +101,15 @@ const ChildCol = (props: RenderColumnProps) => {
           )
         })}
       </Tr>
-      {show ? (
+      {show && (
         <RenderColumn
           {...props}
           draggable={props.draggableProps}
           item={item}
           dataShow
+          isData={isData}
         />
-      ) : null}
+      )}
     </Fragment>
   )
 }
@@ -118,20 +123,54 @@ const RenderColumn = (props: RenderColumnProps) => {
     showBorderDrag,
     dataShow,
     previewImage,
+    isData,
   } = props
   const { draggable, onDrag, onDragEnd } = props
 
-  if (Array.isArray(item.sessions) && item.sessions?.length) {
+  if (Array.isArray(item.sessions) && item.sessions?.length && !isData) {
     const itemData = item.sessions
     return itemData.map((i: any, index: number) => (
       <ChildCol key={`col_${i.id || index}`} {...props} item={i} />
     ))
   }
 
-  if (Array.isArray(item.datatypes) && item.datatypes?.length) {
+  if (
+    Array.isArray(item.datatypes?.images) &&
+    item.datatypes?.images?.length &&
+    !isData
+  ) {
     const itemData = item.datatypes
-    return itemData.map((i: any, index: number) => (
-      <ChildCol key={`col_${i.id || index}`} {...props} item={i} />
+    return <ChildCol {...props} item={itemData} isData />
+  }
+
+  if (isData) {
+    return item.images.map((image: any, index: number) => (
+      <Tr
+      key={`data_show_image_${image.id}_${index}`}
+        onClick={() => rowClick?.(image)}
+        draggable={draggable}
+        onDragStart={() => onDrag?.(image)}
+        onDragEnd={onDragEnd}
+        style={{
+          borderStyle: 'dashed',
+          borderColor: '#1976d2',
+          borderWidth: showBorderDrag && draggable ? 2 : 0,
+          transition: 'all 0.3s',
+          backgroundColor:
+            dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
+        }}
+      >
+        {columns.map((column) => {
+          const key = column.name || column.dataIndex || ''
+          return (
+            <Td key={`col_${column.name || column.dataIndex}`}>
+              {dataShow && ['datatypes', 'sessions'].includes(key)
+                ? null
+                : renderCol(column, image, index)}
+            </Td>
+          )
+        })}
+      </Tr>
     ))
   }
 

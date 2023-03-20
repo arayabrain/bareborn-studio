@@ -191,62 +191,132 @@ export const defaultDatabase = [
         parent_id: 0,
         sessions: 'session 1',
         subjects: 'subjects 3',
-        datatypes: [
-          {
-            id: 0,
-            parent_id: 0,
-            datatypes: 'anat',
-            protocol: 'protocol',
-            size: '8MB',
-            voxel_size: 'voxel_size',
-            type: 'TYPE_RATE',
-            images: [
-              {
-                id: 0,
-                parent_id: 0,
-                image_url: 'lib/functional.nii',
-                attributes: {},
-              },
-              {
-                id: 1,
-                parent_id: 0,
-                image_url: 'lib/test.nii',
-                attributes: {},
-              },
-            ],
-          },
-        ],
+        datatypes: {
+          title: 'anat',
+          images: [
+            {
+              id: 0,
+              parent_id: 0,
+              protocol: 'protocol',
+              size: '8MB',
+              voxel_size: 'voxel_size',
+              type: 'TYPE_RATE',
+              images: [
+                {
+                  id: 0,
+                  parent_id: 0,
+                  image_url: 'lib/functional.nii',
+                  attributes: {},
+                },
+                {
+                  id: 1,
+                  parent_id: 0,
+                  image_url: 'lib/test.nii',
+                  attributes: {},
+                },
+              ],
+            },
+            {
+              id: 2,
+              parent_id: 2,
+              protocol: 'protocol',
+              size: '8MB',
+              voxel_size: 'voxel_size',
+              type: 'TYPE_RATE',
+              images: [
+                {
+                  id: 0,
+                  parent_id: 0,
+                  image_url: 'lib/functional.nii',
+                  attributes: {},
+                },
+                {
+                  id: 1,
+                  parent_id: 0,
+                  image_url: 'lib/test.nii',
+                  attributes: {},
+                },
+              ],
+            },
+          ],
+        },
       },
       {
         id: 0,
         parent_id: 0,
         sessions: 'session 3',
         subjects: 'subjects 3',
-        datatypes: [
-          {
-            id: 0,
-            parent_id: 0,
-            datatypes: 'anat3',
-            protocol: 'protocol 3',
-            size: '8MB',
-            voxel_size: '8MB',
-            type: 'TYPE_RATE',
-            images: [
-              {
-                id: 3,
-                parent_id: 0,
-                image_url: 'lib/functional.nii',
-                attributes: {},
-              },
-              {
-                id: 6,
-                parent_id: 0,
-                image_url: 'lib/test.nii',
-                attributes: {},
-              },
-            ],
-          },
-        ],
+        datatypes: {
+          title: 'anat',
+          images: [
+            {
+              id: 0,
+              parent_id: 0,
+              protocol: 'protocol',
+              size: '8MB',
+              voxel_size: 'voxel_size',
+              type: 'TYPE_RATE',
+              images: [
+                {
+                  id: 0,
+                  parent_id: 0,
+                  image_url: 'lib/functional.nii',
+                  attributes: {},
+                },
+                {
+                  id: 1,
+                  parent_id: 0,
+                  image_url: 'lib/test.nii',
+                  attributes: {},
+                },
+              ],
+            },
+            {
+              id: 2,
+              parent_id: 2,
+              protocol: 'protocol',
+              size: '8MB',
+              voxel_size: 'voxel_size',
+              type: 'TYPE_RATE',
+              images: [
+                {
+                  id: 0,
+                  parent_id: 0,
+                  image_url: 'lib/functional.nii',
+                  attributes: {},
+                },
+                {
+                  id: 1,
+                  parent_id: 0,
+                  image_url: 'lib/test.nii',
+                  attributes: {},
+                },
+              ],
+            },
+            {
+              id: 3,
+              parent_id: 4,
+              protocol: 'protocol',
+              size: '8MB',
+              voxel_size: 'voxel_size',
+              type: 'TYPE_RATE',
+              images: [
+                {
+                  id: 0,
+                  parent_id: 0,
+                  image_url: 'lib/functional.nii',
+                  attributes: {},
+                },
+                {
+                  id: 1,
+                  parent_id: 0,
+                  image_url: 'lib/test.nii',
+                  attributes: {},
+                },
+              ],
+            },
+          ],
+        },
       },
     ],
   },
@@ -264,7 +334,12 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
     filter: true,
     width: 100,
   },
-  { title: 'Dataset', name: 'datatypes', filter: true, width: 100 },
+  {
+    title: 'Dataset',
+    name: 'datatypes',
+    filter: true,
+    width: 100,
+  },
   { title: 'Type', name: 'type', filter: true },
   { title: 'Protocol', name: 'protocol', filter: true },
   { title: 'Size', name: 'size', filter: true },
@@ -317,6 +392,7 @@ const Database = () => {
 
   const rowClick = (row: any) => {
     if (!row?.images?.length) return
+
     setViewer({
       open: true,
       urls: row.images.map((e: { image_url: string }) => e.image_url),
