@@ -183,12 +183,21 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
           height: '100%',
         }}
       >
-        <ImageViewWrapper sx={{ opacity }}>
-          <div style={{ display: 'flex', alignItems: 'stretch' }}>
+        <ImageViewWrapper>
+          <div
+            style={{
+              display: !opacity ? 'none' : 'flex',
+              alignItems: 'stretch',
+            }}
+          >
             <div id="brainbrowser-wrapper">
               <div
                 id="volume-viewer"
-                style={{ minWidth: 768, minHeight: 256, background: '#ffffff' }}
+                style={{
+                  minWidth: 768,
+                  minHeight: 256,
+                  background: '#ffffff',
+                }}
               >
                 <div id="brainbrowser"></div>
               </div>
@@ -241,9 +250,6 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                 defaultValue="JSON Preview and edit"
               />
             </WrapperJson>
-            <ButtonClose onClick={onClose}>
-              <CloseIconWrapper />
-            </ButtonClose>
             <ButtonNext onClick={onNext}>
               <ArrowForwardIosIconWrapper />
             </ButtonNext>
@@ -251,6 +257,16 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
               <ArrowBackIosIconWrapper />
             </ButtonPrevious>
           </div>
+          <ButtonClose onClick={onClose}>
+            <CloseIconWrapper />
+          </ButtonClose>
+          {!opacity && (
+            <img
+              src="/lib/loading.gif"
+              alt="icon loading"
+              style={{ width: 80, height: 80 }}
+            />
+          )}
         </ImageViewWrapper>
       </div>
     </Modal>
@@ -285,6 +301,9 @@ const ImageViewWrapper = styled(Box)({
   marginTop: 48,
   overflow: 'auto',
   margin: 'auto',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 })
 
 const BoxContentData = styled(Box)({
