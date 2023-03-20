@@ -88,10 +88,10 @@ const ProjectFormComponent = () => {
     ])
   }
 
-  const onAddWithin = () => {
+  const onAddWithin = (idFactor: string) => {
     setDataFactors((pre) =>
-      pre.map((p, index) => {
-        if (index === pre.length - 1) {
+      pre.map((p) => {
+        if (p.id === idFactor) {
           return {
             ...p,
             within: [
@@ -273,7 +273,7 @@ const ProjectFormComponent = () => {
 
   const rowClick = (row: any) => {
     if (!row?.images?.length) return
-    
+
     setViewer({
       open: true,
       urls: row.images.map((e: { image_url: string }) => e.image_url),
@@ -306,76 +306,81 @@ const ProjectFormComponent = () => {
         <DragBox>
           {dataFactors.map((factor, index) => {
             return (
-              <BoxFactor key={factor.id}>
-                <Input
-                  onChange={(e) => onChangeNameFactor(factor, e.target.value)}
-                  style={{ width: 'calc(100% - 64px)' }}
-                  value={
-                    factor.name === nameDefault
-                      ? `Between factor name ${index}`
-                      : factor.name
-                  }
-                />
-                <Button onClick={() => onDeleteFactor(factor)}>
-                  <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-                </Button>
-                {projectLevel === 'within-factor' ? (
-                  factor.within.map((within, indexWithin) => (
-                    <BoxFactor style={{ marginLeft: 24 }}>
-                      <Input
-                        onChange={(e) =>
-                          onChangeNameWithinFactor(
-                            factor,
-                            within,
-                            e.target.value,
-                          )
-                        }
-                        style={{ width: 'calc(100% - 64px)' }}
-                        value={
-                          within.name === nameDefault
-                            ? `Within factor name ${indexWithin}`
-                            : within.name
-                        }
-                      />
-                      <Button onClick={() => onDeleteWithin(factor, within)}>
-                        <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-                      </Button>
-                      {renderData(within.data, { marginLeft: 48 }, (row) => {
-                        onDeleteDataWithin(factor, within, row)
+              <>
+                <BoxFactor key={factor.id}>
+                  <Input
+                    onChange={(e) => onChangeNameFactor(factor, e.target.value)}
+                    style={{ width: 'calc(100% - 64px)' }}
+                    value={
+                      factor.name === nameDefault
+                        ? `Between factor name ${index}`
+                        : factor.name
+                    }
+                  />
+                  <Button onClick={() => onDeleteFactor(factor)}>
+                    <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+                  </Button>
+                  {projectLevel === 'within-factor' ? (
+                    factor.within.map((within, indexWithin) => (
+                      <BoxFactor style={{ marginLeft: 24 }}>
+                        <Input
+                          onChange={(e) =>
+                            onChangeNameWithinFactor(
+                              factor,
+                              within,
+                              e.target.value,
+                            )
+                          }
+                          style={{ width: 'calc(100% - 64px)' }}
+                          value={
+                            within.name === nameDefault
+                              ? `Within factor name ${indexWithin}`
+                              : within.name
+                          }
+                        />
+                        <Button onClick={() => onDeleteWithin(factor, within)}>
+                          <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+                        </Button>
+                        {renderData(within.data, { marginLeft: 48 }, (row) => {
+                          onDeleteDataWithin(factor, within, row)
+                        })}
+                        <BoxDrag
+                          style={{
+                            borderBottom: rowDrag ? '1px dashed red' : '',
+                          }}
+                          onDrop={() => onDropData(factor, within)}
+                          onDragOver={onDragOver}
+                          onDragLeave={onDragLeave}
+                        />
+                      </BoxFactor>
+                    ))
+                  ) : (
+                    <>
+                      {renderData(factor.data, { marginLeft: 24 }, (row) => {
+                        onDeleteDataFactor(factor, row)
                       })}
                       <BoxDrag
                         style={{
                           borderBottom: rowDrag ? '1px dashed red' : '',
                         }}
-                        onDrop={() => onDropData(factor, within)}
+                        onDrop={() => onDropData(factor)}
                         onDragOver={onDragOver}
                         onDragLeave={onDragLeave}
                       />
-                    </BoxFactor>
-                  ))
-                ) : (
-                  <>
-                    {renderData(factor.data, { marginLeft: 24 }, (row) => {
-                      onDeleteDataFactor(factor, row)
-                    })}
-                    <BoxDrag
-                      style={{
-                        borderBottom: rowDrag ? '1px dashed red' : '',
-                      }}
-                      onDrop={() => onDropData(factor)}
-                      onDragOver={onDragOver}
-                      onDragLeave={onDragLeave}
-                    />
-                  </>
-                )}
-              </BoxFactor>
+                    </>
+                  )}
+                </BoxFactor>
+                {projectLevel === 'within-factor' && dataFactors.length ? (
+                  <NewRowButton
+                    onClick={() => onAddWithin(factor.id)}
+                    style={{ marginLeft: 24 }}
+                  >
+                    + Add Within Factor
+                  </NewRowButton>
+                ) : null}
+              </>
             )
           })}
-          {projectLevel === 'within-factor' && dataFactors.length ? (
-            <NewRowButton onClick={onAddWithin} style={{ marginLeft: 24 }}>
-              + Add Within Factor
-            </NewRowButton>
-          ) : null}
           <NewRowButton onClick={onAddBetween}>
             + Add Between Factor
           </NewRowButton>
