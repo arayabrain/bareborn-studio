@@ -21,6 +21,7 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   const [maxThres, setMaxThres] = useState(0)
   const [contracts, setContracts] = useState(1)
   const [brightness, setBrightness] = useState(0)
+  const [isLoadFile, setIsLoadFile] = useState(false)
   const volumes = useRef<any>()
   const indexImage = useRef(0)
 
@@ -91,8 +92,8 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   const onChangeJson = () => {}
 
   const loadFileIndex = () => {
-    if (!urls?.length) return
-    if (!viewerRef.current) return
+    if (!urls?.length || isLoadFile || !viewerRef.current) return
+    setIsLoadFile(true)
     viewerRef.current.clearVolumes()
     viewerRef.current.loadVolumes({
       volumes: [
@@ -116,7 +117,8 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   }
 
   const loadFile = () => {
-    if (!urls?.length) return
+    if (!urls?.length || isLoadFile) return
+    setIsLoadFile(true)
     const brainbrowser = (window as any).BrainBrowser
     const color_map_config = brainbrowser.config.get('color_maps')[2]
     viewerRef.current = brainbrowser.VolumeViewer.start(
@@ -124,6 +126,7 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
       (viewer: any) => {
         viewer.addEventListener('volumeloaded', function () {
           setOpacity(1)
+          setIsLoadFile(false)
         })
         viewer.addEventListener('sliceupdate', function (event: any) {
           // const panel = event.target
