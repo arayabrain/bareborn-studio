@@ -260,21 +260,36 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
               <ArrowBackIosIconWrapper />
             </ButtonPrevious>
           </div>
+          {(!opacity || isLoadFile) && (
+            <BoxLoading>
+              <img
+                src="/lib/loading.gif"
+                alt="icon loading"
+                style={{ width: 80, height: 80 }}
+              />
+            </BoxLoading>
+          )}
           <ButtonClose onClick={onClose}>
             <CloseIconWrapper />
           </ButtonClose>
-          {!opacity && (
-            <img
-              src="/lib/loading.gif"
-              alt="icon loading"
-              style={{ width: 80, height: 80 }}
-            />
-          )}
         </ImageViewWrapper>
       </div>
     </Modal>
   )
 }
+
+const BoxLoading = styled(Box)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(255,255,255, 0.1)',
+  zIndex: 88
+})
 
 const ButtonClose = styled(IconButton)({
   width: 50,
@@ -282,6 +297,7 @@ const ButtonClose = styled(IconButton)({
   position: 'absolute',
   top: '10%',
   right: '10%',
+  zIndex: 9999
 })
 
 const ButtonNext = styled(ButtonClose)({
@@ -290,6 +306,7 @@ const ButtonNext = styled(ButtonClose)({
   position: 'absolute',
   top: '50%',
   right: '10%',
+  zIndex: 1
 })
 
 const ButtonPrevious = styled(ButtonClose)({
@@ -298,6 +315,7 @@ const ButtonPrevious = styled(ButtonClose)({
   position: 'absolute',
   top: '50%',
   left: '10%',
+  zIndex: 1
 })
 
 const ImageViewWrapper = styled(Box)({
