@@ -1,8 +1,9 @@
 import { Box, styled, Typography } from '@mui/material'
-import React, { FC, useCallback } from 'react'
+import { FC, useCallback } from 'react'
 import ReactPaginate from 'react-paginate'
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
 type Column = {
   width?: number | string
@@ -10,6 +11,7 @@ type Column = {
   dataIndex?: string
   name?: string
   align?: string
+  filter?: boolean
   render?: (
     item?: any,
     value?: any,
@@ -19,6 +21,8 @@ type Column = {
 
 type TableComponentProps = {
   data?: any[]
+  orderBy?: 'ASC' | 'DESC'
+  orderKey?: string
   className?: string
   columns?: Column[]
   paginate?: {
@@ -35,7 +39,14 @@ type TableComponentProps = {
 }
 
 const TableComponent: FC<TableComponentProps> = (props) => {
-  const { data = [], columns = [], paginate, className } = props
+  const {
+    data = [],
+    columns = [],
+    paginate,
+    className,
+    orderBy,
+    orderKey,
+  } = props
   const pageCount = (paginate?.total || 0) / (paginate?.page_size || 1)
 
   const renderCol = useCallback((col: Column, item: any, index: number) => {
@@ -49,14 +60,24 @@ const TableComponent: FC<TableComponentProps> = (props) => {
       <Table>
         <Thead>
           <Tr>
-            {columns.map((col, iCol) => (
-              <Th
-                style={{ width: col.width, textAlign: col.align as any }}
-                key={col.dataIndex || col.name || iCol}
-              >
-                {col.title}
-              </Th>
-            ))}
+            {columns.map((col, iCol) => {
+              const nameCol = col.name || col.dataIndex || ''
+              return (
+                <Th
+                  style={{ width: col.width, textAlign: col.align as any }}
+                  key={col.dataIndex || col.name || iCol}
+                >
+                  {col.title}
+                  <ArrowDownwardIconOrder
+                    style={{
+                      transform: `rotate(${orderBy === 'ASC' ? 180 : 0}deg)`,
+                      opacity:
+                        orderBy && nameCol === orderKey && col.filter ? 1 : 0,
+                    }}
+                  />
+                </Th>
+              )
+            })}
           </Tr>
         </Thead>
         <TBody>
@@ -173,6 +194,14 @@ const NoData = styled(Typography)({
   fontWeight: '600',
   fontSize: 20,
   paddingTop: 16,
+})
+
+const ArrowDownwardIconOrder = styled(ArrowDownwardIcon)({
+  width: 16,
+  height: 16,
+  transition: 'transform 0.3s',
+  marginBottom: -3,
+  marginLeft: 5,
 })
 
 export default TableComponent

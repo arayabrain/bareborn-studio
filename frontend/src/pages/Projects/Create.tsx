@@ -16,12 +16,12 @@ import { defaultDatabase, PopupSearch } from '../Database'
 import ImageView from 'components/ImageView'
 
 const columns = [
-  { title: 'User', name: 'user_name' },
-  { title: 'Date', name: 'recording_time' },
-  { title: 'Session', name: 'sessions', child: 'label' },
-  { title: 'Dataset', name: 'datatypes', child: 'label' },
+  { title: 'User', name: 'user_name', filter: true },
+  { title: 'Date', name: 'recording_time', filter: true },
+  { title: 'Session', name: 'sessions', child: 'label', filter: true },
+  { title: 'Dataset', name: 'datatypes', child: 'label', filter: true },
   { title: 'Type', name: 'type', filter: true },
-  { title: 'Protocol', name: 'protocol' },
+  { title: 'Protocol', name: 'protocol', filter: true },
 ]
 
 type ProjectAdd = {
@@ -55,7 +55,8 @@ const ProjectFormComponent = () => {
 
   const idEdit = searchParams.get('id')
   const [viewer, setViewer] = useState({ open: false, urls: [] })
-
+  const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
+  const [columnSort, setColumnSort] = useState<string>('')
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
     'factor',
@@ -280,6 +281,17 @@ const ProjectFormComponent = () => {
     })
   }
 
+  const onSort = (orderKey: string) => {
+    setColumnSort(orderKey)
+    if (!orderBy || orderKey !== columnSort) {
+      setOrdeBy('ASC')
+    } else if (orderBy === 'ASC') {
+      setOrdeBy('DESC')
+    } else {
+      setOrdeBy(undefined)
+    }
+  }
+
   return (
     <ProjectsWrapper>
       {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
@@ -395,6 +407,9 @@ const ProjectFormComponent = () => {
             </ButtonFilter>
           </BoxFilter>
           <DatabaseTableComponent
+            onSort={onSort}
+            orderKey={columnSort}
+            orderBy={orderBy}
             rowClick={rowClick}
             defaultExpand
             onDrag={onDragRow}

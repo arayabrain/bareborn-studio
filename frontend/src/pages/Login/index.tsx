@@ -170,7 +170,7 @@ const Description = styled(Typography)(({ theme }) => ({
 //   color: '#1892d1',
 // })
 
-const LinkWrappperText = styled(Typography)({
+const LinkWrappperText = styled('span')({
   marginLeft: 6,
   color: '#1892d1',
 })
