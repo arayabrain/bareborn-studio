@@ -265,7 +265,13 @@ const ProjectFormComponent = () => {
         <Box
           style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}
         >
-          <Button onClick={() => onDelete?.(e)}>
+          <Button
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              onDelete?.(e)
+            }}
+          >
             <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
           </Button>
         </Box>
