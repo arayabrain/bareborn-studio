@@ -257,6 +257,7 @@ const AccountManager = () => {
 
   return (
     <AccountManagerWrapper>
+       <h1 style={{ paddingLeft: 16 }}>Account Manager</h1>
       <ModalDeleteAccount
         titleSubmit="Delete Account"
         onClose={handleCloseDelete}
@@ -300,7 +301,7 @@ const ButtonAdd = styled(Button)(({ theme }) => ({
   margin: theme.spacing(2, 0),
   width: 100,
   backgroundColor: '#283237 !important',
-  color: '#ffffff'
+  color: '#ffffff',
 }))
 
 const ALink = styled('a')({

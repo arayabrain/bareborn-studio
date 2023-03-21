@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import DatabaseTableComponent from 'components/DatabaseTable'
-import React, { useState, DragEvent } from 'react'
+import React, { useState, DragEvent, Fragment } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
 import { defaultDatabase, PopupSearch } from '../Database'
@@ -171,6 +171,7 @@ const ProjectFormComponent = () => {
       image_count: rowDrag.images?.length || 0,
       project_type: 0,
       protocol: rowDrag.protocol,
+      images_url: rowDrag.images?.map((e) => e.image_url),
     }
     if (projectLevel !== 'within-factor') {
       setDataFactors((pre) =>
@@ -250,8 +251,12 @@ const ProjectFormComponent = () => {
     style: any,
     onDelete?: (row: ProjectAdd) => any,
   ) => {
-    return data.map((e) => (
-      <BoxItem key={e.id} style={style}>
+    return data.map((e, index) => (
+      <BoxItem
+        key={`${e.id}_${index}`}
+        style={style}
+        onClick={() => rowDataClick(e)}
+      >
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
         <TypographyBoxItem>
           {e.project_type ? 'TYPE_RATE' : 'TYPE_1'}
@@ -278,6 +283,15 @@ const ProjectFormComponent = () => {
     setViewer({
       open: true,
       urls: row.images.map((e: { image_url: string }) => e.image_url),
+    })
+  }
+
+  const rowDataClick = (row: any) => {
+    if (!row?.images_url?.length) return
+
+    setViewer({
+      open: true,
+      urls: row.images_url,
     })
   }
 
@@ -318,8 +332,8 @@ const ProjectFormComponent = () => {
         <DragBox>
           {dataFactors.map((factor, index) => {
             return (
-              <>
-                <BoxFactor key={factor.id}>
+              <Fragment key={factor.id}>
+                <BoxFactor>
                   <Input
                     onChange={(e) => onChangeNameFactor(factor, e.target.value)}
                     style={{ width: 'calc(100% - 64px)' }}
@@ -334,7 +348,7 @@ const ProjectFormComponent = () => {
                   </Button>
                   {projectLevel === 'within-factor' ? (
                     factor.within.map((within, indexWithin) => (
-                      <BoxFactor style={{ marginLeft: 24 }}>
+                      <BoxFactor key={within.id} style={{ marginLeft: 24 }}>
                         <Input
                           onChange={(e) =>
                             onChangeNameWithinFactor(
@@ -390,7 +404,7 @@ const ProjectFormComponent = () => {
                     + Add Within Factor
                   </NewRowButton>
                 ) : null}
-              </>
+              </Fragment>
             )
           })}
           <NewRowButton onClick={onAddBetween}>
