@@ -68,12 +68,12 @@ conda activate studio
 
 Install from pip.
 ```
-pip install studio
+pip install -r requirements.txt
 ```
 
 launch.
 ```
-run_studio
+python main.py
 ```
 
 Open browser. http://localhost:8000
