@@ -269,7 +269,7 @@ export const defaultDatabase = [
     lab_name: 'lab 5',
     user_name: 'hoge 5',
     sample_name: 'hoge 5',
-    subjects: 'subjects 1',
+    subjects: 'subject 1',
     recording_time: '2023-03-10',
   },
   {
@@ -283,7 +283,7 @@ export const defaultDatabase = [
         id: 0,
         parent_id: 0,
         sessions: 'session 1',
-        subjects: 'subjects 3',
+        subjects: 'subject 3',
         datatypes: {
           title: 'anat',
           images: [
@@ -338,7 +338,7 @@ export const defaultDatabase = [
         id: 0,
         parent_id: 0,
         sessions: 'session 3',
-        subjects: 'subjects 3',
+        subjects: 'subject 3',
         datatypes: {
           title: 'anat',
           images: [
@@ -419,7 +419,7 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true },
   { title: 'Date', name: 'recording_time', filter: true },
-  { title: 'Subjects', name: 'subjects', filter: true },
+  { title: 'Subject', name: 'subjects', filter: true },
   {
     title: 'Session',
     name: 'sessions',
