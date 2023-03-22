@@ -1,24 +1,16 @@
-version: "3.8"
+version: '3'
+
 services:
-  studio:
-    image: studio_app
-    container_name: studio_app
+  be:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    environment:
-      PYTHONPATH: .
-      TZ: Asia/Tokyo
-    env_file:
-      - .env
+    working_dir: /app
     volumes:
-      - ./studio:/app/studio
-      - ./conda/yaml:/app/conda/yaml
-      - ./studio/test_data:/tmp/studio
-      - studio_dir:/tmp/studio
+      - ./firebase_config.json:/app/firebase_config.json
+      - ./mristudio-a799c-firebase-adminsdk-pqsv4-943fa81862.json:/app/mristudio-a799c-firebase-adminsdk-pqsv4-943fa81862.json
     ports:
       - "8000:8000"
-    expose:
-      - 8000
-volumes:
-  studio_dir:
+    environment:
+      PYTHONPATH: /app/
+      TZ: Asia/Tokyo

@@ -60,21 +60,25 @@ studio also supports reproducibility of scientific research, standardization of 
 
 
 ## Installation
-Need anaconda or miniconda environment.
-```
-conda create -n studio python=3.8
-conda activate studio
-```
+**Docker required**
+- On Linux or macOS:
+  - Grant execute permission to the run_app.sh file (only run for the first time):
+    ```
+    chmod +x run_app.sh
+    ```
 
-Install from pip.
-```
-pip install -r requirements.txt
-```
+  - Run the file to set up and start the app:
 
-launch.
-```
-python main.py
-```
+    ```
+    ./run_app.sh
+    ```
+- On Windows:
+  - Open Command Prompt or PowerShell and navigate to the folder containing the run_app.sh file. Run the file to set up and start the app:
+    ```
+    bash run_app.sh
+    ```
+    _Note that to use this command, you need to install Git Bash environment on Windows or use Windows Subsystem for Linux (WSL)._
+
 
 Open browser. http://localhost:8000
 
