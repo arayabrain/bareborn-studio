@@ -72,6 +72,28 @@ export const PopupSearch = ({
   )
 }
 
+export type Image = {
+  id: number
+  parent_id: number
+  session_id: number
+  label: string
+  image: {
+    id: number
+    parent_id: number
+    image_url: string
+    attributes: { [key: string]: any }
+  }
+}
+
+export type Viewer = {
+  open: boolean
+  url: string
+  jsonData?: { [key: string]: any }
+  id?: number
+  session_id?: number
+  parent_id?: number
+}
+
 export type DataDatabase = {
   id: number
   lab_name: string
@@ -79,33 +101,20 @@ export type DataDatabase = {
   sample_name: string
   subjects: string
   recording_time: string
-  sessions: [
-    {
-      id: number
-      parent_id: number
-      label: string
-      datatypes: [
-        {
-          id: number
-          parent_id: number
-          label: string
-          images: [
-            {
-              id: number
-              parent_id: number
-              image_url: string
-              attributes: {}
-            },
-          ]
-        },
-      ]
-    },
-  ]
+  sessions: {
+    id: number
+    parent_id: number
+    label: string
+    datatypes: {
+      title: string
+      images: Image[]
+    }
+  }[]
 }
 
 const dataImages = [
   {
-    id: 3,
+    id: 1,
     lab_name: 'lab 1',
     user_name: 'hoge',
     sample_name: 'hoge',
@@ -117,23 +126,15 @@ const dataImages = [
     sessions: 'sess 1',
     subjects: 'sub 1',
     voxel_size: '8MB',
-    images: [
-      {
-        id: 0,
-        parent_id: 0,
-        image_url: '/lib/functional.nii',
-        attributes: {},
-      },
-      {
-        id: 1,
-        parent_id: 0,
-        image_url: '/lib/test.nii',
-        attributes: {},
-      },
-    ],
+    image: {
+      id: 0,
+      parent_id: 0,
+      image_url: '/lib/test0.nii',
+      attributes: { file_name: 'image 0' },
+    },
   },
   {
-    id: 4,
+    id: 2,
     lab_name: 'lab 2',
     user_name: 'hoge 2',
     sessions: 'sess 2',
@@ -145,23 +146,15 @@ const dataImages = [
     protocol: 'protocol 3',
     size: '8MB',
     voxel_size: '8MB',
-    images: [
-      {
-        id: 0,
-        parent_id: 0,
-        image_url: '/lib/functional.nii',
-        attributes: {},
-      },
-      {
-        id: 1,
-        parent_id: 0,
-        image_url: '/lib/test.nii',
-        attributes: {},
-      },
-    ],
+    image: {
+      id: 1,
+      parent_id: 0,
+      image_url: '/lib/test.nii',
+      attributes: { file_name: 'image 1' },
+    },
   },
   {
-    id: 5,
+    id: 3,
     parent_id: 0,
     lab_name: 'lab 3',
     user_name: 'hoge 3',
@@ -174,23 +167,15 @@ const dataImages = [
     size: '8MB',
     voxel_size: 'voxel_size',
     type: 'TYPE_RATE',
-    images: [
-      {
-        id: 0,
-        parent_id: 0,
-        image_url: '/lib/functional.nii',
-        attributes: {},
-      },
-      {
-        id: 1,
-        parent_id: 0,
-        image_url: '/lib/test.nii',
-        attributes: {},
-      },
-    ],
+    image: {
+      id: 1,
+      parent_id: 0,
+      image_url: '/lib/test1.nii',
+      attributes: { file_name: 'image 2' },
+    },
   },
   {
-    id: 6,
+    id: 4,
     parent_id: 2,
     lab_name: 'lab 4',
     user_name: 'hoge 4',
@@ -203,23 +188,15 @@ const dataImages = [
     voxel_size: 'voxel_size',
     datatypes: 'anat',
     type: 'TYPE_RATE',
-    images: [
-      {
-        id: 0,
-        parent_id: 0,
-        image_url: '/lib/functional.nii',
-        attributes: {},
-      },
-      {
-        id: 1,
-        parent_id: 0,
-        image_url: '/lib/test.nii',
-        attributes: {},
-      },
-    ],
+    image: {
+      id: 0,
+      parent_id: 0,
+      image_url: '/lib/test2.nii',
+      attributes: { file_name: 'image 3' },
+    },
   },
   {
-    id: 7,
+    id: 5,
     parent_id: 4,
     lab_name: 'lab 5',
     user_name: 'hoge 5',
@@ -232,40 +209,32 @@ const dataImages = [
     subjects: 'sub 5',
     voxel_size: 'voxel_size',
     type: 'TYPE_RATE',
-    images: [
-      {
-        id: 0,
-        parent_id: 0,
-        image_url: '/lib/functional.nii',
-        attributes: {},
-      },
-      {
-        id: 1,
-        parent_id: 0,
-        image_url: '/lib/test.nii',
-        attributes: {},
-      },
-    ],
+    image: {
+      id: 1,
+      parent_id: 0,
+      image_url: '/lib/test3.nii',
+      attributes: { file_name: 'image 4' },
+    },
   },
 ]
 
 export const defaultDatabase = [
   {
-    id: 3,
+    id: 0,
     lab_name: 'lab 1',
     user_name: 'hoge',
     sample_name: 'hoge',
     recording_time: '2023-03-10',
   },
   {
-    id: 4,
+    id: 1,
     lab_name: 'lab 4',
     user_name: 'hoge 4',
     sample_name: 'hoge 4',
     recording_time: '2023-03-10',
   },
   {
-    id: 5,
+    id: 2,
     lab_name: 'lab 5',
     user_name: 'hoge 5',
     sample_name: 'hoge 5',
@@ -273,7 +242,7 @@ export const defaultDatabase = [
     recording_time: '2023-03-10',
   },
   {
-    id: 0,
+    id: 3,
     lab_name: 'lab 2',
     user_name: 'hoge 2',
     sample_name: 'hoge 2',
@@ -281,7 +250,7 @@ export const defaultDatabase = [
     sessions: [
       {
         id: 0,
-        parent_id: 0,
+        parent_id: 3,
         sessions: 'session 1',
         subjects: 'subject 3',
         datatypes: {
@@ -289,124 +258,130 @@ export const defaultDatabase = [
           images: [
             {
               id: 0,
-              parent_id: 0,
+              parent_id: 3,
+              session_id: 0,
               protocol: 'protocol',
               size: '8MB',
               voxel_size: 'voxel_size',
               type: 'TYPE_RATE',
-              images: [
-                {
-                  id: 0,
-                  parent_id: 0,
-                  image_url: '/lib/functional.nii',
-                  attributes: {},
+              image: {
+                id: 0,
+                image_url: '/lib/test0.nii',
+                attributes: {
+                  file_name: 'image 0',
                 },
-                {
-                  id: 1,
-                  parent_id: 0,
-                  image_url: '/lib/test.nii',
-                  attributes: {},
-                },
-              ],
+              },
             },
             {
-              id: 2,
-              parent_id: 2,
+              id: 1,
+              parent_id: 3,
+              session_id: 0,
               protocol: 'protocol',
               size: '8MB',
               voxel_size: 'voxel_size',
               type: 'TYPE_RATE',
-              images: [
-                {
-                  id: 0,
-                  parent_id: 0,
-                  image_url: '/lib/functional.nii',
-                  attributes: {},
+              image: {
+                id: 1,
+                image_url: '/lib/test.nii',
+                attributes: {
+                  file_name: 'image 1',
                 },
-                {
-                  id: 1,
-                  parent_id: 0,
-                  image_url: 'lib/test.nii',
-                  attributes: {},
-                },
-              ],
+              },
             },
           ],
         },
       },
       {
-        id: 0,
-        parent_id: 0,
+        id: 1,
+        parent_id: 3,
         sessions: 'session 3',
         subjects: 'subject 3',
         datatypes: {
           title: 'anat',
           images: [
             {
-              id: 0,
-              parent_id: 0,
-              protocol: 'protocol',
-              size: '8MB',
-              voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
-              images: [
-                {
-                  id: 0,
-                  parent_id: 0,
-                  image_url: '/lib/functional.nii',
-                  attributes: {},
-                },
-                {
-                  id: 1,
-                  parent_id: 0,
-                  image_url: '/lib/test.nii',
-                  attributes: {},
-                },
-              ],
-            },
-            {
               id: 2,
-              parent_id: 2,
+              parent_id: 3,
+              session_id: 1,
               protocol: 'protocol',
               size: '8MB',
               voxel_size: 'voxel_size',
               type: 'TYPE_RATE',
-              images: [
-                {
-                  id: 0,
-                  parent_id: 0,
-                  image_url: '/lib/functional.nii',
-                  attributes: {},
+              image: {
+                id: 2,
+                image_url: '/lib/test1.nii',
+                attributes: {
+                  file_name: 'image 2',
                 },
-                {
-                  id: 1,
-                  parent_id: 0,
-                  image_url: '/lib/test.nii',
-                  attributes: {},
-                },
-              ],
+              },
             },
             {
               id: 3,
-              parent_id: 4,
+              parent_id: 3,
+              session_id: 1,
               protocol: 'protocol',
               size: '8MB',
               voxel_size: 'voxel_size',
               type: 'TYPE_RATE',
-              images: [
-                {
-                  id: 0,
-                  parent_id: 0,
-                  image_url: '/lib/functional.nii',
-                  attributes: {},
+              image: {
+                id: 3,
+                image_url: '/lib/test2.nii',
+                attributes: {
+                  file_name: 'image 3',
                 },
-                {
-                  id: 1,
-                  parent_id: 0,
-                  image_url: '/lib/test.nii',
-                  attributes: {},
+              },
+            },
+            {
+              id: 4,
+              parent_id: 3,
+              session_id: 1,
+              protocol: 'protocol',
+              size: '8MB',
+              voxel_size: 'voxel_size',
+              type: 'TYPE_RATE',
+              image: {
+                id: 4,
+                image_url: '/lib/test3.nii',
+                attributes: {
+                  file_name: 'image 4',
                 },
-              ],
+              },
+            },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 4,
+    lab_name: 'lab 2',
+    user_name: 'hoge 2',
+    sample_name: 'hoge 2',
+    recording_time: '2023-03-10',
+    sessions: [
+      {
+        id: 2,
+        parent_id: 4,
+        sessions: 'session 1',
+        subjects: 'subject 3',
+        datatypes: {
+          title: 'anat',
+          images: [
+            {
+              id: 5,
+              parent_id: 4,
+              session_id: 2,
+              protocol: 'protocol',
+              size: '8MB',
+              voxel_size: 'voxel_size',
+              type: 'TYPE_RATE',
+              image: {
+                id: 0,
+                image_url: '/lib/test4.nii',
+                attributes: {
+                  file_name: 'image 5',
+                },
+              },
             },
           ],
         },
@@ -472,24 +447,45 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
 
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
-  const [viewer, setViewer] = useState({ open: false, urls: [] })
+  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
   // const [data /*setData*/] = useState(defaultDatabase)
   const [openDelete, setOpenDelete] = useState(false)
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
   const [columnSort, setColumnSort] = useState<string>('')
   const [type, setType] = useState<'tree' | 'list'>('tree')
+  const [disabled, setDisabled] = useState({ left: false, right: false })
 
   const onCloseImageView = () => {
-    setViewer({ open: false, urls: [] })
+    setViewer({ open: false, url: '' })
   }
 
   const rowClick = (row: any) => {
-    if (!row?.images?.length) return
-
-    setViewer({
+    if (!row?.image?.image_url) return
+    let datas: any[] = dataImages
+    const view = {
       open: true,
-      urls: row.images.map((e: { image_url: string }) => e.image_url),
-    })
+      url: row.image.image_url,
+      id: row.id,
+      session_id: row.session_id,
+      parent_id: row.parent_id,
+      jsonData: row.image.attributes,
+    }
+    if (type === 'tree') {
+      datas = defaultDatabase
+      const checkNext = onGet(datas as any, view)
+      const checkPre = onGet(
+        JSON.parse(JSON.stringify(datas)).reverse() as any,
+        view,
+        true,
+      )
+      setDisabled({ left: !checkPre, right: !checkNext })
+    } else {
+      setDisabled({
+        left: row.id === datas?.[0]?.id,
+        right: row.id === datas?.[datas.length - 1]?.id,
+      })
+    }
+    setViewer(view)
   }
 
   const handleCloseDelete = () => {
@@ -509,6 +505,83 @@ const Database = () => {
     } else {
       setOrdeBy(undefined)
     }
+  }
+
+  const onNext = () => {
+    if (type === 'tree') {
+      const datas = defaultDatabase
+      const imageNext = onGet(datas as any, viewer)
+      rowClick(imageNext)
+    } else {
+      const findIndex = dataImages.findIndex((e) => e.id === viewer.id)
+      rowClick(dataImages[findIndex + 1])
+    }
+  }
+
+  const onPrevious = () => {
+    if (type === 'tree') {
+      const datas = JSON.parse(JSON.stringify(defaultDatabase))
+      const imageNext = onGet(datas.reverse() as any, viewer, true)
+      rowClick(imageNext)
+    } else {
+      const findIndex = dataImages.findIndex((e) => e.id === viewer.id)
+      rowClick(dataImages[findIndex - 1])
+    }
+  }
+
+  const onGet = (
+    datas: DataDatabase[],
+    record: Viewer,
+    isSub?: boolean,
+  ): Image | undefined => {
+    const findIndexData = datas.findIndex((d) => d.id === record.parent_id)
+    const imageNext = datas.reduce((pre: any, current, index) => {
+      if (current.id === record.parent_id) {
+        const sessionIndex = current.sessions?.findIndex(
+          (e) => e.id === record.session_id,
+        )
+        if (typeof sessionIndex === 'number' && sessionIndex >= 0) {
+          const session = current.sessions?.[sessionIndex]
+          if (session) {
+            const findImageIndex = session.datatypes.images.findIndex(
+              (img) => img.id === record.id,
+            )
+            const imageNow =
+              session.datatypes.images[findImageIndex + (isSub ? -1 : 1)]
+            if (imageNow) {
+              pre = imageNow
+            } else {
+              const sessionNext =
+                current.sessions?.[sessionIndex + (isSub ? -1 : 1)]
+              if (sessionNext) {
+                const imageNow =
+                  sessionNext.datatypes.images[
+                    isSub ? sessionNext.datatypes.images.length - 1 : 0
+                  ]
+                if (imageNow) {
+                  pre = imageNow
+                }
+              }
+            }
+          }
+        }
+      }
+      if (index > findIndexData && !pre) {
+        const session =
+          current.sessions?.[isSub ? current.sessions.length - 1 : 0]
+        if (session) {
+          const imageNow =
+            session.datatypes?.images?.[
+              isSub ? session.datatypes?.images.length - 1 : 0
+            ]
+          if (imageNow) {
+            pre = imageNow
+          }
+        }
+      }
+      return pre
+    }, undefined)
+    return imageNext
   }
 
   return (
@@ -564,7 +637,15 @@ const Database = () => {
         data={type === 'tree' ? defaultDatabase : dataImages}
         columns={columns(rowClick, setOpenDelete)}
       />
-      <ImageView {...viewer} onClose={onCloseImageView} />
+      <ImageView
+        disabled={disabled}
+        url={viewer.url}
+        open={viewer.open}
+        jsonData={viewer.jsonData}
+        onClose={onCloseImageView}
+        onNext={onNext}
+        onPrevious={onPrevious}
+      />
     </DatabaseWrapper>
   )
 }

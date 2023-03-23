@@ -12,7 +12,13 @@ import DatabaseTableComponent from 'components/DatabaseTable'
 import React, { useState, DragEvent, Fragment } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
-import { defaultDatabase, PopupSearch } from '../Database'
+import {
+  DataDatabase,
+  defaultDatabase,
+  Image,
+  PopupSearch,
+  Viewer,
+} from '../Database'
 import ImageView from 'components/ImageView'
 
 const columns = [
@@ -45,7 +51,10 @@ type DataFactor = {
 type RowDrag = {
   label: string
   protocol: string
-  images: any[]
+  image?: {
+    image_url: string
+    attributes: { [key: string]: any }
+  }
 }
 
 const nameDefault = 'DEFAULT'
@@ -54,13 +63,14 @@ const ProjectFormComponent = () => {
   const [searchParams] = useSearchParams()
 
   const idEdit = searchParams.get('id')
-  const [viewer, setViewer] = useState({ open: false, urls: [] })
+  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
   const [columnSort, setColumnSort] = useState<string>('')
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
     'factor',
   )
+  const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
   const [rowDrag, setRowDrag] = useState<RowDrag | undefined>()
   const [dataFactors, setDataFactors] = useState<DataFactor[]>([
@@ -164,14 +174,15 @@ const ProjectFormComponent = () => {
   }
 
   const onDropData = (factor: DataFactor, within?: DataWithin) => {
-    if (!rowDrag) return
+    if (!rowDrag?.image) return
     const newData = {
       id: getNanoId(),
       project_name: rowDrag.label,
-      image_count: rowDrag.images?.length || 0,
+      image_count: 1,
       project_type: 0,
       protocol: rowDrag.protocol,
-      images_url: rowDrag.images?.map((e) => e.image_url),
+      image_url: rowDrag.image.image_url,
+      jsonData: rowDrag.image.attributes,
     }
     if (projectLevel !== 'within-factor') {
       setDataFactors((pre) =>
@@ -280,25 +291,37 @@ const ProjectFormComponent = () => {
   }
 
   const onCloseImageView = () => {
-    setViewer({ open: false, urls: [] })
+    setViewer({ open: false, url: '' })
   }
 
   const rowClick = (row: any) => {
-    if (!row?.images?.length) return
-
-    setViewer({
+    if (!row?.image?.image_url) return
+    const view = {
       open: true,
-      urls: row.images.map((e: { image_url: string }) => e.image_url),
-    })
+      url: row.image.image_url,
+      id: row.id,
+      session_id: row.session_id,
+      parent_id: row.parent_id,
+      jsonData: row.image.attributes,
+    }
+    const checkNext = onGet(defaultDatabase as any, view)
+    const checkPre = onGet(
+      JSON.parse(JSON.stringify(defaultDatabase)).reverse() as any,
+      view,
+      true,
+    )
+    setDisabled({ left: !checkPre, right: !checkNext })
+    setViewer(view)
   }
 
   const rowDataClick = (row: any) => {
-    if (!row?.images_url?.length) return
-
+    if (!row?.image_url) return
     setViewer({
       open: true,
-      urls: row.images_url,
+      url: row.image_url,
+      jsonData: row.jsonData,
     })
+    setDisabled({ left: true, right: true })
   }
 
   const onSort = (orderKey: string) => {
@@ -312,10 +335,84 @@ const ProjectFormComponent = () => {
     }
   }
 
+  const onNext = () => {
+    const imageNext = onGet(defaultDatabase as any, viewer)
+    rowClick(imageNext)
+  }
+
+  const onPrevious = () => {
+    const datas = JSON.parse(JSON.stringify(defaultDatabase))
+    const imageNext = onGet(datas.reverse() as any, viewer, true)
+    rowClick(imageNext)
+  }
+
+  const onGet = (
+    datas: DataDatabase[],
+    record: Viewer,
+    isSub?: boolean,
+  ): Image | undefined => {
+    const findIndexData = datas.findIndex((d) => d.id === record.parent_id)
+    const imageNext = datas.reduce((pre: any, current, index) => {
+      if (current.id === record.parent_id) {
+        const sessionIndex = current.sessions?.findIndex(
+          (e) => e.id === record.session_id,
+        )
+        if (typeof sessionIndex === 'number' && sessionIndex >= 0) {
+          const session = current.sessions?.[sessionIndex]
+          if (session) {
+            const findImageIndex = session.datatypes.images.findIndex(
+              (img) => img.id === record.id,
+            )
+            const imageNow =
+              session.datatypes.images[findImageIndex + (isSub ? -1 : 1)]
+            if (imageNow) {
+              pre = imageNow
+            } else {
+              const sessionNext =
+                current.sessions?.[sessionIndex + (isSub ? -1 : 1)]
+              if (sessionNext) {
+                const imageNow =
+                  sessionNext.datatypes.images[
+                    isSub ? sessionNext.datatypes.images.length - 1 : 0
+                  ]
+                if (imageNow) {
+                  pre = imageNow
+                }
+              }
+            }
+          }
+        }
+      }
+      if (index > findIndexData && !pre) {
+        const session =
+          current.sessions?.[isSub ? current.sessions.length - 1 : 0]
+        if (session) {
+          const imageNow =
+            session.datatypes?.images?.[
+              isSub ? session.datatypes?.images.length - 1 : 0
+            ]
+          if (imageNow) {
+            pre = imageNow
+          }
+        }
+      }
+      return pre
+    }, undefined)
+    return imageNext
+  }
+
   return (
     <ProjectsWrapper>
       {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
-      <ImageView {...viewer} onClose={onCloseImageView} />
+      <ImageView
+        disabled={disabled}
+        url={viewer.url}
+        open={viewer.open}
+        jsonData={viewer.jsonData}
+        onClose={onCloseImageView}
+        onNext={onNext}
+        onPrevious={onPrevious}
+      />
       <InputName value={projectName} onChange={onChangeName} />
       <BoxOptions
         aria-labelledby="demo-radio-buttons-group-label"

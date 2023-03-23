@@ -8,10 +8,22 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 type ImageViewProps = {
   open: boolean
   onClose?: () => void
-  urls?: string[]
+  onNext?: () => void
+  onPrevious?: () => void
+  url?: string
+  jsonData?: { [key: string]: any }
+  disabled?: { left: boolean; right: boolean }
 }
 
-const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
+const ImageView: FC<ImageViewProps> = ({
+  open,
+  onClose,
+  url,
+  onNext,
+  onPrevious,
+  jsonData,
+  disabled,
+}) => {
   const viewerRef = useRef<any>()
   const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
   const [voxelCoords, setVoxelCoords] = useState({ i: 0, j: 0, k: 0 })
@@ -23,19 +35,22 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   const [brightness, setBrightness] = useState(0)
   const [isLoadFile, setIsLoadFile] = useState(false)
   const volumes = useRef<any>()
-  const indexImage = useRef(0)
 
   useEffect(() => {
     if (open) {
       setTimeout(loadFile, 0)
       return
     }
-    indexImage.current = 0
     setOpacity(0)
     setContracts(1)
     setBrightness(0)
     //eslint-disable-next-line
   }, [open])
+
+  useEffect(() => {
+    loadFileIndex()
+    //eslint-disable-next-line
+  }, [url])
 
   const onChangeThreshold = (num: number) => {
     if (!volumes.current) return
@@ -71,35 +86,17 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
     viewerRef.current.redrawVolumes()
   }
 
-  const onNext = () => {
-    let nextIndex = indexImage.current + 1
-    if (nextIndex > (urls || [])?.length - 1) {
-      nextIndex = 0
-    }
-    indexImage.current = nextIndex
-    loadFileIndex()
-  }
-
-  const onPrevious = () => {
-    let nextIndex = indexImage.current - 1
-    if (nextIndex < 0) {
-      nextIndex = (urls || [])?.length - 1
-    }
-    indexImage.current = nextIndex
-    loadFileIndex()
-  }
-
   const onChangeJson = () => {}
 
   const loadFileIndex = () => {
-    if (!urls?.length || isLoadFile || !viewerRef.current) return
+    if (!url || isLoadFile || !viewerRef.current) return
     setIsLoadFile(true)
     viewerRef.current.clearVolumes()
     viewerRef.current.loadVolumes({
       volumes: [
         {
           type: 'nifti1',
-          nii_url: urls[indexImage.current],
+          nii_url: url,
           template: {
             element_id: 'volume-ui-template',
             viewer_insert_className: 'volume-viewer-display',
@@ -117,7 +114,7 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   }
 
   const loadFile = () => {
-    if (!urls?.length || isLoadFile) return
+    if (!url || isLoadFile) return
     setIsLoadFile(true)
     const brainbrowser = (window as any).BrainBrowser
     const color_map_config = brainbrowser.config.get('color_maps')[2]
@@ -142,8 +139,8 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
             setVoxelCoords(volume.getVoxelCoords())
           }
         })
-        const { url, cursor_color } = color_map_config
-        viewer.loadDefaultColorMapFromURL(url, cursor_color)
+        const { url: urlColor, cursor_color } = color_map_config
+        viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
         viewer.setDefaultPanelSize(256, 256)
         viewer.render()
         viewer.clearVolumes()
@@ -151,7 +148,7 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
           volumes: [
             {
               type: 'nifti1',
-              nii_url: urls[0],
+              nii_url: url,
               template: {
                 element_id: 'volume-ui-template',
                 viewer_insert_className: 'volume-viewer-display',
@@ -250,15 +247,19 @@ const ImageView: FC<ImageViewProps> = ({ open, onClose, urls }) => {
             <WrapperJson>
               <TextArea
                 onChange={onChangeJson}
-                defaultValue="JSON Preview and edit"
+                value={JSON.stringify(jsonData || '')}
               />
             </WrapperJson>
-            <ButtonNext onClick={onNext}>
-              <ArrowForwardIosIconWrapper />
-            </ButtonNext>
-            <ButtonPrevious onClick={onPrevious}>
-              <ArrowBackIosIconWrapper />
-            </ButtonPrevious>
+            {!disabled?.right ? (
+              <ButtonNext onClick={onNext}>
+                <ArrowForwardIosIconWrapper />
+              </ButtonNext>
+            ) : null}
+            {!disabled?.left ? (
+              <ButtonPrevious onClick={onPrevious}>
+                <ArrowBackIosIconWrapper />
+              </ButtonPrevious>
+            ) : null}
           </div>
           {(!opacity || isLoadFile) && (
             <BoxLoading>
@@ -288,7 +289,7 @@ const BoxLoading = styled(Box)({
   alignItems: 'center',
   justifyContent: 'center',
   backgroundColor: 'rgba(255,255,255, 0.1)',
-  zIndex: 88
+  zIndex: 88,
 })
 
 const ButtonClose = styled(IconButton)({
@@ -297,7 +298,7 @@ const ButtonClose = styled(IconButton)({
   position: 'absolute',
   top: '10%',
   right: '10%',
-  zIndex: 9999
+  zIndex: 9999,
 })
 
 const ButtonNext = styled(ButtonClose)({
@@ -306,7 +307,7 @@ const ButtonNext = styled(ButtonClose)({
   position: 'absolute',
   top: '50%',
   right: '10%',
-  zIndex: 1
+  zIndex: 1,
 })
 
 const ButtonPrevious = styled(ButtonClose)({
@@ -315,7 +316,7 @@ const ButtonPrevious = styled(ButtonClose)({
   position: 'absolute',
   top: '50%',
   left: '10%',
-  zIndex: 1
+  zIndex: 1,
 })
 
 const ImageViewWrapper = styled(Box)({
