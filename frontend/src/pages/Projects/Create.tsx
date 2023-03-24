@@ -66,6 +66,7 @@ const ProjectFormComponent = () => {
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
   const [columnSort, setColumnSort] = useState<string>('')
+  const [datasTable, setDatasTable] = useState<any[]>(defaultDatabase)
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
     'factor',
@@ -326,13 +327,131 @@ const ProjectFormComponent = () => {
 
   const onSort = (orderKey: string) => {
     setColumnSort(orderKey)
+    let typeOrder: 'ASC' | 'DESC' | undefined = undefined
     if (!orderBy || orderKey !== columnSort) {
-      setOrdeBy('ASC')
+      typeOrder = 'ASC'
     } else if (orderBy === 'ASC') {
-      setOrdeBy('DESC')
-    } else {
-      setOrdeBy(undefined)
+      typeOrder = 'DESC'
     }
+    setOrdeBy(typeOrder)
+    if (!typeOrder) {
+      setDatasTable(defaultDatabase)
+      return
+    }
+    let newDatas = datasTable
+    if (['lab_name', 'user_name', 'recording_time'].includes(orderKey)) {
+      newDatas = sortWithLabName(orderKey, typeOrder)
+    } else if (orderKey === 'sessions') {
+      newDatas = sortWithSession(typeOrder)
+    } else if (orderKey === 'subject') {
+      newDatas = sortSubject(typeOrder)
+    } else if (orderKey === 'datatypes') {
+      newDatas = sortDatatypes(typeOrder)
+    } else {
+      newDatas = sortImages(orderKey, typeOrder)
+    }
+    setDatasTable(newDatas)
+  }
+
+  const sortWithLabName = (orderKey: string, typeOrder?: 'ASC' | 'DESC') => {
+    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
+      (a: any, b: any) => {
+        if (typeOrder === 'DESC') {
+          return a[orderKey] > b[orderKey] ? -1 : 1
+        }
+        return a[orderKey] < b[orderKey] ? -1 : 1
+      },
+    )
+    return newDatas
+  }
+
+  const sortWithSession = (typeOrder?: 'ASC' | 'DESC') => {
+    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
+      (a: any, b: any) => {
+        if (typeOrder !== 'DESC') {
+          if (!b.sessions) return 1
+          return (
+            a.sessions?.sort((a: any, b: any) => a.id - b.id)[0].id -
+            b.sessions?.sort((a: any, b: any) => a.id - b.id)[0].id
+          )
+        }
+        if (!b.sessions) return -1
+        return (
+          b.sessions?.sort((a: any, b: any) => b.id - a.id)[0].id -
+          a.sessions?.sort((a: any, b: any) => b.id - a.id)[0].id
+        )
+      },
+    )
+    return newDatas
+  }
+
+  const sortSubject = (typeOrder?: 'ASC' | 'DESC') => {
+    const newDatas = JSON.parse(JSON.stringify(datasTable))
+      .sort((dA: any, dB: any) => {
+        if (typeOrder === 'DESC') {
+          if (!dB.sessions) return 1
+          return dA.sessions?.sort((a: any, b: any) =>
+            a.subject > b.subject ? -1 : 1,
+          )[0].subject >
+            dB.sessions?.sort((a: any, b: any) =>
+              a.subject > b.subject ? -1 : 1,
+            )[0].subject
+            ? -1
+            : 1
+        }
+        if (!dB.sessions) return -1
+        return dB.sessions?.sort((a: any, b: any) =>
+          b.subject > a.subject ? -1 : 1,
+        )[0].subject >
+          dA.sessions?.sort((a: any, b: any) =>
+            b.subject > a.subject ? -1 : 1,
+          )[0].subject
+          ? -1
+          : 1
+      })
+      .map((el: any) => ({
+        ...el,
+        sessions: el.sessions?.sort((a: any, b: any) => {
+          if (typeOrder === 'ASC') {
+            return a.subject > b.subject ? 1 : -1
+          }
+          return b.subject > a.subject ? -1 : 1
+        }),
+      }))
+    return newDatas
+  }
+
+  const sortDatatypes = (typeOrder?: 'ASC' | 'DESC') => {
+    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
+      (dA: any, dB: any) => {
+        if (typeOrder !== 'DESC') {
+          if (!dB.sessions) return 1
+          return (
+            dA.sessions?.sort(
+              (a: any, b: any) => a.datatypes?.title - b.datatypes?.title,
+            )[0].title -
+            dB.sessions?.sort(
+              (a: any, b: any) => a.datatypes?.title - b.datatypes?.title,
+            )[0].title
+          )
+        }
+        if (!dB.sessions) return -1
+        return (
+          dB.sessions?.sort(
+            (a: any, b: any) => b.datatypes?.title - a.datatypes?.title,
+          )[0].datatypes?.title -
+          dA.sessions?.sort(
+            (a: any, b: any) => b.datatypes?.title - a.datatypes?.title,
+          )[0].datatypes?.title
+        )
+      },
+    )
+    return newDatas
+  }
+
+  const sortImages = (key: string, typeOrder?: 'ASC' | 'DESC') => {
+    if (typeOrder === 'ASC') return datasTable
+    return JSON.parse(JSON.stringify(datasTable)).reverse()
   }
 
   const onNext = () => {
@@ -532,7 +651,7 @@ const ProjectFormComponent = () => {
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
             draggable
-            data={defaultDatabase}
+            data={datasTable}
             columns={columns}
           />
         </DropBox>

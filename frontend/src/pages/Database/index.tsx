@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import DatabaseTableComponent from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -99,7 +99,7 @@ export type DataDatabase = {
   lab_name: string
   user_name: string
   sample_name: string
-  subjects: string
+  subject: string
   recording_time: string
   sessions: {
     id: number
@@ -118,13 +118,13 @@ const dataImages = [
     lab_name: 'lab 1',
     user_name: 'hoge',
     sample_name: 'hoge',
-    recording_time: '2023-03-10',
+    recording_time: '2018-03-10',
     type: 'TYPE_RATE',
     datatypes: 'anat',
     protocol: 'protocol 3',
-    size: '8MB',
+    size: '6MB',
     sessions: 'sess 1',
-    subjects: 'sub 1',
+    subject: 'sub 1',
     voxel_size: '8MB',
     image: {
       id: 0,
@@ -138,13 +138,13 @@ const dataImages = [
     lab_name: 'lab 2',
     user_name: 'hoge 2',
     sessions: 'sess 2',
-    subjects: 'sub 2',
+    subject: 'sub 2',
     datatypes: 'anat',
     sample_name: 'hoge 2',
-    recording_time: '2023-03-10',
+    recording_time: '2019-03-10',
     type: 'TYPE_2',
     protocol: 'protocol 3',
-    size: '8MB',
+    size: '7MB',
     voxel_size: '8MB',
     image: {
       id: 1,
@@ -159,9 +159,9 @@ const dataImages = [
     lab_name: 'lab 3',
     user_name: 'hoge 3',
     sample_name: 'hoge 3',
-    recording_time: '2023-04-10',
+    recording_time: '2020-04-10',
     sessions: 'sess 3',
-    subjects: 'sub 3',
+    subject: 'sub 3',
     datatypes: 'anat',
     protocol: 'protocol',
     size: '8MB',
@@ -180,11 +180,11 @@ const dataImages = [
     lab_name: 'lab 4',
     user_name: 'hoge 4',
     sample_name: 'hoge 4',
-    recording_time: '2023-04-11',
+    recording_time: '2021-04-11',
     protocol: 'protocol',
-    size: '8MB',
+    size: '9MB',
     sessions: 'sess 4',
-    subjects: 'sub 4',
+    subject: 'sub 4',
     voxel_size: 'voxel_size',
     datatypes: 'anat',
     type: 'TYPE_RATE',
@@ -201,12 +201,12 @@ const dataImages = [
     lab_name: 'lab 5',
     user_name: 'hoge 5',
     sample_name: 'hoge 5',
-    recording_time: '2023-04-15',
+    recording_time: '2022-04-15',
     protocol: 'protocol',
-    size: '8MB',
+    size: '10MB',
     sessions: 'sess 5',
     datatypes: 'anat',
-    subjects: 'sub 5',
+    subject: 'sub 5',
     voxel_size: 'voxel_size',
     type: 'TYPE_RATE',
     image: {
@@ -224,35 +224,34 @@ export const defaultDatabase = [
     lab_name: 'lab 1',
     user_name: 'hoge',
     sample_name: 'hoge',
-    recording_time: '2023-03-10',
+    recording_time: '2017-03-10',
   },
   {
     id: 1,
     lab_name: 'lab 4',
     user_name: 'hoge 4',
     sample_name: 'hoge 4',
-    recording_time: '2023-03-10',
+    recording_time: '2018-03-10',
   },
   {
     id: 2,
     lab_name: 'lab 5',
     user_name: 'hoge 5',
     sample_name: 'hoge 5',
-    subjects: 'subject 1',
-    recording_time: '2023-03-10',
+    recording_time: '2019-03-10',
   },
   {
     id: 3,
     lab_name: 'lab 2',
     user_name: 'hoge 2',
     sample_name: 'hoge 2',
-    recording_time: '2023-03-10',
+    recording_time: '2020-03-10',
     sessions: [
       {
         id: 0,
         parent_id: 3,
         sessions: 'session 1',
-        subjects: 'subject 3',
+        subject: '1 subject 6',
         datatypes: {
           title: 'anat',
           images: [
@@ -261,9 +260,9 @@ export const defaultDatabase = [
               parent_id: 3,
               session_id: 0,
               protocol: 'protocol',
-              size: '8MB',
+              size: '5MB',
               voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
+              type: '0_TYPE_RATE',
               image: {
                 id: 0,
                 image_url: '/lib/test0.nii',
@@ -277,9 +276,9 @@ export const defaultDatabase = [
               parent_id: 3,
               session_id: 0,
               protocol: 'protocol',
-              size: '8MB',
+              size: '7MB',
               voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
+              type: '1_TYPE_RATE',
               image: {
                 id: 1,
                 image_url: '/lib/test.nii',
@@ -295,7 +294,7 @@ export const defaultDatabase = [
         id: 1,
         parent_id: 3,
         sessions: 'session 3',
-        subjects: 'subject 3',
+        subject: '2 subject 5',
         datatypes: {
           title: 'anat',
           images: [
@@ -306,7 +305,7 @@ export const defaultDatabase = [
               protocol: 'protocol',
               size: '8MB',
               voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
+              type: '2_TYPE_RATE',
               image: {
                 id: 2,
                 image_url: '/lib/test1.nii',
@@ -320,9 +319,9 @@ export const defaultDatabase = [
               parent_id: 3,
               session_id: 1,
               protocol: 'protocol',
-              size: '8MB',
+              size: '9MB',
               voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
+              type: '3_TYPE_RATE',
               image: {
                 id: 3,
                 image_url: '/lib/test2.nii',
@@ -336,9 +335,9 @@ export const defaultDatabase = [
               parent_id: 3,
               session_id: 1,
               protocol: 'protocol',
-              size: '8MB',
+              size: '10MB',
               voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
+              type: '4_TYPE_RATE',
               image: {
                 id: 4,
                 image_url: '/lib/test3.nii',
@@ -357,13 +356,13 @@ export const defaultDatabase = [
     lab_name: 'lab 2',
     user_name: 'hoge 2',
     sample_name: 'hoge 2',
-    recording_time: '2023-03-10',
+    recording_time: '2021-03-10',
     sessions: [
       {
         id: 2,
         parent_id: 4,
-        sessions: 'session 1',
-        subjects: 'subject 3',
+        sessions: 'session 4',
+        subject: '3 subject 2',
         datatypes: {
           title: 'anat',
           images: [
@@ -372,9 +371,9 @@ export const defaultDatabase = [
               parent_id: 4,
               session_id: 2,
               protocol: 'protocol',
-              size: '8MB',
+              size: '11MB',
               voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
+              type: '5_TYPE_RATE',
               image: {
                 id: 0,
                 image_url: '/lib/test4.nii',
@@ -394,7 +393,7 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true },
   { title: 'Date', name: 'recording_time', filter: true },
-  { title: 'Subject', name: 'subjects', filter: true },
+  { title: 'Subject', name: 'subject', filter: true },
   {
     title: 'Session',
     name: 'sessions',
@@ -448,7 +447,7 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
-  // const [data /*setData*/] = useState(defaultDatabase)
+  const [datasTable, setDatasTable] = useState<any[]>(defaultDatabase)
   const [openDelete, setOpenDelete] = useState(false)
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
   const [columnSort, setColumnSort] = useState<string>('')
@@ -458,6 +457,12 @@ const Database = () => {
   const onCloseImageView = () => {
     setViewer({ open: false, url: '' })
   }
+
+  useEffect(() => {
+    if (type === 'tree') {
+      setDatasTable(defaultDatabase)
+    } else setDatasTable(dataImages)
+  }, [type])
 
   const rowClick = (row: any) => {
     if (!row?.image?.image_url) return
@@ -498,33 +503,164 @@ const Database = () => {
 
   const onSort = (orderKey: string) => {
     setColumnSort(orderKey)
+    let typeOrder: 'ASC' | 'DESC' | undefined = undefined
     if (!orderBy || orderKey !== columnSort) {
-      setOrdeBy('ASC')
+      typeOrder = 'ASC'
     } else if (orderBy === 'ASC') {
-      setOrdeBy('DESC')
-    } else {
-      setOrdeBy(undefined)
+      typeOrder = 'DESC'
     }
+    setOrdeBy(typeOrder)
+    if (!typeOrder) {
+      if (type === 'tree') {
+        setDatasTable(defaultDatabase)
+      } else {
+        setDatasTable(dataImages)
+      }
+      return
+    }
+    if (type === 'tree') {
+      let newDatas = datasTable
+      if (['lab_name', 'user_name', 'recording_time'].includes(orderKey)) {
+        newDatas = sortWithLabName(orderKey, typeOrder)
+      } else if (orderKey === 'sessions') {
+        newDatas = sortWithSession(typeOrder)
+      } else if (orderKey === 'subject') {
+        newDatas = sortSubject(typeOrder)
+      } else if (orderKey === 'datatypes') {
+        newDatas = sortDatatypes(typeOrder)
+      } else {
+        newDatas = sortImages(orderKey, typeOrder)
+      }
+      setDatasTable(newDatas)
+    } else {
+      const newDatas = dataImages.sort((a: any, b: any) => {
+        if (typeOrder === 'DESC') {
+          return a[orderKey] > b[orderKey] ? -1 : 1
+        }
+        return a[orderKey] > b[orderKey] ? 1 : -1
+      })
+      setDatasTable(newDatas)
+    }
+  }
+
+  const sortWithLabName = (orderKey: string, typeOrder?: 'ASC' | 'DESC') => {
+    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
+      (a: any, b: any) => {
+        if (typeOrder === 'DESC') {
+          return a[orderKey] > b[orderKey] ? -1 : 1
+        }
+        return a[orderKey] < b[orderKey] ? -1 : 1
+      },
+    )
+    return newDatas
+  }
+
+  const sortWithSession = (typeOrder?: 'ASC' | 'DESC') => {
+    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
+      (a: any, b: any) => {
+        if (typeOrder !== 'DESC') {
+          if (!b.sessions) return 1
+          return (
+            a.sessions?.sort((a: any, b: any) => a.id - b.id)[0].id -
+            b.sessions?.sort((a: any, b: any) => a.id - b.id)[0].id
+          )
+        }
+        if (!b.sessions) return -1
+        return (
+          b.sessions?.sort((a: any, b: any) => b.id - a.id)[0].id -
+          a.sessions?.sort((a: any, b: any) => b.id - a.id)[0].id
+        )
+      },
+    )
+    return newDatas
+  }
+
+  const sortSubject = (typeOrder?: 'ASC' | 'DESC') => {
+    const newDatas = JSON.parse(JSON.stringify(datasTable))
+      .sort((dA: any, dB: any) => {
+        if (typeOrder === 'DESC') {
+          if (!dB.sessions) return 1
+          return dA.sessions?.sort((a: any, b: any) =>
+            a.subject > b.subject ? -1 : 1,
+          )[0].subject >
+            dB.sessions?.sort((a: any, b: any) =>
+              a.subject > b.subject ? -1 : 1,
+            )[0].subject
+            ? -1
+            : 1
+        }
+        if (!dB.sessions) return -1
+        return dB.sessions?.sort((a: any, b: any) =>
+          b.subject > a.subject ? -1 : 1,
+        )[0].subject >
+          dA.sessions?.sort((a: any, b: any) =>
+            b.subject > a.subject ? -1 : 1,
+          )[0].subject
+          ? -1
+          : 1
+      })
+      .map((el: any) => ({
+        ...el,
+        sessions: el.sessions?.sort((a: any, b: any) => {
+          if (typeOrder === 'ASC') {
+            return a.subject > b.subject ? 1 : -1
+          }
+          return b.subject > a.subject ? -1 : 1
+        }),
+      }))
+    return newDatas
+  }
+
+  const sortDatatypes = (typeOrder?: 'ASC' | 'DESC') => {
+    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
+      (dA: any, dB: any) => {
+        if (typeOrder !== 'DESC') {
+          if (!dB.sessions) return 1
+          return (
+            dA.sessions?.sort(
+              (a: any, b: any) => a.datatypes?.title - b.datatypes?.title,
+            )[0].title -
+            dB.sessions?.sort(
+              (a: any, b: any) => a.datatypes?.title - b.datatypes?.title,
+            )[0].title
+          )
+        }
+        if (!dB.sessions) return -1
+        return (
+          dB.sessions?.sort(
+            (a: any, b: any) => b.datatypes?.title - a.datatypes?.title,
+          )[0].datatypes?.title -
+          dA.sessions?.sort(
+            (a: any, b: any) => b.datatypes?.title - a.datatypes?.title,
+          )[0].datatypes?.title
+        )
+      },
+    )
+    return newDatas
+  }
+
+  const sortImages = (key: string, typeOrder?: 'ASC' | 'DESC') => {
+    if (typeOrder === 'ASC') return datasTable
+    return JSON.parse(JSON.stringify(datasTable)).reverse()
   }
 
   const onNext = () => {
     if (type === 'tree') {
-      const datas = defaultDatabase
-      const imageNext = onGet(datas as any, viewer)
+      const imageNext = onGet(datasTable as any, viewer)
       rowClick(imageNext)
     } else {
-      const findIndex = dataImages.findIndex((e) => e.id === viewer.id)
+      const findIndex = datasTable.findIndex((e) => e.id === viewer.id)
       rowClick(dataImages[findIndex + 1])
     }
   }
 
   const onPrevious = () => {
     if (type === 'tree') {
-      const datas = JSON.parse(JSON.stringify(defaultDatabase))
+      const datas = JSON.parse(JSON.stringify(datasTable))
       const imageNext = onGet(datas.reverse() as any, viewer, true)
       rowClick(imageNext)
     } else {
-      const findIndex = dataImages.findIndex((e) => e.id === viewer.id)
+      const findIndex = datasTable.findIndex((e) => e.id === viewer.id)
       rowClick(dataImages[findIndex - 1])
     }
   }
@@ -634,7 +770,7 @@ const Database = () => {
         rowClick={rowClick}
         orderKey={columnSort}
         orderBy={orderBy}
-        data={type === 'tree' ? defaultDatabase : dataImages}
+        data={datasTable}
         columns={columns(rowClick, setOpenDelete)}
       />
       <ImageView

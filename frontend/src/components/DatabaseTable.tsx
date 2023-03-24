@@ -93,7 +93,7 @@ const ChildCol = (props: RenderColumnProps) => {
                     style={{ transform: `rotate(${show ? 180 : 0}deg)` }}
                   />
                 ) : null}
-                {['datatypes', 'sessions', 'subjects'].includes(key)
+                {['datatypes', 'sessions', 'subject'].includes(key)
                   ? value
                   : null}
               </ElementFlex>
@@ -130,7 +130,7 @@ const RenderColumn = (props: RenderColumnProps) => {
   if (Array.isArray(item.sessions) && item.sessions?.length && !isData) {
     const itemData = item.sessions
     return itemData.map((i: any, index: number) => (
-      <ChildCol key={`col_${i.id || index}`} {...props} item={i} />
+      <ChildCol key={`col_${i.id}_${index}`} {...props} item={i} />
     ))
   }
 
@@ -146,7 +146,7 @@ const RenderColumn = (props: RenderColumnProps) => {
   if (isData) {
     return item.images.map((image: any, index: number) => (
       <Tr
-      key={`data_show_image_${image.id}_${index}`}
+        key={`data_show_image_${image.id}_${index}`}
         onClick={() => rowClick?.(image)}
         draggable={draggable}
         onDragStart={() => onDrag?.(image)}
@@ -206,6 +206,11 @@ const RenderColumn = (props: RenderColumnProps) => {
 const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   const { className, orderKey, orderBy, onSort, draggable, ...p } = props
   const { data = [], columns = [] } = props
+
+  const onSortHandle = (nameCol: string) => {
+    onSort?.(nameCol, orderBy === 'ASC' ? 'DESC' : 'ASC')
+  }
+
   return (
     <TableWrap className={className}>
       <DataTable
@@ -219,10 +224,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
               const nameCol = col.name || col.dataIndex || ''
               return (
                 <Th
-                  onClick={() => {
-                    if (!col.filter) return
-                    onSort?.(nameCol, orderBy === 'ASC' ? 'DESC' : 'ASC')
-                  }}
+                  onClick={() => onSortHandle(nameCol)}
                   style={{
                     maxWidth: col.width,
                     width: col.width,
