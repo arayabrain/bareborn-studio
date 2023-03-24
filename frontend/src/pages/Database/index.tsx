@@ -765,6 +765,7 @@ const Database = () => {
       </BoxSelectTypeView>
       {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
       <DatabaseTableComponent
+        defaultExpand
         previewImage={type === 'list'}
         onSort={onSort}
         rowClick={rowClick}
