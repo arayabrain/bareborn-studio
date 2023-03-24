@@ -590,24 +590,27 @@ const Database = () => {
             : 1
         }
         if (!dB.sessions) return -1
-        return dB.sessions?.sort((a: any, b: any) =>
-          b.subject > a.subject ? -1 : 1,
+        return dA.sessions?.sort((a: any, b: any) =>
+          a.subject > b.subject ? 1 : -1,
         )[0].subject >
-          dA.sessions?.sort((a: any, b: any) =>
-            b.subject > a.subject ? -1 : 1,
+          dB.sessions?.sort((a: any, b: any) =>
+            a.subject > b.subject ? 1 : -1,
           )[0].subject
-          ? -1
-          : 1
+          ? 1
+          : -1
       })
-      .map((el: any) => ({
-        ...el,
-        sessions: el.sessions?.sort((a: any, b: any) => {
-          if (typeOrder === 'ASC') {
-            return a.subject > b.subject ? 1 : -1
-          }
-          return b.subject > a.subject ? -1 : 1
-        }),
-      }))
+      .map((el: any) => {
+        console.log('el.sessions', el.sessions)
+        return {
+          ...el,
+          sessions: el.sessions?.sort((a: any, b: any) => {
+            if (typeOrder === 'ASC') {
+              return a.subject > b.subject ? 1 : -1
+            }
+            return a.subject > b.subject ? -1 : 1
+          }),
+        }
+      })
     return newDatas
   }
 
