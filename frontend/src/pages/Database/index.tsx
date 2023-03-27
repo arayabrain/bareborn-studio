@@ -415,7 +415,7 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
     title: '',
     name: 'action',
     render: (data: any) => {
-      if (!Array.isArray(data?.images) || !data?.images?.length) return null
+      if (!data?.image) return null
       return (
         <BoxButton>
           <ButtonControl
@@ -726,7 +726,7 @@ const Database = () => {
   return (
     <DatabaseWrapper>
       <ModalDeleteAccount
-        titleSubmit="Delete Project"
+        titleSubmit="Delete Image"
         description={`Are you sure delete?\n`}
         onClose={handleCloseDelete}
         open={openDelete}
