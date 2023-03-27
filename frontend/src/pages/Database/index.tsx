@@ -203,7 +203,7 @@ const dataImages = [
     sample_name: 'hoge 5',
     recording_time: '2022-04-15',
     protocol: 'protocol',
-    size: '10MB',
+    size: '1MB',
     sessions: 'sess 5',
     datatypes: 'anat',
     subject: 'sub 5',
