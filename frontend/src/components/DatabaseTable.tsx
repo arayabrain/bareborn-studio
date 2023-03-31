@@ -1,5 +1,5 @@
 import { Box, styled, Typography } from '@mui/material'
-import { MouseEvent, FC, Fragment, useState } from 'react'
+import { MouseEvent, FC, Fragment, useState, useRef, useEffect } from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
@@ -25,11 +25,11 @@ type TableComponentProps = {
   orderKey?: string
   onSort?: (orderKey: string, orderBy: string) => any
   rowClick?: (row: any) => any
+  onClickEvent?: (e: any, row: any) => any
   draggable?: boolean
   onDrag?: (row?: any) => any
   onDragEnd?: (row?: any) => any
   defaultExpand?: boolean
-  showBorderDrag?: boolean
   previewImage?: boolean
 }
 
@@ -39,17 +39,20 @@ type RenderColumnProps = {
   orderBy?: 'ASC' | 'DESC'
   orderKey?: string
   onSort?: (orderKey: string, orderBy: string) => any
-  rowClick?: (row: any) => any
+  rowClick?: (e: any, row: any) => any
   draggable?: boolean
-  onDrag?: (row?: any) => any
+  onDrag?: (event: any, row?: any) => any
   onDragEnd?: (row?: any) => any
   index: number
   isData?: boolean
   defaultExpand?: boolean
   dataShow?: boolean
+  beginDrag?: boolean
   draggableProps?: boolean
   previewImage?: boolean
-  showBorderDrag?: boolean
+  allowMutilKey?: boolean
+  drags: any[]
+  onMouseDown: (event: MouseEvent<HTMLTableRowElement>) => any
 }
 
 const renderCol = (col: Column, item: any, index: number, child?: boolean) => {
@@ -72,7 +75,7 @@ const ChildCol = (props: RenderColumnProps) => {
   return (
     <Fragment>
       <Tr
-        onClick={() => rowClick?.(item)}
+        onClick={(e) => rowClick?.(e, item)}
         style={{ backgroundColor: 'rgb(238, 238, 238)' }}
       >
         {columns.map((column) => {
@@ -120,12 +123,18 @@ const RenderColumn = (props: RenderColumnProps) => {
     item,
     index,
     rowClick,
-    showBorderDrag,
     dataShow,
     previewImage,
     isData,
+    drags,
+    onMouseDown,
+    beginDrag,
   } = props
   const { draggable, onDrag, onDragEnd } = props
+
+  const onDragEvent = (event: any, image: any) => {
+    return onDrag?.(event, image)
+  }
 
   if (Array.isArray(item.sessions) && item.sessions?.length && !isData) {
     const itemData = item.sessions
@@ -144,46 +153,49 @@ const RenderColumn = (props: RenderColumnProps) => {
   }
 
   if (isData) {
-    return item.images.map((image: any, index: number) => (
-      <Tr
-        key={`data_show_image_${image.id}_${index}`}
-        onClick={() => rowClick?.(image)}
-        draggable={draggable}
-        onDragStart={() => onDrag?.(image)}
-        onDragEnd={onDragEnd}
-        style={{
-          borderStyle: 'dashed',
-          borderColor: '#1976d2',
-          borderWidth: showBorderDrag && draggable ? 2 : 0,
-          transition: 'all 0.3s',
-          backgroundColor:
-            dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
-        }}
-      >
-        {columns.map((column) => {
-          const key = column.name || column.dataIndex || ''
-          return (
-            <Td key={`col_${column.name || column.dataIndex}`}>
-              {dataShow && ['datatypes', 'sessions'].includes(key)
-                ? null
-                : renderCol(column, image, index)}
-            </Td>
-          )
-        })}
-      </Tr>
-    ))
+    return item.images.map((image: any, index: number) => {
+      const isDragging = drags.find((drag: any) => drag.id === image.id)
+      return (
+        <Tr
+          onMouseDown={onMouseDown}
+          id={image.id}
+          key={`data_show_image_${image.id}_${index}`}
+          onClick={(e) => rowClick?.(e, image)}
+          draggable={draggable}
+          onDragStart={(e) => onDragEvent?.(e, image)}
+          onDragEnd={onDragEnd}
+          style={{
+            border: `${
+              isDragging && draggable && !beginDrag ? 2 : 0
+            }px dashed #1976d2`,
+            transition: 'all 0.3s',
+            opacity: isDragging && draggable && beginDrag ? 0.3 : 1,
+            backgroundColor:
+              dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
+          }}
+        >
+          {columns.map((column) => {
+            const key = column.name || column.dataIndex || ''
+            return (
+              <Td key={`col_${column.name || column.dataIndex}`}>
+                {dataShow && ['datatypes', 'sessions'].includes(key)
+                  ? null
+                  : renderCol(column, image, index)}
+              </Td>
+            )
+          })}
+        </Tr>
+      )
+    })
   }
 
   return (
     <Tr
-      onClick={() => rowClick?.(item)}
+      onClick={(e) => rowClick?.(e, item)}
       draggable={draggable}
-      onDragStart={() => onDrag?.(item)}
+      onDragStart={(e) => onDragEvent?.(e, item)}
       onDragEnd={onDragEnd}
       style={{
-        borderStyle: 'dashed',
-        borderColor: '#1976d2',
-        borderWidth: showBorderDrag && draggable ? 2 : 0,
         transition: 'all 0.3s',
         backgroundColor:
           dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
@@ -204,65 +216,198 @@ const RenderColumn = (props: RenderColumnProps) => {
 }
 
 const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
-  const { className, orderKey, orderBy, onSort, draggable, ...p } = props
+  const {
+    className,
+    orderKey,
+    orderBy,
+    onSort,
+    draggable,
+    rowClick,
+    onDrag,
+    onDragEnd,
+    ...p
+  } = props
   const { data = [], columns = [] } = props
+  const [drags, setDrags] = useState<any[]>([])
+  const [mouseMoveRect, setMouseMoveRect] = useState({ pageX: 0, pageY: 0 })
+
+  const ctrRef = useRef(false)
+  const refTdSelect = useRef<{
+    [key: string]: {
+      dom: HTMLTableRowElement
+      tds: { id: number | string; dom: HTMLTableCellElement; html: string }[]
+    }
+  }>({})
+  const mouseStart = useRef<{ pageX: number; pageY: number } | undefined>()
+  const [beginDrag, setBeginDrag] = useState(false)
+
+  useEffect(() => {
+    window.addEventListener('keydown', onKeydownEvent)
+    window.addEventListener('keyup', onKeyupEvent)
+    window.addEventListener('mouseup', onMouseUp)
+    window.addEventListener('mousemove', onMouseMove)
+    return () => {
+      window.removeEventListener('keydown', onKeyupEvent)
+      window.removeEventListener('keyup', onKeyupEvent)
+      window.removeEventListener('mousemove', onMouseMove)
+    }
+    //eslint-disable-next-line
+  }, [])
+
+  const onKeydownEvent = (event: KeyboardEvent) => {
+    ctrRef.current = event.ctrlKey || event.metaKey
+  }
+
+  const onKeyupEvent = (event: KeyboardEvent) => {
+    if (event.ctrlKey || event.metaKey) return
+    ctrRef.current = false
+    setDrags([])
+    onDragEnd?.()
+  }
 
   const onSortHandle = (nameCol: string) => {
     onSort?.(nameCol, orderBy === 'ASC' ? 'DESC' : 'ASC')
   }
 
+  const onRowClickEvent = (
+    event: MouseEvent<HTMLTableColElement>,
+    image: any,
+  ) => {
+    if (!ctrRef.current || !draggable) {
+      return rowClick?.(image)
+    }
+    if (drags.find((drag: any) => drag.id === image.id)) {
+      setDrags(drags.filter((drag: any) => drag.id !== image.id))
+      delete refTdSelect.current[event.currentTarget.id]
+    } else {
+      setDrags([...drags, image])
+      const tds = event.currentTarget.getElementsByTagName('td')
+      refTdSelect.current[event.currentTarget.id] = {
+        dom: event.currentTarget as unknown as HTMLTableRowElement,
+        tds: [],
+      }
+      for (let i = 0; i < tds.length; i++) {
+        refTdSelect.current[event.currentTarget.id].tds.push({
+          id: tds[i].id,
+          dom: tds[i],
+          html: tds[i].innerHTML,
+        })
+      }
+    }
+  }
+
+  const onMouseDown = (event: MouseEvent<HTMLTableRowElement>) => {
+    if (!drags.length || !draggable) return
+    mouseStart.current = { pageX: event.pageX, pageY: event.pageY }
+    onDrag?.(drags)
+  }
+
+  const onMouseUp = () => {
+    mouseStart.current = undefined
+    setBeginDrag(false)
+  }
+
+  const onMouseMove = (event: any) => {
+    if (!mouseStart.current || !draggable || !mouseStart.current) return
+    setBeginDrag(true)
+    setMouseMoveRect({
+      pageX: event.pageX - mouseStart.current.pageX,
+      pageY: event.pageY - mouseStart.current.pageY,
+    })
+  }
+
   return (
-    <TableWrap className={className}>
-      <DataTable
-        style={{
-          width: columns.reduce((a, b) => a + (Number(b.width) || 110), 0),
-        }}
-      >
-        <Thead>
-          <Tr>
-            {columns.map((col, iCol) => {
-              const nameCol = col.name || col.dataIndex || ''
-              return (
-                <Th
-                  onClick={() => onSortHandle(nameCol)}
-                  style={{
-                    maxWidth: col.width,
-                    width: col.width,
-                    cursor: 'pointer',
-                  }}
-                  key={col.dataIndex || col.name || iCol}
-                >
-                  {col.title}
-                  <ArrowDownwardIconOrder
+    <>
+      <TableWrap className={className}>
+        <DataTable
+          style={{
+            width: columns.reduce((a, b) => a + (Number(b.width) || 110), 0),
+          }}
+        >
+          <Thead>
+            <Tr>
+              {columns.map((col, iCol) => {
+                const nameCol = col.name || col.dataIndex || ''
+                return (
+                  <Th
+                    onClick={() => onSortHandle(nameCol)}
                     style={{
-                      transform: `rotate(${orderBy === 'ASC' ? 180 : 0}deg)`,
-                      opacity:
-                        orderBy && nameCol === orderKey && col.filter ? 1 : 0,
+                      maxWidth: col.width,
+                      width: col.width,
+                      cursor: 'pointer',
                     }}
-                  />
-                </Th>
-              )
-            })}
-          </Tr>
-        </Thead>
-        <TBody>
-          {data.map((item, index) => (
-            <RenderColumn
-              item={item}
-              index={index}
-              columns={columns}
-              {...p}
-              draggable={false}
-              draggableProps={draggable}
-              key={`row_table_${item.id}_${index}`}
-            />
-          ))}
-        </TBody>
-      </DataTable>
-      {!data.length ? <NoData>No Data</NoData> : null}
-    </TableWrap>
+                    key={col.dataIndex || col.name || iCol}
+                  >
+                    {col.title}
+                    <ArrowDownwardIconOrder
+                      style={{
+                        transform: `rotate(${orderBy === 'ASC' ? 180 : 0}deg)`,
+                        opacity:
+                          orderBy && nameCol === orderKey && col.filter ? 1 : 0,
+                      }}
+                    />
+                  </Th>
+                )
+              })}
+            </Tr>
+          </Thead>
+          <TBody>
+            {data.map((item, index) => (
+              <RenderColumn
+                allowMutilKey={ctrRef.current}
+                item={item}
+                index={index}
+                columns={columns}
+                {...p}
+                rowClick={(e, image) => onRowClickEvent(e, image)}
+                onMouseDown={onMouseDown}
+                beginDrag={beginDrag}
+                draggable={false}
+                draggableProps={draggable}
+                key={`row_table_${item.id}_${index}`}
+                drags={drags}
+                onDrag={onDrag}
+                onDragEnd={onDragEnd}
+              />
+            ))}
+          </TBody>
+        </DataTable>
+        {!data.length ? <NoData>No Data</NoData> : null}
+      </TableWrap>
+      {beginDrag &&
+        drags.map((el) => {
+          const trNow = refTdSelect.current[el.id]
+          const { width, height, top, left } = trNow.dom.getBoundingClientRect()
+          const style = {
+            width,
+            height,
+            top: top - window.scrollY + mouseMoveRect.pageY,
+            left: left + mouseMoveRect.pageX,
+          }
+          return (
+            <BoxDrag key={el.id} style={style}>
+              {trNow.tds.map((td, index) => {
+                const { width } = td.dom.getBoundingClientRect()
+                return (
+                  <Box key={`${td.id}_${index}`} style={{ width, padding: 16 }}>
+                    {td.html}
+                  </Box>
+                )
+              })}
+            </BoxDrag>
+          )
+        })}
+    </>
   )
 }
+
+const BoxDrag = styled(Box)({
+  position: 'absolute',
+  background: '#ffffff',
+  border: '1px dashed #1976d2',
+  display: 'flex',
+  alignItems: 'center',
+})
 
 const ArrowDropDownIconWrap = styled(ArrowDropDownIcon)({
   transition: 'transform 0.3s',
