@@ -1,13 +1,5 @@
 import { Box, styled, Typography } from '@mui/material'
-import {
-  MouseEvent,
-  FC,
-  Fragment,
-  useState,
-  useRef,
-  useEffect,
-  EventHandler,
-} from 'react'
+import { MouseEvent, FC, Fragment, useState, useRef, useEffect } from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
@@ -49,12 +41,13 @@ type RenderColumnProps = {
   onSort?: (orderKey: string, orderBy: string) => any
   rowClick?: (e: any, row: any) => any
   draggable?: boolean
-  onDrag?: (row?: any) => any
+  onDrag?: (event: any, row?: any) => any
   onDragEnd?: (row?: any) => any
   index: number
   isData?: boolean
   defaultExpand?: boolean
   dataShow?: boolean
+  beginDrag?: boolean
   draggableProps?: boolean
   previewImage?: boolean
   allowMutilKey?: boolean
@@ -135,11 +128,12 @@ const RenderColumn = (props: RenderColumnProps) => {
     isData,
     drags,
     onMouseDown,
+    beginDrag,
   } = props
   const { draggable, onDrag, onDragEnd } = props
 
-  const onDragEvent = (_: any, image: any) => {
-    return onDrag?.(image)
+  const onDragEvent = (event: any, image: any) => {
+    return onDrag?.(event, image)
   }
 
   if (Array.isArray(item.sessions) && item.sessions?.length && !isData) {
@@ -167,12 +161,15 @@ const RenderColumn = (props: RenderColumnProps) => {
           id={image.id}
           key={`data_show_image_${image.id}_${index}`}
           onClick={(e) => rowClick?.(e, image)}
-          draggable={draggable && !drags.length}
+          draggable={draggable}
           onDragStart={(e) => onDragEvent?.(e, image)}
           onDragEnd={onDragEnd}
           style={{
-            border: `${isDragging && draggable ? 2 : 0}px dashed #1976d2`,
+            border: `${
+              isDragging && draggable && !beginDrag ? 2 : 0
+            }px dashed #1976d2`,
             transition: 'all 0.3s',
+            opacity: isDragging && draggable && beginDrag ? 0.3 : 1,
             backgroundColor:
               dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
           }}
@@ -219,8 +216,17 @@ const RenderColumn = (props: RenderColumnProps) => {
 }
 
 const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
-  const { className, orderKey, orderBy, onSort, draggable, rowClick, ...p } =
-    props
+  const {
+    className,
+    orderKey,
+    orderBy,
+    onSort,
+    draggable,
+    rowClick,
+    onDrag,
+    onDragEnd,
+    ...p
+  } = props
   const { data = [], columns = [] } = props
   const [drags, setDrags] = useState<any[]>([])
   const [mouseMoveRect, setMouseMoveRect] = useState({ pageX: 0, pageY: 0 })
@@ -245,6 +251,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
       window.removeEventListener('keyup', onKeyupEvent)
       window.removeEventListener('mousemove', onMouseMove)
     }
+    //eslint-disable-next-line
   }, [])
 
   const onKeydownEvent = (event: KeyboardEvent) => {
@@ -254,6 +261,8 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   const onKeyupEvent = (event: KeyboardEvent) => {
     if (event.ctrlKey || event.metaKey) return
     ctrRef.current = false
+    setDrags([])
+    onDragEnd?.()
   }
 
   const onSortHandle = (nameCol: string) => {
@@ -290,6 +299,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   const onMouseDown = (event: MouseEvent<HTMLTableRowElement>) => {
     if (!drags.length || !draggable) return
     mouseStart.current = { pageX: event.pageX, pageY: event.pageY }
+    onDrag?.(drags)
   }
 
   const onMouseUp = () => {
@@ -351,36 +361,42 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                 {...p}
                 rowClick={(e, image) => onRowClickEvent(e, image)}
                 onMouseDown={onMouseDown}
+                beginDrag={beginDrag}
                 draggable={false}
                 draggableProps={draggable}
                 key={`row_table_${item.id}_${index}`}
                 drags={drags}
+                onDrag={onDrag}
+                onDragEnd={onDragEnd}
               />
             ))}
           </TBody>
         </DataTable>
         {!data.length ? <NoData>No Data</NoData> : null}
       </TableWrap>
-      {beginDrag && (
-        <ViewDrag>
-          {drags.map((el) => {
-            const trNow = refTdSelect.current[el.id]
-            const { width, height, top, left } =
-              trNow.dom.getBoundingClientRect()
-            const style = {
-              width,
-              height,
-              top: top - window.scrollY + mouseMoveRect.pageY,
-              left: left + mouseMoveRect.pageX,
-            }
-            return (
-              <BoxDrag key={el.id} style={style}>
-                test
-              </BoxDrag>
-            )
-          })}
-        </ViewDrag>
-      )}
+      {beginDrag &&
+        drags.map((el) => {
+          const trNow = refTdSelect.current[el.id]
+          const { width, height, top, left } = trNow.dom.getBoundingClientRect()
+          const style = {
+            width,
+            height,
+            top: top - window.scrollY + mouseMoveRect.pageY,
+            left: left + mouseMoveRect.pageX,
+          }
+          return (
+            <BoxDrag key={el.id} style={style}>
+              {trNow.tds.map((td, index) => {
+                const { width } = td.dom.getBoundingClientRect()
+                return (
+                  <Box key={`${td.id}_${index}`} style={{ width, padding: 16 }}>
+                    {td.html}
+                  </Box>
+                )
+              })}
+            </BoxDrag>
+          )
+        })}
     </>
   )
 }
@@ -389,14 +405,8 @@ const BoxDrag = styled(Box)({
   position: 'absolute',
   background: '#ffffff',
   border: '1px dashed #1976d2',
-})
-
-const ViewDrag = styled(Box)({
-  position: 'fixed',
-  width: '100vw',
-  height: '100vh',
-  top: 0,
-  left: 0,
+  display: 'flex',
+  alignItems: 'center',
 })
 
 const ArrowDropDownIconWrap = styled(ArrowDropDownIcon)({

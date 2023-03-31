@@ -73,7 +73,7 @@ const ProjectFormComponent = () => {
   )
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
-  const [rowDrag, setRowDrag] = useState<RowDrag | undefined>()
+  const [rowDrag, setRowDrag] = useState<(RowDrag | undefined) | RowDrag[]>()
   const [dataFactors, setDataFactors] = useState<DataFactor[]>([
     { name: nameDefault, within: [], id: getNanoId(), data: [] },
   ])
@@ -174,22 +174,45 @@ const ProjectFormComponent = () => {
     setRowDrag(undefined)
   }
 
+  const onMouseOver = (factor: DataFactor, within?: DataWithin) => {
+    console.log('rowDrag', rowDrag)
+    onDropData(factor, within)
+    setRowDrag(undefined)
+  }
+
   const onDropData = (factor: DataFactor, within?: DataWithin) => {
-    if (!rowDrag?.image) return
-    const newData = {
-      id: getNanoId(),
-      project_name: rowDrag.label,
-      image_count: 1,
-      project_type: 0,
-      protocol: rowDrag.protocol,
-      image_url: rowDrag.image.image_url,
-      jsonData: rowDrag.image.attributes,
+    if (!Array.isArray(rowDrag) && !rowDrag?.image) {
+      return
+    }
+    let newData: any[] = []
+    if (!Array.isArray(rowDrag)) {
+      newData = [
+        {
+          id: getNanoId(),
+          project_name: rowDrag.label,
+          image_count: 1,
+          project_type: 0,
+          protocol: rowDrag.protocol,
+          image_url: rowDrag.image?.image_url,
+          jsonData: rowDrag.image?.attributes,
+        },
+      ]
+    } else if (Array.isArray(rowDrag)) {
+      newData = rowDrag.map((row) => ({
+        id: getNanoId(),
+        project_name: row.label,
+        image_count: 1,
+        project_type: 0,
+        protocol: row.protocol,
+        image_url: row.image?.image_url,
+        jsonData: row.image?.attributes,
+      }))
     }
     if (projectLevel !== 'within-factor') {
       setDataFactors((pre) =>
         pre.map((p) => {
           if (p.id === factor.id) {
-            return { ...p, data: [...p.data, newData] }
+            return { ...p, data: [...p.data, ...newData] }
           }
           return p
         }),
@@ -204,7 +227,7 @@ const ProjectFormComponent = () => {
               ...p,
               within: p.within.map((w) => {
                 if (w.id === within.id) {
-                  return { ...w, data: [...w.data, newData] }
+                  return { ...w, data: [...w.data, ...newData] }
                 }
                 return w
               }),
@@ -597,6 +620,7 @@ const ProjectFormComponent = () => {
                             borderBottom: rowDrag ? '1px dashed red' : '',
                           }}
                           onDrop={() => onDropData(factor, within)}
+                          onMouseOver={() => onMouseOver(factor, within)}
                           onDragOver={onDragOver}
                           onDragLeave={onDragLeave}
                         />
@@ -614,6 +638,7 @@ const ProjectFormComponent = () => {
                         onDrop={() => onDropData(factor)}
                         onDragOver={onDragOver}
                         onDragLeave={onDragLeave}
+                        onMouseOver={() => onMouseOver(factor)}
                       />
                     </>
                   )}
