@@ -51,6 +51,7 @@ type DataFactor = {
 type RowDrag = {
   label: string
   protocol: string
+  type: string
   image?: {
     image_url: string
     attributes: { [key: string]: any }
@@ -190,7 +191,7 @@ const ProjectFormComponent = () => {
           id: getNanoId(),
           project_name: rowDrag.label,
           image_count: 1,
-          project_type: 0,
+          project_type: rowDrag.type,
           protocol: rowDrag.protocol,
           image_url: rowDrag.image?.image_url,
           jsonData: rowDrag.image?.attributes,
@@ -201,7 +202,7 @@ const ProjectFormComponent = () => {
         id: getNanoId(),
         project_name: row.label,
         image_count: 1,
-        project_type: 0,
+        project_type: row.type,
         protocol: row.protocol,
         image_url: row.image?.image_url,
         jsonData: row.image?.attributes,
@@ -293,7 +294,7 @@ const ProjectFormComponent = () => {
       >
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
         <TypographyBoxItem>
-          {e.project_type ? 'TYPE_RATE' : 'TYPE_1'}
+          {e.project_type}
         </TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
         <Box
