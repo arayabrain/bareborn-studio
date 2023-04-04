@@ -293,9 +293,7 @@ const ProjectFormComponent = () => {
         onClick={() => rowDataClick(e)}
       >
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
-        <TypographyBoxItem>
-          {e.project_type}
-        </TypographyBoxItem>
+        <TypographyBoxItem>{e.project_type}</TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
         <Box
           style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}
@@ -493,7 +491,7 @@ const ProjectFormComponent = () => {
     record: Viewer,
     isSub?: boolean,
   ): Image | undefined => {
-    const findIndexData = datas.findIndex((d) => d.id === record.parent_id)
+    // const findIndexData = datas.findIndex((d) => d.id === record.parent_id)
     const imageNext = datas.reduce((pre: any, current, index) => {
       if (current.id === record.parent_id) {
         const sessionIndex = current.sessions?.findIndex(
@@ -509,36 +507,37 @@ const ProjectFormComponent = () => {
               session.datatypes.images[findImageIndex + (isSub ? -1 : 1)]
             if (imageNow) {
               pre = imageNow
-            } else {
-              const sessionNext =
-                current.sessions?.[sessionIndex + (isSub ? -1 : 1)]
-              if (sessionNext) {
-                const imageNow =
-                  sessionNext.datatypes.images[
-                    isSub ? sessionNext.datatypes.images.length - 1 : 0
-                  ]
-                if (imageNow) {
-                  pre = imageNow
-                }
-              }
             }
+            // else {
+            //   const sessionNext =
+            //     current.sessions?.[sessionIndex + (isSub ? -1 : 1)]
+            //   if (sessionNext) {
+            //     const imageNow =
+            //       sessionNext.datatypes.images[
+            //         isSub ? sessionNext.datatypes.images.length - 1 : 0
+            //       ]
+            //     if (imageNow) {
+            //       pre = imageNow
+            //     }
+            //   }
+            // }
           }
         }
       }
-      if (index > findIndexData && !pre) {
-        const session =
-          current.sessions?.[isSub ? current.sessions.length - 1 : 0]
-        if (session) {
-          const imageNow =
-            session.datatypes?.images?.[
-              isSub ? session.datatypes?.images.length - 1 : 0
-            ]
-          if (imageNow) {
-            pre = imageNow
-          }
-        }
-      }
-      return pre
+      // if (index > findIndexData && !pre) {
+      //   const session =
+      //     current.sessions?.[isSub ? current.sessions.length - 1 : 0]
+      //   if (session) {
+      //     const imageNow =
+      //       session.datatypes?.images?.[
+      //         isSub ? session.datatypes?.images.length - 1 : 0
+      //       ]
+      //     if (imageNow) {
+      //       pre = imageNow
+      //     }
+      //   }
+      // }
+      // return pre
     }, undefined)
     return imageNext
   }
