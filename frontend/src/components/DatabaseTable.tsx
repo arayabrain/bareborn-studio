@@ -132,8 +132,8 @@ const RenderColumn = (props: RenderColumnProps) => {
   } = props
   const { draggable, onDrag, onDragEnd } = props
 
-  const onDragEvent = (event: any, image: any) => {
-    return onDrag?.(event, image)
+  const onDragEvent = (_: any, image: any) => {
+    return onDrag?.([image])
   }
 
   if (Array.isArray(item.sessions) && item.sessions?.length && !isData) {
@@ -249,6 +249,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     return () => {
       window.removeEventListener('keydown', onKeyupEvent)
       window.removeEventListener('keyup', onKeyupEvent)
+      window.removeEventListener('mouseup', onMouseUp)
       window.removeEventListener('mousemove', onMouseMove)
     }
     //eslint-disable-next-line

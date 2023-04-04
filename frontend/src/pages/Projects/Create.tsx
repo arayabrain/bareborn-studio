@@ -175,7 +175,6 @@ const ProjectFormComponent = () => {
   }
 
   const onMouseOver = (factor: DataFactor, within?: DataWithin) => {
-    console.log('rowDrag', rowDrag)
     onDropData(factor, within)
     setRowDrag(undefined)
   }
