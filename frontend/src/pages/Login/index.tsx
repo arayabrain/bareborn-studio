@@ -55,6 +55,10 @@ const Login = () => {
     setErrors({ ...errors, [name]: !value ? 'This field is required' : '' })
   }
 
+  const onClickResetPass = () => {
+    navigate('/reset-password')
+  }
+
   return (
     <LoginWrapper>
       <LoginContent>
@@ -91,7 +95,7 @@ const Login = () => {
           </Box>
           <Description>
             Forgot your password?
-            <LinkWrappperText>Reset password</LinkWrappperText>
+            <LinkWrappperText onClick={onClickResetPass}>Reset password</LinkWrappperText>
           </Description>
           <Stack
             flexDirection="row"
