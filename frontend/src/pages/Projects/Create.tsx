@@ -537,7 +537,7 @@ const ProjectFormComponent = () => {
       //     }
       //   }
       // }
-      // return pre
+      return pre
     }, undefined)
     return imageNext
   }
