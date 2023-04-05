@@ -91,7 +91,7 @@ const Login = () => {
           </Box>
           <Description>
             Forgot your password?
-            <LinkWrappper to="/reset-password">Reset password</LinkWrappper>
+            <LinkWrappper to="/reset-password" >Reset password</LinkWrappper>
           </Description>
           <Stack
             flexDirection="row"

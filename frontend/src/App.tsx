@@ -14,6 +14,7 @@ import Database from './pages/Database'
 import Login from 'pages/Login'
 import Signup from 'pages/Signup'
 import ProjectFormComponent from "./pages/Projects/Create";
+import ResetPassword from "./pages/ResetPassword";
 
 const App: React.FC = () => {
   return (
@@ -33,6 +34,7 @@ const App: React.FC = () => {
             <Route path="/projects" element={<Projects />} />
             <Route path="/database" element={<Database />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/account-deleted" element={<AccountDelete />} />
             <Route path="/project/new-project" element={<ProjectFormComponent />} />

@@ -13,7 +13,7 @@ import { UserContext, useUser } from 'providers'
 import { getToken } from 'utils/auth'
 import { getMe } from 'api/auth'
 
-const ignorePaths = ['/login', '/account-delete']
+const ignorePaths = ['/login', '/account-delete','/reset-password']
 
 const Layout: FC = ({ children }) => {
   const [user, setUser] = useState()
@@ -45,7 +45,7 @@ const Layout: FC = ({ children }) => {
       }
       if (
         // !auth.currentUser &&
-        !['/login', '/signup'].includes(window.location.pathname)
+        !['/login', '/signup', '/reset-password'].includes(window.location.pathname)
       ) {
         navigate('/login')
       }
