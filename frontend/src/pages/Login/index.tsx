@@ -2,7 +2,7 @@ import { Box, Stack, styled, Typography } from '@mui/material'
 import { getMe, login } from 'api/auth'
 import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { saveToken } from 'utils/auth'
 
 const Login = () => {
@@ -55,10 +55,6 @@ const Login = () => {
     setErrors({ ...errors, [name]: !value ? 'This field is required' : '' })
   }
 
-  const onClickResetPass = () => {
-    navigate('/reset-password')
-  }
-
   return (
     <LoginWrapper>
       <LoginContent>
@@ -95,7 +91,7 @@ const Login = () => {
           </Box>
           <Description>
             Forgot your password?
-            <LinkWrappperText onClick={onClickResetPass}>Reset password</LinkWrappperText>
+            <LinkWrappper to="/reset-password" >Reset password</LinkWrappper>
           </Description>
           <Stack
             flexDirection="row"
@@ -169,12 +165,7 @@ const Description = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(1),
 }))
 
-// const LinkWrappper = styled(Link)({
-//   marginLeft: 6,
-//   color: '#1892d1',
-// })
-
-const LinkWrappperText = styled('span')({
+const LinkWrappper = styled(Link)({
   marginLeft: 6,
   color: '#1892d1',
 })

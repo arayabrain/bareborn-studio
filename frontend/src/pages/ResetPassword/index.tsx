@@ -1,12 +1,8 @@
 import { Box, Stack, styled, Typography } from '@mui/material'
-import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 const regexEmail = /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/
 const ResetPassword = () => {
-    const { setUser } = useUser()
-    const navigate = useNavigate()
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({
         email: '',
@@ -127,22 +123,6 @@ const Input = styled('input', {
             borderColor: '#1677ff',
         },
     }
-})
-
-const Description = styled(Typography)(({ theme }) => ({
-    fontSize: 12,
-    color: 'rgba(0, 0, 0, 0.65)',
-    marginTop: theme.spacing(1),
-}))
-
-// const LinkWrappper = styled(Link)({
-//   marginLeft: 6,
-//   color: '#1892d1',
-// })
-
-const LinkWrappperText = styled('span')({
-    marginLeft: 6,
-    color: '#1892d1',
 })
 
 const ButtonLogin = styled('button')({
