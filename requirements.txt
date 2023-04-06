@@ -14,3 +14,6 @@ nbstripout
 snakemake
 # git+https://github.com/ShogoAkiyama/snakemake@main#egg=snakemake
 jinja2==3.0.3
+firebase_admin
+pydantic[email]
+pyrebase4

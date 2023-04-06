@@ -6,6 +6,7 @@ import os
 import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 DIRPATH = os.path.dirname(os.path.abspath(__file__))
+from backend.routers import auth, user_manage
 from optinist.routers import (
     files,
     run,
@@ -17,6 +18,8 @@ from optinist.routers import (
 )
 
 app = FastAPI(docs_url="/docs", openapi_url="/openapi")
+app.include_router(auth.router, prefix='/auth', tags=['auth'])
+app.include_router(user_manage.router, prefix='/admin/user', tags=['admin'])
 app.include_router(algolist.router)
 app.include_router(files.router)
 app.include_router(outputs.router)
@@ -39,12 +42,37 @@ app.mount(
     name="static"
 )
 
+app.mount(
+    "/lib",
+    StaticFiles(directory=f"{DIRPATH}/frontend/build/lib"),
+    name="lib",
+)
+
 templates = Jinja2Templates(directory=f"{DIRPATH}/frontend/build")
 
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/database")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/projects")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/account-manager")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/login")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/account")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 def main():
     uvicorn.run('optinist.__main__:app', port=8000, reload=True)
