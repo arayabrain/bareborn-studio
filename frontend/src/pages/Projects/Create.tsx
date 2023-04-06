@@ -12,14 +12,9 @@ import DatabaseTableComponent from 'components/DatabaseTable'
 import React, { useState, DragEvent, Fragment } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
-import {
-  DataDatabase,
-  defaultDatabase,
-  Image,
-  PopupSearch,
-  Viewer,
-} from '../Database'
+import { defaultDatabase, PopupSearch, Viewer } from '../Database'
 import ImageView from 'components/ImageView'
+import { onGet, onSort } from 'utils/database'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
@@ -346,7 +341,7 @@ const ProjectFormComponent = () => {
     setDisabled({ left: true, right: true })
   }
 
-  const onSort = (orderKey: string) => {
+  const handleSort = (orderKey: string) => {
     setColumnSort(orderKey)
     let typeOrder: 'ASC' | 'DESC' | undefined = undefined
     if (!orderBy || orderKey !== columnSort) {
@@ -359,120 +354,8 @@ const ProjectFormComponent = () => {
       setDatasTable(defaultDatabase)
       return
     }
-    let newDatas = datasTable
-    if (['lab_name', 'user_name', 'recording_time'].includes(orderKey)) {
-      newDatas = sortWithLabName(orderKey, typeOrder)
-    } else if (orderKey === 'sessions') {
-      newDatas = sortWithSession(typeOrder)
-    } else if (orderKey === 'subject') {
-      newDatas = sortSubject(typeOrder)
-    } else if (orderKey === 'datatypes') {
-      newDatas = sortDatatypes(typeOrder)
-    } else {
-      newDatas = sortImages(orderKey, typeOrder)
-    }
-    setDatasTable(newDatas)
-  }
-
-  const sortWithLabName = (orderKey: string, typeOrder?: 'ASC' | 'DESC') => {
-    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
-      (a: any, b: any) => {
-        if (typeOrder === 'DESC') {
-          return a[orderKey] > b[orderKey] ? -1 : 1
-        }
-        return a[orderKey] < b[orderKey] ? -1 : 1
-      },
-    )
-    return newDatas
-  }
-
-  const sortWithSession = (typeOrder?: 'ASC' | 'DESC') => {
-    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
-      (a: any, b: any) => {
-        if (typeOrder !== 'DESC') {
-          if (!b.sessions) return 1
-          return (
-            a.sessions?.sort((a: any, b: any) => a.id - b.id)[0].id -
-            b.sessions?.sort((a: any, b: any) => a.id - b.id)[0].id
-          )
-        }
-        if (!b.sessions) return -1
-        return (
-          b.sessions?.sort((a: any, b: any) => b.id - a.id)[0].id -
-          a.sessions?.sort((a: any, b: any) => b.id - a.id)[0].id
-        )
-      },
-    )
-    return newDatas
-  }
-
-  const sortSubject = (typeOrder?: 'ASC' | 'DESC') => {
-    const newDatas = JSON.parse(JSON.stringify(datasTable))
-      .sort((dA: any, dB: any) => {
-        if (typeOrder === 'DESC') {
-          if (!dB.sessions) return 1
-          return dA.sessions?.sort((a: any, b: any) =>
-            a.subject > b.subject ? -1 : 1,
-          )[0].subject >
-            dB.sessions?.sort((a: any, b: any) =>
-              a.subject > b.subject ? -1 : 1,
-            )[0].subject
-            ? -1
-            : 1
-        }
-        if (!dB.sessions) return -1
-        return dB.sessions?.sort((a: any, b: any) =>
-          b.subject > a.subject ? -1 : 1,
-        )[0].subject >
-          dA.sessions?.sort((a: any, b: any) =>
-            b.subject > a.subject ? -1 : 1,
-          )[0].subject
-          ? -1
-          : 1
-      })
-      .map((el: any) => ({
-        ...el,
-        sessions: el.sessions?.sort((a: any, b: any) => {
-          if (typeOrder === 'ASC') {
-            return a.subject > b.subject ? 1 : -1
-          }
-          return b.subject > a.subject ? -1 : 1
-        }),
-      }))
-    return newDatas
-  }
-
-  const sortDatatypes = (typeOrder?: 'ASC' | 'DESC') => {
-    const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
-      (dA: any, dB: any) => {
-        if (typeOrder !== 'DESC') {
-          if (!dB.sessions) return 1
-          return (
-            dA.sessions?.sort(
-              (a: any, b: any) => a.datatypes?.title - b.datatypes?.title,
-            )[0].title -
-            dB.sessions?.sort(
-              (a: any, b: any) => a.datatypes?.title - b.datatypes?.title,
-            )[0].title
-          )
-        }
-        if (!dB.sessions) return -1
-        return (
-          dB.sessions?.sort(
-            (a: any, b: any) => b.datatypes?.title - a.datatypes?.title,
-          )[0].datatypes?.title -
-          dA.sessions?.sort(
-            (a: any, b: any) => b.datatypes?.title - a.datatypes?.title,
-          )[0].datatypes?.title
-        )
-      },
-    )
-    return newDatas
-  }
-
-  const sortImages = (key: string, typeOrder?: 'ASC' | 'DESC') => {
-    if (typeOrder === 'ASC') return datasTable
-    return JSON.parse(JSON.stringify(datasTable)).reverse()
+    const { data } = onSort(datasTable, typeOrder, orderKey, 'tree')
+    setDatasTable(data)
   }
 
   const onNext = () => {
@@ -484,62 +367,6 @@ const ProjectFormComponent = () => {
     const datas = JSON.parse(JSON.stringify(defaultDatabase))
     const imageNext = onGet(datas.reverse() as any, viewer, true)
     rowClick(imageNext)
-  }
-
-  const onGet = (
-    datas: DataDatabase[],
-    record: Viewer,
-    isSub?: boolean,
-  ): Image | undefined => {
-    // const findIndexData = datas.findIndex((d) => d.id === record.parent_id)
-    const imageNext = datas.reduce((pre: any, current, index) => {
-      if (current.id === record.parent_id) {
-        const sessionIndex = current.sessions?.findIndex(
-          (e) => e.id === record.session_id,
-        )
-        if (typeof sessionIndex === 'number' && sessionIndex >= 0) {
-          const session = current.sessions?.[sessionIndex]
-          if (session) {
-            const findImageIndex = session.datatypes.images.findIndex(
-              (img) => img.id === record.id,
-            )
-            const imageNow =
-              session.datatypes.images[findImageIndex + (isSub ? -1 : 1)]
-            if (imageNow) {
-              pre = imageNow
-            }
-            // else {
-            //   const sessionNext =
-            //     current.sessions?.[sessionIndex + (isSub ? -1 : 1)]
-            //   if (sessionNext) {
-            //     const imageNow =
-            //       sessionNext.datatypes.images[
-            //         isSub ? sessionNext.datatypes.images.length - 1 : 0
-            //       ]
-            //     if (imageNow) {
-            //       pre = imageNow
-            //     }
-            //   }
-            // }
-          }
-        }
-      }
-      // if (index > findIndexData && !pre) {
-      //   const session =
-      //     current.sessions?.[isSub ? current.sessions.length - 1 : 0]
-      //   if (session) {
-      //     const imageNow =
-      //       session.datatypes?.images?.[
-      //         isSub ? session.datatypes?.images.length - 1 : 0
-      //       ]
-      //     if (imageNow) {
-      //       pre = imageNow
-      //     }
-      //   }
-      // }
-      return pre
-    }, undefined)
-    return imageNext
   }
 
   return (
@@ -667,7 +494,7 @@ const ProjectFormComponent = () => {
             </ButtonFilter>
           </BoxFilter>
           <DatabaseTableComponent
-            onSort={onSort}
+            onSort={handleSort}
             orderKey={columnSort}
             orderBy={orderBy}
             rowClick={rowClick}
