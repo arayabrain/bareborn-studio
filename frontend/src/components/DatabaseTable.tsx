@@ -165,13 +165,14 @@ const RenderColumn = (props: RenderColumnProps) => {
           // onDragStart={(e) => onDragEvent?.(e, image)}
           // onDragEnd={onDragEnd}
           style={{
-            border: `${
-              isDragging && draggable && !beginDrag ? 2 : 0
-            }px dashed #1976d2`,
             transition: 'all 0.3s',
             opacity: isDragging && draggable && beginDrag ? 0.3 : 1,
             backgroundColor:
-              dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
+              dataShow || previewImage
+                ? isDragging && draggable && !beginDrag
+                  ? 'rgba(25,118,210,0.15)'
+                  : 'transparent'
+                : 'rgb(238, 238, 238)',
           }}
         >
           {columns.map((column) => {
@@ -438,7 +439,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
 const BoxDrag = styled(Box)({
   position: 'absolute',
   background: '#ffffff',
-  border: '1px dashed #1976d2',
+  backgroundColor: 'rgba(25,118,210,0.15)',
   display: 'flex',
   alignItems: 'center',
 })
