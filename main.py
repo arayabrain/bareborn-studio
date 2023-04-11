@@ -52,26 +52,9 @@ templates = Jinja2Templates(directory=f"{DIRPATH}/frontend/build")
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.get("/database")
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.get("/projects")
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.get("/account-manager")
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.get("/login")
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.get("/account")
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
+@app.get("/{path}")
+async def index(request: Request):
+    return await root(request)
 
 def main():
     parser = argparse.ArgumentParser()
