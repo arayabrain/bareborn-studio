@@ -6,6 +6,7 @@ import {
   Radio,
   RadioGroup,
   styled,
+  Typography,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import DatabaseTableComponent from 'components/DatabaseTable'
@@ -75,6 +76,7 @@ const ProjectFormComponent = () => {
   ])
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
+  const [isEditName, setIsEditName] = useState(false)
 
   const onChangeName = (e: any) => {
     setProjectName(e.target.value)
@@ -387,7 +389,16 @@ const ProjectFormComponent = () => {
         onNext={onNext}
         onPrevious={onPrevious}
       />
-      <InputName value={projectName} onChange={onChangeName} />
+      {isEditName ? (
+        <InputName
+          autoFocus
+          onBlur={() => setIsEditName(false)}
+          value={projectName}
+          onChange={onChangeName}
+        />
+      ) : (
+        <TextName onClick={() => setIsEditName(true)}>{projectName}</TextName>
+      )}
       <BoxOptions
         aria-labelledby="demo-radio-buttons-group-label"
         value={projectLevel}
@@ -534,6 +545,16 @@ const ProjectFormComponent = () => {
     </ProjectsWrapper>
   )
 }
+
+const TextName = styled(Typography)(({theme}) => ({
+  textOverflow: 'ellipsis',
+  width: 'calc(40% - 16px)',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+  padding: theme.spacing(1),
+  borderWidth: 1,
+  fontSize: 16
+}))
 
 const BoxItem = styled(Box)({
   display: 'flex',
