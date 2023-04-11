@@ -578,11 +578,10 @@ const InputName = styled('input')(({ theme }) => ({
   fontSize: 18,
   width: 'calc(40% - 16px)',
   '&:focus': {
-    borderBottomColor: 'blue',
+    borderColor: '#000',
   },
   display: 'block',
-  borderBottomWidth: 1,
-  borderBottomColor: '#000000'
+  borderWidth: 1,
 }))
 
 const DropAndDropBox = styled(Box)(({ theme }) => ({
