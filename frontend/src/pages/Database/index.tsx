@@ -95,22 +95,153 @@ export type Viewer = {
   parent_id?: number
 }
 
-export type DataDatabase = {
+export type ImagesDatabase = {
+  id: number
+  parent_id: number
+  image_url: string
+  attributes: { [key: string]: any }
+}
+
+export type DatatypesDatabase = {
+  id: number
+  parent_id: number
+  label: string
+  images: ImagesDatabase[]
+}
+
+export type SessionsDatabase = {
+  id: number
+  parent_id: number
+  label: string
+  datatypes: DatatypesDatabase[]
+}
+
+export type SubjectDatabase = {
+  id: number
+  parent_id: number
+  label: string
+  sessions: SessionsDatabase[]
+}
+
+export type RecordDatabase = {
   id: number
   lab_name: string
   user_name: string
-  sample_name: string
-  subject: string
   recording_time: string
-  sessions: {
-    id: number
-    parent_id: number
-    label: string
-    datatypes: {
-      title: string
-      images: Image[]
-    }
-  }[]
+  created_time: string
+  updated_time: string
+  subjects: SubjectDatabase[]
+}
+
+export type DatabaseData = {
+  pagenation: {
+    page: number
+    limit: number
+    total: number
+    total_pages: number
+  }
+  records: RecordDatabase[]
+}
+
+export const defaultDatabase: DatabaseData = {
+  pagenation: {
+    page: 0,
+    limit: 0,
+    total: 0,
+    total_pages: 0,
+  },
+  records: [
+    {
+      id: 0,
+      lab_name: 'string',
+      user_name: 'string',
+      recording_time: '2023-04-07',
+      subjects: [
+        {
+          id: 0,
+          parent_id: 0,
+          label: 'string',
+          sessions: [
+            {
+              id: 0,
+              parent_id: 0,
+              label: 'string',
+              datatypes: [
+                {
+                  id: 0,
+                  parent_id: 0,
+                  label: 'anat',
+                  images: [
+                    {
+                      id: 0,
+                      parent_id: 0,
+                      image_url: 'string',
+                      attributes: {},
+                    },
+                  ],
+                },
+                {
+                  id: 1,
+                  parent_id: 0,
+                  label: 'func',
+                  images: [
+                    {
+                      id: 0,
+                      parent_id: 0,
+                      image_url: 'string',
+                      attributes: {},
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 1,
+          parent_id: 0,
+          label: 'string',
+          sessions: [
+            {
+              id: 1,
+              parent_id: 0,
+              label: 'string',
+              datatypes: [
+                {
+                  id: 0,
+                  parent_id: 0,
+                  label: 'anat',
+                  images: [
+                    {
+                      id: 0,
+                      parent_id: 0,
+                      image_url: 'string',
+                      attributes: {},
+                    },
+                  ],
+                },
+                {
+                  id: 1,
+                  parent_id: 0,
+                  label: 'func',
+                  images: [
+                    {
+                      id: 0,
+                      parent_id: 0,
+                      image_url: 'string',
+                      attributes: {},
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      created_time: '2023-04-07T04:28:09.686Z',
+      updated_time: '2023-04-07T04:28:09.686Z',
+    },
+  ],
 }
 
 const dataImages = [
@@ -219,177 +350,6 @@ const dataImages = [
   },
 ]
 
-export const defaultDatabase = [
-  {
-    id: 0,
-    lab_name: 'lab 1',
-    user_name: 'hoge',
-    sample_name: 'hoge',
-    recording_time: '2017-03-10',
-  },
-  {
-    id: 1,
-    lab_name: 'lab 4',
-    user_name: 'hoge 4',
-    sample_name: 'hoge 4',
-    recording_time: '2018-03-10',
-  },
-  {
-    id: 2,
-    lab_name: 'lab 5',
-    user_name: 'hoge 5',
-    sample_name: 'hoge 5',
-    recording_time: '2019-03-10',
-  },
-  {
-    id: 3,
-    lab_name: 'lab 2',
-    user_name: 'hoge 2',
-    sample_name: 'hoge 2',
-    recording_time: '2020-03-10',
-    sessions: [
-      {
-        id: 0,
-        parent_id: 3,
-        sessions: 'session 1',
-        subject: '1 subject 6',
-        datatypes: {
-          title: 'anat',
-          images: [
-            {
-              id: 0,
-              parent_id: 3,
-              session_id: 0,
-              protocol: 'protocol',
-              size: '5MB',
-              voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
-              image: {
-                id: 0,
-                image_url: '/lib/test0.nii',
-                attributes: {
-                  file_name: 'image 0',
-                },
-              },
-            },
-            {
-              id: 1,
-              parent_id: 3,
-              session_id: 0,
-              protocol: 'protocol',
-              size: '5MB',
-              voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
-              image: {
-                id: 1,
-                image_url: '/lib/test.nii',
-                attributes: {
-                  file_name: 'image 1',
-                },
-              },
-            },
-          ],
-        },
-      },
-      {
-        id: 1,
-        parent_id: 3,
-        sessions: 'session 3',
-        subject: '2 subject 5',
-        datatypes: {
-          title: 'anat',
-          images: [
-            {
-              id: 2,
-              parent_id: 3,
-              session_id: 1,
-              protocol: 'protocol',
-              size: '5MB',
-              voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
-              image: {
-                id: 2,
-                image_url: '/lib/test1.nii',
-                attributes: {
-                  file_name: 'image 2',
-                },
-              },
-            },
-            {
-              id: 3,
-              parent_id: 3,
-              session_id: 1,
-              protocol: 'protocol',
-              size: '5MB',
-              voxel_size: 'voxel_size',
-              type: '3_TYPE_RATE',
-              image: {
-                id: 3,
-                image_url: '/lib/test2.nii',
-                attributes: {
-                  file_name: 'image 3',
-                },
-              },
-            },
-            {
-              id: 4,
-              parent_id: 3,
-              session_id: 1,
-              protocol: 'protocol',
-              size: '5MB',
-              voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
-              image: {
-                id: 4,
-                image_url: '/lib/test3.nii',
-                attributes: {
-                  file_name: 'image 4',
-                },
-              },
-            },
-          ],
-        },
-      },
-    ],
-  },
-  {
-    id: 4,
-    lab_name: 'lab 2',
-    user_name: 'hoge 2',
-    sample_name: 'hoge 2',
-    recording_time: '2021-03-10',
-    sessions: [
-      {
-        id: 2,
-        parent_id: 4,
-        sessions: 'session 4',
-        subject: '3 subject 2',
-        datatypes: {
-          title: 'anat',
-          images: [
-            {
-              id: 5,
-              parent_id: 4,
-              session_id: 2,
-              protocol: 'protocol',
-              size: '5MB',
-              voxel_size: 'voxel_size',
-              type: 'TYPE_RATE',
-              image: {
-                id: 0,
-                image_url: '/lib/test4.nii',
-                attributes: {
-                  file_name: 'image 5',
-                },
-              },
-            },
-          ],
-        },
-      },
-    ],
-  },
-]
-
 export const columns = (rowClick: Function, setOpenDelete: Function) => [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true },
@@ -448,7 +408,7 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
-  const [datasTable, setDatasTable] = useState<any[]>(defaultDatabase)
+  const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
   const [openDelete, setOpenDelete] = useState(false)
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
   const [columnSort, setColumnSort] = useState<string>('')
@@ -462,36 +422,37 @@ const Database = () => {
   useEffect(() => {
     if (type === 'tree') {
       setDatasTable(defaultDatabase)
-    } else setDatasTable(dataImages)
+    }
+    //  else setDatasTable(dataImages)
   }, [type])
 
   const rowClick = (row: any) => {
-    if (!row?.image?.image_url) return
-    let datas: any[] = dataImages
-    const view = {
-      open: true,
-      url: row.image.image_url,
-      id: row.id,
-      session_id: row.session_id,
-      parent_id: row.parent_id,
-      jsonData: row.image.attributes,
-    }
-    if (type === 'tree') {
-      datas = defaultDatabase
-      const checkNext = onGet(datas as any, view)
-      const checkPre = onGet(
-        JSON.parse(JSON.stringify(datas)).reverse() as any,
-        view,
-        true,
-      )
-      setDisabled({ left: !checkPre, right: !checkNext })
-    } else {
-      setDisabled({
-        left: row.id === datas?.[0]?.id,
-        right: row.id === datas?.[datas.length - 1]?.id,
-      })
-    }
-    setViewer(view)
+    // if (!row?.image?.image_url) return
+    // let datas: any[] = dataImages
+    // const view = {
+    //   open: true,
+    //   url: row.image.image_url,
+    //   id: row.id,
+    //   session_id: row.session_id,
+    //   parent_id: row.parent_id,
+    //   jsonData: row.image.attributes,
+    // }
+    // if (type === 'tree') {
+    //   datas = defaultDatabase
+    //   const checkNext = onGet(datas as any, view)
+    //   const checkPre = onGet(
+    //     JSON.parse(JSON.stringify(datas)).reverse() as any,
+    //     view,
+    //     true,
+    //   )
+    //   setDisabled({ left: !checkPre, right: !checkNext })
+    // } else {
+    //   setDisabled({
+    //     left: row.id === datas?.[0]?.id,
+    //     right: row.id === datas?.[datas.length - 1]?.id,
+    //   })
+    // }
+    // setViewer(view)
   }
 
   const handleCloseDelete = () => {
@@ -503,49 +464,49 @@ const Database = () => {
   }
 
   const handleSort = (orderKey: string) => {
-    setColumnSort(orderKey)
-    let typeOrder: 'ASC' | 'DESC' | undefined = undefined
-    if (!orderBy || orderKey !== columnSort) {
-      typeOrder = 'ASC'
-    } else if (orderBy === 'ASC') {
-      typeOrder = 'DESC'
-    }
-    setOrdeBy(typeOrder)
-    if (!typeOrder) {
-      if (type === 'tree') {
-        setDatasTable(defaultDatabase)
-      } else {
-        setDatasTable(dataImages)
-      }
-      return
-    }
-    const { data } = onSort(
-      type === 'tree' ? defaultDatabase : dataImages,
-      typeOrder,
-      type,
-    )
-    setDatasTable(data)
+    // setColumnSort(orderKey)
+    // let typeOrder: 'ASC' | 'DESC' | undefined = undefined
+    // if (!orderBy || orderKey !== columnSort) {
+    //   typeOrder = 'ASC'
+    // } else if (orderBy === 'ASC') {
+    //   typeOrder = 'DESC'
+    // }
+    // setOrdeBy(typeOrder)
+    // if (!typeOrder) {
+    //   if (type === 'tree') {
+    //     setDatasTable(defaultDatabase)
+    //   } else {
+    //     setDatasTable(dataImages)
+    //   }
+    //   return
+    // }
+    // const { data } = onSort(
+    //   type === 'tree' ? defaultDatabase : dataImages,
+    //   typeOrder,
+    //   type,
+    // )
+    // setDatasTable(data)
   }
 
   const onNext = () => {
-    if (type === 'tree') {
-      const imageNext = onGet(datasTable as any, viewer)
-      rowClick(imageNext)
-    } else {
-      const findIndex = datasTable.findIndex((e) => e.id === viewer.id)
-      rowClick(dataImages[findIndex + 1])
-    }
+    // if (type === 'tree') {
+    //   const imageNext = onGet(datasTable as any, viewer)
+    //   rowClick(imageNext)
+    // } else {
+    //   const findIndex = datasTable.findIndex((e) => e.id === viewer.id)
+    //   rowClick(dataImages[findIndex + 1])
+    // }
   }
 
   const onPrevious = () => {
-    if (type === 'tree') {
-      const datas = JSON.parse(JSON.stringify(datasTable))
-      const imageNext = onGet(datas.reverse() as any, viewer, true)
-      rowClick(imageNext)
-    } else {
-      const findIndex = datasTable.findIndex((e) => e.id === viewer.id)
-      rowClick(dataImages[findIndex - 1])
-    }
+    // if (type === 'tree') {
+    //   const datas = JSON.parse(JSON.stringify(datasTable))
+    //   const imageNext = onGet(datas.reverse() as any, viewer, true)
+    //   rowClick(imageNext)
+    // } else {
+    //   const findIndex = datasTable.findIndex((e) => e.id === viewer.id)
+    //   rowClick(dataImages[findIndex - 1])
+    // }
   }
 
   return (
@@ -599,7 +560,7 @@ const Database = () => {
         rowClick={rowClick}
         orderKey={columnSort}
         orderBy={orderBy}
-        data={datasTable}
+        data={datasTable.records}
         columns={columns(rowClick, setOpenDelete)}
       />
       <ImageView

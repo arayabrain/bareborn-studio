@@ -2,6 +2,7 @@ import { Box, styled, Typography } from '@mui/material'
 import { MouseEvent, FC, Fragment, useState, useRef, useEffect } from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import { RecordDatabase } from 'pages/Database'
 
 type Column = {
   width?: number
@@ -18,7 +19,7 @@ type Column = {
 }
 
 type TableComponentProps = {
-  data?: any[]
+  data?: RecordDatabase[]
   className?: string
   columns?: Column[]
   orderBy?: 'ASC' | 'DESC'
@@ -34,7 +35,7 @@ type TableComponentProps = {
 }
 
 type RenderColumnProps = {
-  item: any
+  data: RecordDatabase
   columns: Column[]
   orderBy?: 'ASC' | 'DESC'
   orderKey?: string
@@ -62,65 +63,73 @@ const renderCol = (col: Column, item: any, index: number, child?: boolean) => {
   return typeof value === 'object' || Array.isArray(value) ? null : value
 }
 
-const ChildCol = (props: RenderColumnProps) => {
-  const { columns, item, index, rowClick, defaultExpand, isData } = props
-  const [show, setShow] = useState<boolean>(!!defaultExpand)
+// const ChildCol = (props: RenderColumnProps) => {
+//   const { columns, item, index, rowClick, defaultExpand, isData } = props
+//   const [show, setShow] = useState<boolean>(!!defaultExpand)
 
-  const onClickCol = (event: MouseEvent<HTMLTableDataCellElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
-    setShow(!show)
-  }
+//   const onClickCol = (event: MouseEvent<HTMLTableDataCellElement>) => {
+//     event.preventDefault()
+//     event.stopPropagation()
+//     setShow(!show)
+//   }
 
+//   return (
+//     <Fragment>
+//       <Tr
+//         onClick={(e) => rowClick?.(e, item)}
+//         style={{ backgroundColor: 'rgb(238, 238, 238)' }}
+//       >
+//         {columns.map((column) => {
+//           const key = column.name || column.dataIndex || ''
+//           const value =
+//             isData && key === 'datatypes'
+//               ? item.title
+//               : renderCol(column, item, index)
+//           return (
+//             <Td
+//               key={`row_child_${column.name || column.dataIndex}`}
+//               onClick={onClickCol}
+//               style={{ cursor: 'pointer' }}
+//             >
+//               <ElementFlex>
+//                 {['datatypes', 'sessions'].includes(key) && value ? (
+//                   <ArrowDropDownIconWrap
+//                     style={{ transform: `rotate(${show ? 180 : 0}deg)` }}
+//                   />
+//                 ) : null}
+//                 {['datatypes', 'sessions', 'subject'].includes(key)
+//                   ? value
+//                   : null}
+//               </ElementFlex>
+//             </Td>
+//           )
+//         })}
+//       </Tr>
+//       {show && (
+//         <RenderColumn
+//           {...props}
+//           draggable={props.draggableProps}
+//           item={item}
+//           dataShow
+//           isData={isData}
+//         />
+//       )}
+//     </Fragment>
+//   )
+// }
+
+const RenderColSubject = () => {
   return (
-    <Fragment>
-      <Tr
-        onClick={(e) => rowClick?.(e, item)}
-        style={{ backgroundColor: 'rgb(238, 238, 238)' }}
-      >
-        {columns.map((column) => {
-          const key = column.name || column.dataIndex || ''
-          const value =
-            isData && key === 'datatypes'
-              ? item.title
-              : renderCol(column, item, index)
-          return (
-            <Td
-              key={`row_child_${column.name || column.dataIndex}`}
-              onClick={onClickCol}
-              style={{ cursor: 'pointer' }}
-            >
-              <ElementFlex>
-                {['datatypes', 'sessions'].includes(key) && value ? (
-                  <ArrowDropDownIconWrap
-                    style={{ transform: `rotate(${show ? 180 : 0}deg)` }}
-                  />
-                ) : null}
-                {['datatypes', 'sessions', 'subject'].includes(key)
-                  ? value
-                  : null}
-              </ElementFlex>
-            </Td>
-          )
-        })}
-      </Tr>
-      {show && (
-        <RenderColumn
-          {...props}
-          draggable={props.draggableProps}
-          item={item}
-          dataShow
-          isData={isData}
-        />
-      )}
-    </Fragment>
+    <Box>
+      <Box>ColSubject</Box>
+    </Box>
   )
 }
 
-const RenderColumn = (props: RenderColumnProps) => {
+const RenderColumn = (props: RenderColumnProps): any => {
   const {
     columns,
-    item,
+    data,
     index,
     rowClick,
     dataShow,
@@ -136,65 +145,39 @@ const RenderColumn = (props: RenderColumnProps) => {
     return onDrag?.(event, [image])
   }
 
-  if (Array.isArray(item.sessions) && item.sessions?.length && !isData) {
-    const itemData = item.sessions
-    return itemData.map((i: any, index: number) => (
-      <ChildCol key={`col_${i.id}_${index}`} {...props} item={i} />
+  if (data.subjects?.length) {
+    return data.subjects.map((sub: any) => (
+      <Tr
+        key={sub.id}
+        onClick={(e) => rowClick?.(e, data)}
+        draggable={draggable}
+        onDragStart={(e) => onDragEvent?.(e, data)}
+        onDragEnd={onDragEnd}
+        style={{
+          transition: 'all 0.3s',
+          backgroundColor:
+            dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
+        }}
+      >
+        {columns.map((column) => {
+          const key = column.name || column.dataIndex || ''
+          return (
+            <Td key={`col_${column.name || column.dataIndex}`}>
+              {['subject'].includes(key)
+                ? sub.label
+                : renderCol(column, data, index)}
+            </Td>
+          )
+        })}
+      </Tr>
     ))
-  }
-
-  if (
-    Array.isArray(item.datatypes?.images) &&
-    item.datatypes?.images?.length &&
-    !isData
-  ) {
-    const itemData = item.datatypes
-    return <ChildCol {...props} item={itemData} isData />
-  }
-
-  if (isData) {
-    return item.images.map((image: any, index: number) => {
-      const isDragging = drags.find((drag: any) => drag.id === image.id)
-      return (
-        <Tr
-          onMouseDown={(e) => onMouseDown?.(e, image)}
-          id={image.id}
-          key={`data_show_image_${image.id}_${index}`}
-          onClick={(e) => rowClick?.(e, image)}
-          // draggable={draggable}
-          // onDragStart={(e) => onDragEvent?.(e, image)}
-          // onDragEnd={onDragEnd}
-          style={{
-            transition: 'all 0.3s',
-            opacity: isDragging && draggable && beginDrag ? 0.3 : 1,
-            backgroundColor:
-              dataShow || previewImage
-                ? isDragging && draggable && !beginDrag
-                  ? 'rgba(25,118,210,0.15)'
-                  : 'transparent'
-                : 'rgb(238, 238, 238)',
-          }}
-        >
-          {columns.map((column) => {
-            const key = column.name || column.dataIndex || ''
-            return (
-              <Td key={`col_${column.name || column.dataIndex}`}>
-                {dataShow && ['datatypes', 'sessions'].includes(key)
-                  ? null
-                  : renderCol(column, image, index)}
-              </Td>
-            )
-          })}
-        </Tr>
-      )
-    })
   }
 
   return (
     <Tr
-      onClick={(e) => rowClick?.(e, item)}
+      onClick={(e) => rowClick?.(e, data)}
       draggable={draggable}
-      onDragStart={(e) => onDragEvent?.(e, item)}
+      onDragStart={(e) => onDragEvent?.(e, data)}
       onDragEnd={onDragEnd}
       style={{
         transition: 'all 0.3s',
@@ -208,13 +191,93 @@ const RenderColumn = (props: RenderColumnProps) => {
           <Td key={`col_${column.name || column.dataIndex}`}>
             {dataShow && ['datatypes', 'sessions'].includes(key)
               ? null
-              : renderCol(column, item, index)}
+              : renderCol(column, data, index)}
           </Td>
         )
       })}
     </Tr>
   )
 }
+
+//   if (Array.isArray(item.sessions) && item.sessions?.length && !isData) {
+//     const itemData = item.sessions
+//     return itemData.map((i: any, index: number) => (
+//       <ChildCol key={`col_${i.id}_${index}`} {...props} item={i} />
+//     ))
+//   }
+
+//   if (
+//     Array.isArray(item.datatypes?.images) &&
+//     item.datatypes?.images?.length &&
+//     !isData
+//   ) {
+//     const itemData = item.datatypes
+//     return <ChildCol {...props} item={itemData} isData />
+//   }
+
+//   if (isData) {
+//     return item.images.map((image: any, index: number) => {
+//       const isDragging = drags.find((drag: any) => drag.id === image.id)
+//       return (
+//         <Tr
+//           onMouseDown={(e) => onMouseDown?.(e, image)}
+//           id={image.id}
+//           key={`data_show_image_${image.id}_${index}`}
+//           onClick={(e) => rowClick?.(e, image)}
+//           // draggable={draggable}
+//           // onDragStart={(e) => onDragEvent?.(e, image)}
+//           // onDragEnd={onDragEnd}
+//           style={{
+//             transition: 'all 0.3s',
+//             opacity: isDragging && draggable && beginDrag ? 0.3 : 1,
+//             backgroundColor:
+//               dataShow || previewImage
+//                 ? isDragging && draggable && !beginDrag
+//                   ? 'rgba(25,118,210,0.15)'
+//                   : 'transparent'
+//                 : 'rgb(238, 238, 238)',
+//           }}
+//         >
+//           {columns.map((column) => {
+//             const key = column.name || column.dataIndex || ''
+//             return (
+//               <Td key={`col_${column.name || column.dataIndex}`}>
+//                 {dataShow && ['datatypes', 'sessions'].includes(key)
+//                   ? null
+//                   : renderCol(column, image, index)}
+//               </Td>
+//             )
+//           })}
+//         </Tr>
+//       )
+//     })
+//   }
+
+//   return (
+//     <Tr
+//       onClick={(e) => rowClick?.(e, item)}
+//       draggable={draggable}
+//       onDragStart={(e) => onDragEvent?.(e, item)}
+//       onDragEnd={onDragEnd}
+//       style={{
+//         transition: 'all 0.3s',
+//         backgroundColor:
+//           dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
+//       }}
+//     >
+//       {columns.map((column) => {
+//         const key = column.name || column.dataIndex || ''
+//         return (
+//           <Td key={`col_${column.name || column.dataIndex}`}>
+//             {dataShow && ['datatypes', 'sessions'].includes(key)
+//               ? null
+//               : renderCol(column, item, index)}
+//           </Td>
+//         )
+//       })}
+//     </Tr>
+//   )
+// }
 
 const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   const {
@@ -389,10 +452,10 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
             {data.map((item, index) => (
               <RenderColumn
                 allowMutilKey={ctrRef.current}
-                item={item}
                 index={index}
                 columns={columns}
                 {...p}
+                data={item}
                 rowClick={(e, image) => onRowClickEvent(e, image)}
                 onMouseDown={onMouseDown}
                 beginDrag={beginDrag}

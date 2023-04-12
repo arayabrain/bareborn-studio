@@ -13,7 +13,7 @@ import DatabaseTableComponent from 'components/DatabaseTable'
 import React, { useState, DragEvent, Fragment, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
-import { defaultDatabase, PopupSearch, Viewer } from '../Database'
+import { DatabaseData, defaultDatabase, PopupSearch, Viewer } from '../Database'
 import ImageView from 'components/ImageView'
 import { onGet, onSort } from 'utils/database'
 
@@ -63,7 +63,7 @@ const ProjectFormComponent = () => {
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
   const [columnSort, setColumnSort] = useState<string>('')
-  const [datasTable, setDatasTable] = useState<any[]>(defaultDatabase)
+  const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
     'factor',
@@ -350,20 +350,20 @@ const ProjectFormComponent = () => {
   }
 
   const handleSort = (orderKey: string) => {
-    setColumnSort(orderKey)
-    let typeOrder: 'ASC' | 'DESC' | undefined = undefined
-    if (!orderBy || orderKey !== columnSort) {
-      typeOrder = 'ASC'
-    } else if (orderBy === 'ASC') {
-      typeOrder = 'DESC'
-    }
-    setOrdeBy(typeOrder)
-    if (!typeOrder) {
-      setDatasTable(defaultDatabase)
-      return
-    }
-    const { data } = onSort(datasTable, typeOrder, orderKey, 'tree')
-    setDatasTable(data)
+    // setColumnSort(orderKey)
+    // let typeOrder: 'ASC' | 'DESC' | undefined = undefined
+    // if (!orderBy || orderKey !== columnSort) {
+    //   typeOrder = 'ASC'
+    // } else if (orderBy === 'ASC') {
+    //   typeOrder = 'DESC'
+    // }
+    // setOrdeBy(typeOrder)
+    // if (!typeOrder) {
+    //   setDatasTable(defaultDatabase)
+    //   return
+    // }
+    // const { data } = onSort(datasTable, typeOrder, orderKey, 'tree')
+    // setDatasTable(data)
   }
 
   const onNext = () => {
@@ -523,7 +523,7 @@ const ProjectFormComponent = () => {
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
             draggable
-            data={datasTable}
+            data={datasTable.records}
             columns={columns}
           />
         </DropBox>
