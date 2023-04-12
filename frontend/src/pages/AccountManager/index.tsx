@@ -133,7 +133,7 @@ const ModalComponent = ({
           <LabelModal>Role: </LabelModal>
           <SelectError
             value={formData?.role || ''}
-            options={['ADMIN', 'Researcher', 'Manager']}
+            options={['ADMIN', 'RESEARCHER', 'MANAGER']}
             onChange={(e: any) => onChangeData(e, 'role')}
             onBlur={(e: any) => onBlurData(e, 'role')}
             errorMessage={errors.role}
@@ -197,11 +197,9 @@ const AccountManager = () => {
   }, [])
 
   const getList = async (page: number = 0) => {
-    if (page === paginate.page) return
     const query: { [key: string]: string | number } = {
       offset: paginate.per_page * page,
     }
-    console.log('paginate.next_page_token[page - 1]', paginate)
     if (paginate.next_page_token[page - 1]) {
       query.next_page_token = paginate.next_page_token[page - 1]
     }
@@ -259,7 +257,8 @@ const AccountManager = () => {
     } else {
       await createUser(data)
     }
-    return getList()
+    await getList(id !== undefined ? paginate.page : 0)
+    return undefined
   }
 
   const columns = useMemo(
