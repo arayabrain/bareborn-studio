@@ -2,6 +2,12 @@ import { Box, styled, Typography } from '@mui/material'
 import { MouseEvent, FC, Fragment, useState, useRef, useEffect } from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import {
+  ImagesDatabase,
+  RecordDatabase,
+  RecordList,
+  SessionsDatabase,
+} from 'pages/Database'
 
 type Column = {
   width?: number
@@ -18,23 +24,22 @@ type Column = {
 }
 
 type TableComponentProps = {
-  data?: any[]
+  data?: (RecordDatabase | RecordList)[]
   className?: string
   columns?: Column[]
-  orderBy?: 'ASC' | 'DESC'
+  orderBy?: 'ASC' | 'DESC' | ''
   orderKey?: string
-  onSort?: (orderKey: string, orderBy: string) => any
+  onSort?: (orderKey: string, orderBy: 'ASC' | 'DESC') => any
   rowClick?: (row: any) => any
   onClickEvent?: (e: any, row: any) => any
   draggable?: boolean
   onDrag?: (row?: any) => any
   onDragEnd?: (row?: any) => any
   defaultExpand?: boolean
-  previewImage?: boolean
 }
 
 type RenderColumnProps = {
-  item: any
+  data: RecordDatabase | SessionsDatabase | ImagesDatabase | RecordList
   columns: Column[]
   orderBy?: 'ASC' | 'DESC'
   orderKey?: string
@@ -43,172 +48,236 @@ type RenderColumnProps = {
   draggable?: boolean
   onDrag?: (event: any, row?: any) => any
   onDragEnd?: (row?: any) => any
-  index: number
-  isData?: boolean
+  recordIndex: number
   defaultExpand?: boolean
   dataShow?: boolean
   beginDrag?: boolean
   draggableProps?: boolean
-  previewImage?: boolean
   allowMutilKey?: boolean
-  drags: any[]
+  drags: ImagesDatabase[]
   onMouseDown: (event: MouseEvent<HTMLTableRowElement>, image: any) => any
 }
 
-const renderCol = (col: Column, item: any, index: number, child?: boolean) => {
+const renderCol = (col: Column, item: any, index: number) => {
   const key = col.name || col.dataIndex || ''
-  const value = item[child ? col.child || key : key]
+  let value = item
+  if (key.includes('.')) {
+    const keys = key.split('.')
+    keys.forEach((k) => {
+      value = value?.[k]
+    })
+  } else value = item[key]
   if (col.render) return col.render(item, value, index)
   return typeof value === 'object' || Array.isArray(value) ? null : value
 }
 
-const ChildCol = (props: RenderColumnProps) => {
-  const { columns, item, index, rowClick, defaultExpand, isData } = props
-  const [show, setShow] = useState<boolean>(!!defaultExpand)
-
-  const onClickCol = (event: MouseEvent<HTMLTableDataCellElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
-    setShow(!show)
-  }
-
-  return (
-    <Fragment>
-      <Tr
-        onClick={(e) => rowClick?.(e, item)}
-        style={{ backgroundColor: 'rgb(238, 238, 238)' }}
-      >
-        {columns.map((column) => {
-          const key = column.name || column.dataIndex || ''
-          const value =
-            isData && key === 'datatypes'
-              ? item.title
-              : renderCol(column, item, index)
-          return (
-            <Td
-              key={`row_child_${column.name || column.dataIndex}`}
-              onClick={onClickCol}
-              style={{ cursor: 'pointer' }}
-            >
-              <ElementFlex>
-                {['datatypes', 'sessions'].includes(key) && value ? (
-                  <ArrowDropDownIconWrap
-                    style={{ transform: `rotate(${show ? 180 : 0}deg)` }}
-                  />
-                ) : null}
-                {['datatypes', 'sessions', 'subject'].includes(key)
-                  ? value
-                  : null}
-              </ElementFlex>
-            </Td>
-          )
-        })}
-      </Tr>
-      {show && (
-        <RenderColumn
-          {...props}
-          draggable={props.draggableProps}
-          item={item}
-          dataShow
-          isData={isData}
-        />
-      )}
-    </Fragment>
-  )
-}
-
-const RenderColumn = (props: RenderColumnProps) => {
-  const {
-    columns,
-    item,
-    index,
-    rowClick,
-    dataShow,
-    previewImage,
-    isData,
-    drags,
-    onMouseDown,
-    beginDrag,
-  } = props
+const RenderColumn = (props: RenderColumnProps): any => {
+  const { columns, data, recordIndex, rowClick, drags, onMouseDown } = props
   const { draggable, onDrag, onDragEnd } = props
+  const [openChild, setOpenChild] = useState(true)
+  const [openChildParent, setOpenChildPrent] = useState(true)
+  const [openSubjects, setOpenSubjects] = useState<number[]>(
+    (data as RecordDatabase)?.subjects?.map?.((e) => e.id) || [],
+  )
+
+  const isDrag = drags.find((drag) => {
+    return (
+      drag.id === data.id &&
+      drag.session_id === (data as ImagesDatabase).session_id &&
+      drag.datatype_index === (data as ImagesDatabase).datatype_index
+    )
+  })
 
   const onDragEvent = (event: any, image: any) => {
     return onDrag?.(event, [image])
   }
 
-  if (Array.isArray(item.sessions) && item.sessions?.length && !isData) {
-    const itemData = item.sessions
-    return itemData.map((i: any, index: number) => (
-      <ChildCol key={`col_${i.id}_${index}`} {...props} item={i} />
-    ))
+  const onSetOpenSubject = (subId: number) => {
+    if (openSubjects.includes(subId)) {
+      setOpenSubjects(openSubjects.filter((o) => o !== subId))
+    } else setOpenSubjects([...openSubjects, subId])
   }
 
   if (
-    Array.isArray(item.datatypes?.images) &&
-    item.datatypes?.images?.length &&
-    !isData
+    (data as RecordDatabase)?.subjects?.length ||
+    (data as SessionsDatabase).datatypes?.length
   ) {
-    const itemData = item.datatypes
-    return <ChildCol {...props} item={itemData} isData />
-  }
-
-  if (isData) {
-    return item.images.map((image: any, index: number) => {
-      const isDragging = drags.find((drag: any) => drag.id === image.id)
-      return (
+    return (
+      <Fragment>
         <Tr
-          onMouseDown={(e) => onMouseDown?.(e, image)}
-          id={image.id}
-          key={`data_show_image_${image.id}_${index}`}
-          onClick={(e) => rowClick?.(e, image)}
-          // draggable={draggable}
-          // onDragStart={(e) => onDragEvent?.(e, image)}
-          // onDragEnd={onDragEnd}
+          onClick={(e) => rowClick?.(e, data)}
+          draggable={draggable}
+          onDragStart={(e) => onDragEvent?.(e, data)}
+          onDragEnd={onDragEnd}
           style={{
             transition: 'all 0.3s',
-            opacity: isDragging && draggable && beginDrag ? 0.3 : 1,
-            backgroundColor:
-              dataShow || previewImage
-                ? isDragging && draggable && !beginDrag
-                  ? 'rgba(25,118,210,0.15)'
-                  : 'transparent'
-                : 'rgb(238, 238, 238)',
+            backgroundColor: 'rgb(238, 238, 238)',
           }}
         >
           {columns.map((column) => {
             const key = column.name || column.dataIndex || ''
             return (
-              <Td key={`col_${column.name || column.dataIndex}`}>
-                {dataShow && ['datatypes', 'sessions'].includes(key)
-                  ? null
-                  : renderCol(column, image, index)}
+              <Td
+                key={`col_${column.name || column.dataIndex}`}
+                onClick={() =>
+                  key === 'session' && setOpenChildPrent(!openChildParent)
+                }
+              >
+                <BoxCenter>
+                  {renderCol(column, data, recordIndex)}
+                  {renderCol(column, data, recordIndex) && key === 'session' && (
+                    <ArrowDropDownIcon
+                      style={{
+                        transform: `rotate(${!openChildParent ? -180 : 0}deg)`,
+                      }}
+                    />
+                  )}
+                </BoxCenter>
               </Td>
             )
           })}
         </Tr>
-      )
-    })
+        {openChildParent &&
+          (data as RecordDatabase).subjects?.map((sub, subject_index) => {
+            return (
+              <Fragment key={sub.id}>
+                <Tr
+                  style={{
+                    transition: 'all 0.3s',
+                    backgroundColor: 'rgb(238, 238, 238)',
+                  }}
+                >
+                  {columns.map((column) => {
+                    const key = column.name || column.dataIndex || ''
+                    return (
+                      <Td
+                        key={`col_${column.name || column.dataIndex}`}
+                        onClick={() =>
+                          key === 'subject' && onSetOpenSubject(sub.id)
+                        }
+                      >
+                        {key === 'subject' ? (
+                          <BoxCenter>
+                            {sub.label}
+                            {sub.sessions?.length ? (
+                              <ArrowDropDownIcon
+                                style={{
+                                  transform: `rotate(${
+                                    !openSubjects.includes(sub.id) ? -180 : 0
+                                  }deg)`,
+                                }}
+                              />
+                            ) : null}
+                          </BoxCenter>
+                        ) : (
+                          ''
+                        )}
+                      </Td>
+                    )
+                  })}
+                </Tr>
+                {openSubjects.includes(sub.id) &&
+                  sub.sessions.map((session, session_index) => (
+                    <RenderColumn
+                      {...props}
+                      key={session.id}
+                      data={
+                        {
+                          ...session,
+                          session: session.label,
+                          session_index,
+                          subject_index,
+                        } as SessionsDatabase
+                      }
+                    />
+                  ))}
+              </Fragment>
+            )
+          })}
+        {openChildParent &&
+          (data as SessionsDatabase).datatypes?.map((type, ii) => {
+            return (
+              <Fragment key={type.id}>
+                <Tr
+                  style={{
+                    transition: 'all 0.3s',
+                    backgroundColor: 'rgb(238, 238, 238)',
+                  }}
+                >
+                  {columns.map((column) => {
+                    const key = column.name || column.dataIndex || ''
+                    return (
+                      <Td
+                        key={`col_${column.name || column.dataIndex}`}
+                        onClick={() =>
+                          key === 'datatype' && setOpenChild(!openChild)
+                        }
+                      >
+                        {key === 'datatype' ? (
+                          <BoxCenter>
+                            {type.label}
+                            {type.images?.length ? (
+                              <ArrowDropDownIcon
+                                style={{
+                                  transform: `rotate(${
+                                    !openChild ? -180 : 0
+                                  }deg)`,
+                                }}
+                              />
+                            ) : null}
+                          </BoxCenter>
+                        ) : (
+                          ''
+                        )}
+                      </Td>
+                    )
+                  })}
+                </Tr>
+                {openChild &&
+                  type.images.map((image, index) => (
+                    <RenderColumn
+                      {...props}
+                      key={`row_image_${image.id}_${index}`}
+                      data={
+                        {
+                          ...image,
+                          session_index: (data as SessionsDatabase)
+                            .session_index,
+                          subject_index: (data as SessionsDatabase)
+                            .subject_index,
+                          session_id: data.id,
+                          datatype_index: ii,
+                          image_index: index,
+                          datatype_label: type.label,
+                          subject_id: (data as SessionsDatabase).parent_id,
+                          record_index: recordIndex,
+                        } as ImagesDatabase
+                      }
+                    />
+                  ))}
+              </Fragment>
+            )
+          })}
+      </Fragment>
+    )
   }
 
   return (
     <Tr
-      onClick={(e) => rowClick?.(e, item)}
+      onClick={(e) => rowClick?.(e, data)}
       draggable={draggable}
-      onDragStart={(e) => onDragEvent?.(e, item)}
+      onDragStart={(e) => onDragEvent?.(e, data)}
+      onMouseDown={(e) => onMouseDown(e, data)}
       onDragEnd={onDragEnd}
       style={{
         transition: 'all 0.3s',
-        backgroundColor:
-          dataShow || previewImage ? 'transparent' : 'rgb(238, 238, 238)',
+        backgroundColor: isDrag ? 'rgba(25,118,210,0.15)' : '',
       }}
     >
       {columns.map((column) => {
-        const key = column.name || column.dataIndex || ''
         return (
           <Td key={`col_${column.name || column.dataIndex}`}>
-            {dataShow && ['datatypes', 'sessions'].includes(key)
-              ? null
-              : renderCol(column, item, index)}
+            {renderCol(column, data, recordIndex)}
           </Td>
         )
       })}
@@ -229,7 +298,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     ...p
   } = props
   const { data = [], columns = [] } = props
-  const [drags, setDrags] = useState<any[]>([])
+  const [drags, setDrags] = useState<ImagesDatabase[]>([])
   const [mouseMoveRect, setMouseMoveRect] = useState({ pageX: 0, pageY: 0 })
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
 
@@ -276,20 +345,21 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     event: MouseEvent<HTMLTableColElement>,
     image: any,
   ) => {
-    if (!ctrRef.current || !draggable) {
+    const idDom = `${image.id}_${image.datatype_index}_${image.session_id}`
+    if (!ctrRef.current) {
       if (!timeoutClick.current) {
         timeoutClick.current = setTimeout(() => {
           timeoutClick.current = undefined
         }, 300)
-        if (!ctrRef.current) {
+        if (draggable) {
           setDrags([image])
           const tds = event.currentTarget.getElementsByTagName('td')
-          refTdSelect.current[event.currentTarget.id] = {
+          refTdSelect.current[idDom] = {
             dom: event.currentTarget as unknown as HTMLTableRowElement,
             tds: [],
           }
           for (let i = 0; i < tds.length; i++) {
-            refTdSelect.current[event.currentTarget.id].tds.push({
+            refTdSelect.current[idDom].tds.push({
               id: tds[i].id,
               dom: tds[i],
               html: tds[i].innerHTML,
@@ -300,18 +370,33 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
       }
       return rowClick?.(image)
     }
-    if (drags.find((drag: any) => drag.id === image.id)) {
-      setDrags(drags.filter((drag: any) => drag.id !== image.id))
-      delete refTdSelect.current[event.currentTarget.id]
+    if (!draggable) return
+    if (
+      drags.find(
+        (drag) =>
+          drag.id === image.id &&
+          drag.datatype_index === image.datatype_index &&
+          drag.session_index === image.session_index,
+      )
+    ) {
+      setDrags(
+        drags.filter(
+          (drag: any) =>
+            drag.id === image.id &&
+            drag.datatype_index === image.datatype_index &&
+            drag.session_index === image.session_index,
+        ),
+      )
+      delete refTdSelect.current[idDom]
     } else {
       setDrags([...drags, image])
       const tds = event.currentTarget.getElementsByTagName('td')
-      refTdSelect.current[event.currentTarget.id] = {
+      refTdSelect.current[idDom] = {
         dom: event.currentTarget as unknown as HTMLTableRowElement,
         tds: [],
       }
       for (let i = 0; i < tds.length; i++) {
-        refTdSelect.current[event.currentTarget.id].tds.push({
+        refTdSelect.current[idDom].tds.push({
           id: tds[i].id,
           dom: tds[i],
           html: tds[i].innerHTML,
@@ -324,9 +409,15 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     if (
       !drags.length ||
       !draggable ||
-      !drags.some((drag) => drag.id === image.id)
-    )
+      !drags.some(
+        (drag) =>
+          drag.id === image.id &&
+          drag.datatype_index === image.datatype_index &&
+          drag.session_index === image.session_index,
+      )
+    ) {
       return
+    }
     mouseStart.current = { pageX: event.pageX, pageY: event.pageY }
     onDrag?.(drags)
   }
@@ -334,6 +425,9 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   const onMouseUp = () => {
     mouseStart.current = undefined
     setBeginDrag(false)
+    setTimeout(() => {
+      onDrag?.(undefined)
+    }, 100)
   }
 
   const onMouseMove = (event: any) => {
@@ -389,10 +483,10 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
             {data.map((item, index) => (
               <RenderColumn
                 allowMutilKey={ctrRef.current}
-                item={item}
-                index={index}
+                recordIndex={index}
                 columns={columns}
                 {...p}
+                data={item}
                 rowClick={(e, image) => onRowClickEvent(e, image)}
                 onMouseDown={onMouseDown}
                 beginDrag={beginDrag}
@@ -410,7 +504,8 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
       </TableWrap>
       {beginDrag &&
         drags.map((el) => {
-          const trNow = refTdSelect.current[el.id]
+          const rowId = `${el.id}_${el.datatype_index}_${el.session_id}`
+          const trNow = refTdSelect.current[rowId]
           const { width, height, top, left } =
             trNow.dom?.getBoundingClientRect()
           const style = {
@@ -424,7 +519,10 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
               {trNow.tds.map((td, index) => {
                 const { width } = td.dom.getBoundingClientRect()
                 return (
-                  <Box key={`${td.id}_${index}`} style={{ width, padding: 16 }}>
+                  <Box
+                    key={`${rowId}_-${index}`}
+                    style={{ width, padding: 16 }}
+                  >
                     {td.html}
                   </Box>
                 )
@@ -440,15 +538,6 @@ const BoxDrag = styled(Box)({
   position: 'absolute',
   background: '#ffffff',
   backgroundColor: 'rgba(25,118,210,0.15)',
-  display: 'flex',
-  alignItems: 'center',
-})
-
-const ArrowDropDownIconWrap = styled(ArrowDropDownIcon)({
-  transition: 'transform 0.3s',
-})
-
-const ElementFlex = styled(Box)({
   display: 'flex',
   alignItems: 'center',
 })
@@ -504,6 +593,11 @@ const ArrowDownwardIconOrder = styled(ArrowDownwardIcon)({
   transition: 'transform 0.3s',
   marginBottom: -3,
   marginLeft: 5,
+})
+
+const BoxCenter = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
 })
 
 export default DatabaseTableComponent
