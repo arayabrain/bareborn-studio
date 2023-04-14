@@ -3,7 +3,7 @@ import { getMe, login } from 'api/auth'
 import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { saveToken } from 'utils/auth'
+import {getToken, saveToken} from 'utils/auth'
 
 const Login = () => {
   const { setUser } = useUser()
@@ -36,7 +36,6 @@ const Login = () => {
     setUser(data)
     navigate('/')
   }
-
   const validateSubmit = () => {
     let errors = { email: '', password: '' }
     if (!values.email) {
