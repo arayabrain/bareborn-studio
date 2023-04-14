@@ -296,7 +296,7 @@ const AccountManager = () => {
   )
 
   if (user?.role !== 'ADMIN') {
-    return <Box>You don't have permission</Box>
+    return null
   }
 
   return (

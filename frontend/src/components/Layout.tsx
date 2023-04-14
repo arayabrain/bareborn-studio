@@ -41,7 +41,11 @@ const Layout: FC = ({ children }) => {
     try {
       if (token) {
         const data = await getMe()
-        return setUser(data)
+         setUser(data)
+        if(['/login', '/signup', '/reset-password'].includes( window.location.pathname )) {
+          navigate("/")
+        }
+        return;
       }
       if (
         // !auth.currentUser &&
