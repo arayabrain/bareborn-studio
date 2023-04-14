@@ -18,6 +18,7 @@ const ModalComponent = ({
   const regex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/
   const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,100}$/
   const [formData, setFormData] = useState(type !== 'Add' ? dataEdit : {})
+  const [isDisabled, setIsDisabled] = useState(false)
   const [errors, setErrors] = useState<{ [key: string]: string }>({
     email: '',
     password: '',
@@ -77,34 +78,44 @@ const ModalComponent = ({
 
   const onSubmit = async (e: any) => {
     e.preventDefault()
+    setIsDisabled(true)
+    const errorName = values.display_name === '' || !formData.hasOwnProperty('display_name')
+        ? 'This field is required'
+        : ''
     const errorEmail = validateEmail(values.email)
+    const errorLab = values.lab === '' || !formData.hasOwnProperty('lab')
+        ? 'This field is required'
+        : ''
+    const errorRole = values.role === '' || !formData.hasOwnProperty('role')
+        ? 'This field is required'
+        : ''
     const errorPassword = values.password === '' ? 'This field is required' : validatePassword(values.password)
     const errorConfirmPassword = !values.password && !values.confirmPassword ? 'This field is required' : validatePassword(values.confirmPassword)
     const errorNotMatch =
-      formData.password === formData.confirmPassword ? ''
-        : 'password is not match'
-    if (errorEmail || errorPassword || errorConfirmPassword || errorNotMatch) {
+        formData.password === formData.confirmPassword ? ''
+            : 'password is not match'
+    if (errorEmail || errorPassword || errorConfirmPassword || errorNotMatch || errorName || errorRole || errorLab) {
       setErrors({
         email: errorEmail,
         password: errorPassword,
         confirmPassword:
           errorConfirmPassword === '' ? errorNotMatch : errorConfirmPassword,
-        display_name:
-          values.display_name === '' || !formData.hasOwnProperty('display_name')
-            ? 'This field is required'
-            : '',
-        lab:
-          values.lab === '' || !formData.hasOwnProperty('lab')
-            ? 'This field is required'
-            : '',
-        role:
-          values.role === '' || !formData.hasOwnProperty('role')
-            ? 'This field is required'
-            : '',
+        display_name: errorName,
+        lab: errorLab,
+        role: errorRole,
       })
+      setIsDisabled(false)
       return
     }
-    await onSubmitEdit(dataEdit.uid, formData)
+    try {
+      await onSubmitEdit(dataEdit.uid, formData)
+      setIsDisabled(false)
+      alert('Your account has been created successfully!')
+    }
+    catch {
+      setIsDisabled(false)
+      alert('Your account creation failed!')
+    }
     setIsOpenModal(false)
   }
   const onCancel = () => {
@@ -168,7 +179,7 @@ const ModalComponent = ({
           ) : null}
         </BoxData>
         <ButtonModal>
-          <Button onClick={(e) => onSubmit(e)}>Ok</Button>
+          <Button disabled = {isDisabled} onClick={(e) => onSubmit(e)}>Ok</Button>
           <Button onClick={() => onCancel()}>Cancel</Button>
         </ButtonModal>
       </ModalBox>
