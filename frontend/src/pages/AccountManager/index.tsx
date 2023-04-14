@@ -67,7 +67,7 @@ const ModalComponent = ({
       setErrors((pre) => ({
         ...pre,
         [type]:
-          value === '' && !['password', 'confirmPassword'].includes(type)
+          value === ''
             ? 'This field is required'
             : validate?.(value),
       }))
@@ -77,12 +77,12 @@ const ModalComponent = ({
 
   const onSubmit = async (e: any) => {
     e.preventDefault()
+    console.log('values.password', values.password , 'values.confirmPassword',values.confirmPassword)
     const errorEmail = validateEmail(values.email)
-    const errorPassword = validatePassword(values.password)
-    const errorConfirmPassword = validatePassword(values.confirmPassword)
+    const errorPassword = values.password === '' ? 'This field is required' : validatePassword(values.password)
+    const errorConfirmPassword = !values.password && !values.confirmPassword ? 'This field is required' : validatePassword(values.confirmPassword)
     const errorNotMatch =
-      formData.password === formData.confirmPassword
-        ? ''
+      formData.password === formData.confirmPassword ? ''
         : 'password is not match'
     if (errorEmail || errorPassword || errorConfirmPassword || errorNotMatch) {
       setErrors({
@@ -128,7 +128,7 @@ const ModalComponent = ({
             value={formData?.display_name || ''}
             onChange={(e: any) => onChangeData(e, 'display_name')}
             onBlur={(e: any) => onBlurData(e, 'display_name')}
-            errorMessage={errors.name}
+            errorMessage={errors.display_name}
           />
           <LabelModal>Role: </LabelModal>
           <SelectError
