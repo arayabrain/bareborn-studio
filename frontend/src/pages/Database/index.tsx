@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import { onGet, onSort } from 'utils/database'
+import { onGet, onRowClick, onSort } from 'utils/database'
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -93,13 +93,22 @@ export type Viewer = {
   id?: number
   session_id?: number
   parent_id?: number
+  image?: ImagesDatabase | RecordList
 }
 
 export type ImagesDatabase = {
   id: number
   parent_id: number
   image_url: string
+  datatype_label?: string
+  type?: string
   attributes: { [key: string]: any }
+  session_id?: number
+  record_index?: number
+  subject_index?: number
+  session_index?: number
+  datatype_index?: number
+  image_index?: number
 }
 
 export type DatatypesDatabase = {
@@ -112,8 +121,10 @@ export type DatatypesDatabase = {
 export type SessionsDatabase = {
   id: number
   parent_id: number
+  session_index?: number
   label: string
   datatypes: DatatypesDatabase[]
+  subject_index?: number
 }
 
 export type SubjectDatabase = {
@@ -121,6 +132,7 @@ export type SubjectDatabase = {
   parent_id: number
   label: string
   sessions: SessionsDatabase[]
+  subject_index?: number
 }
 
 export type RecordDatabase = {
@@ -143,6 +155,38 @@ export type DatabaseData = {
   records: RecordDatabase[]
 }
 
+export type RecordList = {
+  id: number
+  lab_name: string
+  user_name: string
+  recording_time: string
+  subject_id: number
+  subject_label: string
+  session_id: number
+  session_label: string
+  datatypes_id: number
+  datatypes_label: string
+  image_id: number
+  image_url: string
+  image_attributes: {
+    size: string
+    type: string
+    protocol: string
+  }
+  created_time: string
+  updated_time: string
+}
+
+export type DatabaseListData = {
+  pagenation: {
+    page: number
+    limit: number
+    total: number
+    total_pages: number
+  }
+  records: RecordList[]
+}
+
 export const defaultDatabase: DatabaseData = {
   pagenation: {
     page: 0,
@@ -160,12 +204,12 @@ export const defaultDatabase: DatabaseData = {
         {
           id: 0,
           parent_id: 0,
-          label: 'string',
+          label: 'new subject',
           sessions: [
             {
               id: 0,
               parent_id: 0,
-              label: 'string',
+              label: 'new session',
               datatypes: [
                 {
                   id: 0,
@@ -175,8 +219,12 @@ export const defaultDatabase: DatabaseData = {
                     {
                       id: 0,
                       parent_id: 0,
-                      image_url: 'string',
-                      attributes: {},
+                      image_url: '/lib/test.nii',
+                      attributes: {
+                        size: '20MB',
+                        type: 'TYPE_1',
+                        protocol: 'Protocol',
+                      },
                     },
                   ],
                 },
@@ -186,10 +234,14 @@ export const defaultDatabase: DatabaseData = {
                   label: 'func',
                   images: [
                     {
-                      id: 0,
+                      id: 1,
                       parent_id: 0,
-                      image_url: 'string',
-                      attributes: {},
+                      image_url: '/lib/test0.nii',
+                      attributes: {
+                        size: '20MB',
+                        type: 'TYPE_1',
+                        protocol: 'Protocol',
+                      },
                     },
                   ],
                 },
@@ -200,36 +252,64 @@ export const defaultDatabase: DatabaseData = {
         {
           id: 1,
           parent_id: 0,
-          label: 'string',
+          label: 'project subject',
           sessions: [
             {
               id: 1,
-              parent_id: 0,
-              label: 'string',
+              parent_id: 1,
+              label: 'zsession',
               datatypes: [
                 {
-                  id: 0,
-                  parent_id: 0,
+                  id: 2,
+                  parent_id: 1,
                   label: 'anat',
                   images: [
                     {
-                      id: 0,
-                      parent_id: 0,
-                      image_url: 'string',
-                      attributes: {},
+                      id: 2,
+                      parent_id: 2,
+                      image_url: '/lib/test1.nii',
+                      attributes: {
+                        size: '20MB',
+                        type: 'TYPE_1',
+                        protocol: 'Protocol',
+                      },
                     },
                   ],
                 },
                 {
-                  id: 1,
-                  parent_id: 0,
-                  label: 'func',
+                  id: 3,
+                  parent_id: 1,
+                  label: 'zunc',
                   images: [
                     {
-                      id: 0,
-                      parent_id: 0,
-                      image_url: 'string',
-                      attributes: {},
+                      id: 3,
+                      parent_id: 3,
+                      image_url: '/lib/test2.nii',
+                      attributes: {
+                        size: '20MB',
+                        type: 'T2_RATE',
+                        protocol: 'X Protocol',
+                      },
+                    },
+                    {
+                      id: 4,
+                      parent_id: 3,
+                      image_url: '/lib/test3.nii',
+                      attributes: {
+                        size: '20MB',
+                        type: 'TYPE_1',
+                        protocol: 'Protocol',
+                      },
+                    },
+                    {
+                      id: 5,
+                      parent_id: 3,
+                      image_url: '/lib/test4.nii',
+                      attributes: {
+                        size: '20MB',
+                        type: 'T3_RATE',
+                        protocol: 'Z Protocol',
+                      },
                     },
                   ],
                 },
@@ -241,137 +321,221 @@ export const defaultDatabase: DatabaseData = {
       created_time: '2023-04-07T04:28:09.686Z',
       updated_time: '2023-04-07T04:28:09.686Z',
     },
+    {
+      id: 1,
+      lab_name: 'lab name',
+      user_name: 'user name',
+      recording_time: '2023-04-06',
+      subjects: [
+        {
+          id: 3,
+          parent_id: 1,
+          label: 'subject name',
+          sessions: [],
+        },
+        {
+          id: 4,
+          parent_id: 1,
+          label: 'zubject name',
+          sessions: [],
+        },
+        {
+          id: 5,
+          parent_id: 1,
+          label: 'lubject name',
+          sessions: [],
+        },
+      ],
+      created_time: '2023-04-07T04:28:09.686Z',
+      updated_time: '2023-04-07T04:28:09.686Z',
+    },
   ],
 }
 
-const dataImages = [
-  {
-    id: 1,
-    lab_name: 'lab 1',
-    user_name: 'hoge',
-    sample_name: 'hoge',
-    recording_time: '2018-03-10',
-    type: 'TYPE_RATE',
-    datatypes: 'anat',
-    protocol: 'protocol 3',
-    size: '6MB',
-    sessions: 'sess 1',
-    subject: 'sub 1',
-    voxel_size: '8MB',
-    image: {
-      id: 0,
-      parent_id: 0,
-      image_url: '/lib/test0.nii',
-      attributes: { file_name: 'image 0' },
-    },
+const dataImages: DatabaseListData = {
+  pagenation: {
+    page: 0,
+    limit: 0,
+    total: 0,
+    total_pages: 0,
   },
-  {
-    id: 2,
-    lab_name: 'lab 2',
-    user_name: 'hoge 2',
-    sessions: 'sess 2',
-    subject: 'sub 2',
-    datatypes: 'anat',
-    sample_name: 'hoge 2',
-    recording_time: '2019-03-10',
-    type: 'TYPE_2',
-    protocol: 'protocol 3',
-    size: '7MB',
-    voxel_size: '8MB',
-    image: {
-      id: 1,
-      parent_id: 0,
+  records: [
+    {
+      id: 0,
+      lab_name: 'lab name',
+      user_name: 'string',
+      recording_time: '2023-04-13',
+      subject_id: 0,
+      subject_label: 'string',
+      session_id: 0,
+      session_label: 'string',
+      datatypes_id: 0,
+      datatypes_label: 'string',
+      image_id: 0,
       image_url: '/lib/test.nii',
-      attributes: { file_name: 'image 1' },
+      image_attributes: {
+        size: '20MB',
+        type: 'TYPE_1',
+        protocol: 'Protocol',
+      },
+      created_time: '2023-04-13T04:48:01.063Z',
+      updated_time: '2023-04-13T04:48:01.063Z',
     },
-  },
-  {
-    id: 3,
-    parent_id: 0,
-    lab_name: 'lab 3',
-    user_name: 'hoge 3',
-    sample_name: 'hoge 3',
-    recording_time: '2020-04-10',
-    sessions: 'sess 3',
-    subject: 'sub 3',
-    datatypes: 'anat',
-    protocol: 'protocol',
-    size: '8MB',
-    voxel_size: 'voxel_size',
-    type: 'TYPE_RATE',
-    image: {
+    {
       id: 1,
-      parent_id: 0,
+      lab_name: 'z lab name',
+      user_name: 'string',
+      recording_time: '2023-04-13',
+      subject_id: 0,
+      subject_label: 'string',
+      session_id: 0,
+      session_label: 'string',
+      datatypes_id: 0,
+      datatypes_label: 'string',
+      image_id: 0,
+      image_url: '/lib/test0.nii',
+      image_attributes: {
+        size: '20MB',
+        type: 'TYPE_1',
+        protocol: 'Protocol',
+      },
+      created_time: '2023-04-13T04:48:01.063Z',
+      updated_time: '2023-04-13T04:48:01.063Z',
+    },
+    {
+      id: 2,
+      lab_name: 'x lab name',
+      user_name: 'string',
+      recording_time: '2023-04-13',
+      subject_id: 0,
+      subject_label: 'string',
+      session_id: 0,
+      session_label: 'string',
+      datatypes_id: 0,
+      datatypes_label: 'string',
+      image_id: 0,
       image_url: '/lib/test1.nii',
-      attributes: { file_name: 'image 2' },
+      image_attributes: {
+        size: '20MB',
+        type: 'TYPE_1',
+        protocol: 'Protocol',
+      },
+      created_time: '2023-04-13T04:48:01.063Z',
+      updated_time: '2023-04-13T04:48:01.063Z',
     },
-  },
-  {
-    id: 4,
-    parent_id: 2,
-    lab_name: 'lab 4',
-    user_name: 'hoge 4',
-    sample_name: 'hoge 4',
-    recording_time: '2021-04-11',
-    protocol: 'protocol',
-    size: '9MB',
-    sessions: 'sess 4',
-    subject: 'sub 4',
-    voxel_size: 'voxel_size',
-    datatypes: 'anat',
-    type: 'TYPE_RATE',
-    image: {
-      id: 0,
-      parent_id: 0,
+    {
+      id: 3,
+      lab_name: 'c lab name',
+      user_name: 'string',
+      recording_time: '2023-04-13',
+      subject_id: 0,
+      subject_label: 'string',
+      session_id: 0,
+      session_label: 'string',
+      datatypes_id: 0,
+      datatypes_label: 'string',
+      image_id: 0,
       image_url: '/lib/test2.nii',
-      attributes: { file_name: 'image 3' },
+      image_attributes: {
+        size: '20MB',
+        type: 'TYPE_1',
+        protocol: 'Protocol',
+      },
+      created_time: '2023-04-13T04:48:01.063Z',
+      updated_time: '2023-04-13T04:48:01.063Z',
     },
-  },
-  {
-    id: 5,
-    parent_id: 4,
-    lab_name: 'lab 5',
-    user_name: 'hoge 5',
-    sample_name: 'hoge 5',
-    recording_time: '2022-04-15',
-    protocol: 'protocol',
-    size: '1MB',
-    sessions: 'sess 5',
-    datatypes: 'anat',
-    subject: 'sub 5',
-    voxel_size: 'voxel_size',
-    type: 'TYPE_RATE',
-    image: {
-      id: 1,
-      parent_id: 0,
+    {
+      id: 4,
+      lab_name: '4 lab name',
+      user_name: 'string',
+      recording_time: '2023-04-13',
+      subject_id: 0,
+      subject_label: 'string',
+      session_id: 0,
+      session_label: 'string',
+      datatypes_id: 0,
+      datatypes_label: 'string',
+      image_id: 0,
       image_url: '/lib/test3.nii',
-      attributes: { file_name: 'image 4' },
+      image_attributes: {
+        size: '20MB',
+        type: 'TYPE_1',
+        protocol: 'Z Protocol',
+      },
+      created_time: '2023-04-13T04:48:01.063Z',
+      updated_time: '2023-04-13T04:48:01.063Z',
     },
-  },
-]
+    {
+      id: 5,
+      lab_name: 'string',
+      user_name: 'string',
+      recording_time: '2023-04-13',
+      subject_id: 0,
+      subject_label: 'string',
+      session_id: 0,
+      session_label: 'string',
+      datatypes_id: 0,
+      datatypes_label: 'string',
+      image_id: 0,
+      image_url: '/lib/test4.nii',
+      image_attributes: {
+        size: '20MB',
+        type: 'TYPE_1',
+        protocol: 'X Protocol',
+      },
+      created_time: '2023-04-13T04:48:01.063Z',
+      updated_time: '2023-04-13T04:48:01.063Z',
+    },
+  ],
+}
 
-export const columns = (rowClick: Function, setOpenDelete: Function) => [
+export const columns = (
+  rowClick: Function,
+  setOpenDelete: Function,
+  type: 'tree' | 'list' = 'tree',
+) => [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true },
   { title: 'Date', name: 'recording_time', filter: true },
-  { title: 'Subject', name: 'subject', filter: true },
+  {
+    title: 'Subject',
+    name: type === 'tree' ? 'subject' : 'subject_label',
+    filter: true,
+  },
   {
     title: 'Session',
-    name: 'sessions',
+    name: type === 'tree' ? 'session' : 'session_label',
     child: 'label',
     filter: true,
     width: 100,
   },
   {
     title: 'Dataset',
-    name: 'datatypes',
+    name: type === 'tree' ? 'datatype' : 'datatypes_label',
     filter: true,
     width: 100,
   },
-  { title: 'Type', name: 'type', filter: true },
-  { title: 'Protocol', name: 'protocol', filter: true },
-  { title: 'Size', name: 'size', filter: true },
-  { title: 'Voxel size', name: 'voxel_size', filter: true },
+  {
+    title: 'Type',
+    name: type === 'tree' ? 'attributes.type' : 'image_attributes.type',
+    filter: true,
+  },
+  {
+    title: 'Protocol',
+    name: type === 'tree' ? 'attributes.protocol' : 'image_attributes.protocol',
+    filter: true,
+  },
+  {
+    title: 'Size',
+    name: type === 'tree' ? 'attributes.size' : 'image_attributes.size',
+    filter: true,
+  },
+  {
+    title: 'Voxel size',
+    name:
+      type === 'tree' ? 'attributes.voxel_size' : 'image_attributes.voxel_size',
+    filter: true,
+  },
   {
     title: '',
     name: 'action',
@@ -408,9 +572,14 @@ export const columns = (rowClick: Function, setOpenDelete: Function) => [
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
-  const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
+  const [datasTable, setDatasTable] = useState<DatabaseData | DatabaseListData>(
+    defaultDatabase,
+  )
+  const [initDataTable, setInitDataTable] = useState<
+    DatabaseData | DatabaseListData
+  >(defaultDatabase)
   const [openDelete, setOpenDelete] = useState(false)
-  const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
+  const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [type, setType] = useState<'tree' | 'list'>('tree')
   const [disabled, setDisabled] = useState({ left: false, right: false })
@@ -422,37 +591,17 @@ const Database = () => {
   useEffect(() => {
     if (type === 'tree') {
       setDatasTable(defaultDatabase)
+      setInitDataTable(defaultDatabase)
+    } else {
+      setDatasTable(dataImages)
+      setInitDataTable(dataImages)
     }
-    //  else setDatasTable(dataImages)
   }, [type])
 
-  const rowClick = (row: any) => {
-    // if (!row?.image?.image_url) return
-    // let datas: any[] = dataImages
-    // const view = {
-    //   open: true,
-    //   url: row.image.image_url,
-    //   id: row.id,
-    //   session_id: row.session_id,
-    //   parent_id: row.parent_id,
-    //   jsonData: row.image.attributes,
-    // }
-    // if (type === 'tree') {
-    //   datas = defaultDatabase
-    //   const checkNext = onGet(datas as any, view)
-    //   const checkPre = onGet(
-    //     JSON.parse(JSON.stringify(datas)).reverse() as any,
-    //     view,
-    //     true,
-    //   )
-    //   setDisabled({ left: !checkPre, right: !checkNext })
-    // } else {
-    //   setDisabled({
-    //     left: row.id === datas?.[0]?.id,
-    //     right: row.id === datas?.[datas.length - 1]?.id,
-    //   })
-    // }
-    // setViewer(view)
+  const rowClick = (row: ImagesDatabase | RecordList) => {
+    const { view, checkNext, checkPre } = onRowClick(datasTable, row, type)
+    setViewer(view)
+    setDisabled({ left: !checkPre, right: !checkNext })
   }
 
   const handleCloseDelete = () => {
@@ -463,50 +612,32 @@ const Database = () => {
     setOpenDelete(false)
   }
 
-  const handleSort = (orderKey: string) => {
-    // setColumnSort(orderKey)
-    // let typeOrder: 'ASC' | 'DESC' | undefined = undefined
-    // if (!orderBy || orderKey !== columnSort) {
-    //   typeOrder = 'ASC'
-    // } else if (orderBy === 'ASC') {
-    //   typeOrder = 'DESC'
-    // }
-    // setOrdeBy(typeOrder)
-    // if (!typeOrder) {
-    //   if (type === 'tree') {
-    //     setDatasTable(defaultDatabase)
-    //   } else {
-    //     setDatasTable(dataImages)
-    //   }
-    //   return
-    // }
-    // const { data } = onSort(
-    //   type === 'tree' ? defaultDatabase : dataImages,
-    //   typeOrder,
-    //   type,
-    // )
-    // setDatasTable(data)
+  const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC') => {
+    let orderbyCheck: 'DESC' | 'ASC' | '' = orderByValue
+    if (orderBy === 'DESC' && orderByValue === 'ASC') {
+      orderbyCheck = ''
+    }
+    const data = onSort(
+      JSON.parse(JSON.stringify(initDataTable.records)),
+      orderbyCheck,
+      orderKey,
+      type,
+    )
+    setDatasTable({ ...datasTable, records: data as any })
+    setColumnSort(orderKey)
+    setOrdeBy(orderbyCheck)
   }
 
   const onNext = () => {
-    // if (type === 'tree') {
-    //   const imageNext = onGet(datasTable as any, viewer)
-    //   rowClick(imageNext)
-    // } else {
-    //   const findIndex = datasTable.findIndex((e) => e.id === viewer.id)
-    //   rowClick(dataImages[findIndex + 1])
-    // }
+    if (!viewer.image) return
+    const imageNext = onGet(datasTable as any, viewer.image, false, type)
+    if (imageNext) rowClick(imageNext)
   }
 
   const onPrevious = () => {
-    // if (type === 'tree') {
-    //   const datas = JSON.parse(JSON.stringify(datasTable))
-    //   const imageNext = onGet(datas.reverse() as any, viewer, true)
-    //   rowClick(imageNext)
-    // } else {
-    //   const findIndex = datasTable.findIndex((e) => e.id === viewer.id)
-    //   rowClick(dataImages[findIndex - 1])
-    // }
+    if (!viewer.image) return
+    const imagePre = onGet(datasTable, viewer.image, true, type)
+    if (imagePre) rowClick(imagePre)
   }
 
   return (
@@ -555,13 +686,12 @@ const Database = () => {
       {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
       <DatabaseTableComponent
         defaultExpand
-        previewImage={type === 'list'}
         onSort={handleSort}
         rowClick={rowClick}
         orderKey={columnSort}
         orderBy={orderBy}
         data={datasTable.records}
-        columns={columns(rowClick, setOpenDelete)}
+        columns={columns(rowClick, setOpenDelete, type)}
       />
       <ImageView
         disabled={disabled}

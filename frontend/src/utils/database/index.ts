@@ -1,178 +1,628 @@
-import { DatabaseData, Image, Viewer } from 'pages/Database'
+import {
+  DatabaseData,
+  DatabaseListData,
+  ImagesDatabase,
+  RecordDatabase,
+  RecordList,
+} from 'pages/Database'
+
+export const onRowClick = (
+  datas: DatabaseData | DatabaseListData,
+  row: ImagesDatabase | RecordList,
+  type: 'tree' | 'list' = 'tree',
+) => {
+  const view = {
+    open: true,
+    url: row.image_url,
+    id: row.id,
+    session_id: row.session_id,
+    parent_id: (row as ImagesDatabase).parent_id,
+    jsonData:
+      (row as ImagesDatabase).attributes ||
+      (row as RecordList).image_attributes,
+    image: row,
+  }
+  const checkNext = onGet(datas, row, false, type)
+  const checkPre = onGet(datas, row, true, type)
+  return { view, checkNext, checkPre }
+}
 
 export const onGet = (
-  datas: DatabaseData,
-  record: Viewer,
+  datas: DatabaseData | DatabaseListData,
+  rowClick: ImagesDatabase | RecordList,
   isSub?: boolean,
-): Image | undefined => {
-  // const imageNext = datas.reduce((pre: any, current, index) => {
-  //   if (current.id === record.parent_id) {
-  //     const sessionIndex = current.sessions?.findIndex(
-  //       (e) => e.id === record.session_id,
-  //     )
-  //     if (typeof sessionIndex === 'number' && sessionIndex >= 0) {
-  //       const session = current.sessions?.[sessionIndex]
-  //       if (session) {
-  //         const findImageIndex = session.datatypes.images.findIndex(
-  //           (img) => img.id === record.id,
-  //         )
-  //         const imageNow =
-  //           session.datatypes.images[findImageIndex + (isSub ? -1 : 1)]
-  //         if (imageNow) {
-  //           pre = imageNow
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return pre
-  // }, undefined)
-  // return imageNext
+  type: 'tree' | 'list' = 'tree',
+): ImagesDatabase | RecordList | undefined => {
+  if (type === 'tree') {
+    const row = rowClick as ImagesDatabase
+    const dataNow = datas.records[row.record_index || 0] as RecordDatabase
+    const subjectNow = dataNow?.subjects?.[row.subject_index || 0]
+    const sessionNow = subjectNow?.sessions[row.session_index || 0]
+    const datatypeNow = sessionNow?.datatypes[row.datatype_index || 0]
+    if (!isSub) {
+      const imageNext = datatypeNow?.images[(row.image_index || 0) + 1]
+      if (imageNext) {
+        return { ...row, ...imageNext, image_index: (row.image_index || 0) + 1 }
+      }
+      const datatypeNext = sessionNow?.datatypes[(row.datatype_index || 0) + 1]
+      if (datatypeNext) {
+        const images = datatypeNext?.images
+        if (images[0])
+          return {
+            ...row,
+            ...images[0],
+            datatype_index: (row.datatype_index || 0) + 1,
+            image_index: 0,
+          }
+      }
+    } else {
+      const imagePre = datatypeNow?.images[(row.image_index || 0) - 1]
+      if (imagePre) {
+        return { ...row, ...imagePre, image_index: (row.image_index || 0) - 1 }
+      }
+      const datatypeImagePre =
+        sessionNow?.datatypes?.[(row.datatype_index || 0) - 1]
+      if (datatypeImagePre) {
+        const images = datatypeImagePre?.images
+        if (images?.[images.length - 1]) {
+          return {
+            ...row,
+            ...images?.[images.length - 1],
+            datatype_index: (row.datatype_index || 0) - 1,
+            image_index: images.length - 1,
+          }
+        }
+      }
+    }
+  } else {
+    const row = rowClick as RecordList
+    const indexImageNow = datas.records.findIndex(
+      (record) => record.id === row.id,
+    )
+    return datas.records[indexImageNow + (isSub ? -1 : 1)] as RecordList
+  }
   return undefined
 }
 
 const sortWithLabName = (
-  datasTable: DatabaseData[],
+  datasTable: (RecordDatabase | RecordList)[],
   orderKey: string,
   typeOrder?: 'ASC' | 'DESC',
 ) => {
-  // const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
-  //   (a: any, b: any) => {
-  //     if (typeOrder === 'DESC') {
-  //       return a[orderKey] > b[orderKey] ? -1 : 1
-  //     }
-  //     return a[orderKey] < b[orderKey] ? -1 : 1
-  //   },
-  // )
-  // return newDatas
+  const newDatas = datasTable.sort((a: any, b: any) => {
+    if (typeOrder === 'DESC') {
+      return a[orderKey] > b[orderKey] ? -1 : 1
+    }
+    return a[orderKey] < b[orderKey] ? -1 : 1
+  })
+  return newDatas
 }
 
-const sortWithSession = (
-  datasTable: DatabaseData[],
+const sortSubjectTree = (
+  datasTable: RecordDatabase[],
   typeOrder?: 'ASC' | 'DESC',
 ) => {
-  // const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
-  //   (a: any, b: any) => {
-  //     if (typeOrder !== 'DESC') {
-  //       if (!b.sessions) return 1
-  //       return (
-  //         a.sessions?.sort((a: any, b: any) => a.id - b.id)[0].id -
-  //         b.sessions?.sort((a: any, b: any) => a.id - b.id)[0].id
-  //       )
-  //     }
-  //     if (!b.sessions) return -1
-  //     return (
-  //       b.sessions?.sort((a: any, b: any) => b.id - a.id)[0].id -
-  //       a.sessions?.sort((a: any, b: any) => b.id - a.id)[0].id
-  //     )
-  //   },
-  // )
-  // return newDatas
+  const newDatas = datasTable.sort((dataA, dataB) => {
+    const subjectsA = dataA.subjects.sort((subA, subB) => {
+      if (typeOrder === 'DESC') {
+        return subA.label > subB.label ? -1 : 1
+      }
+      return subA.label < subB.label ? -1 : 1
+    })
+    const subjectsB = dataB.subjects.sort((subA, subB) => {
+      if (typeOrder === 'DESC') {
+        return subA.label > subB.label ? -1 : 1
+      }
+      return subA.label < subB.label ? -1 : 1
+    })
+    if (typeOrder === 'DESC') {
+      return subjectsA[0]?.label > subjectsB[0]?.label ? -1 : 1
+    }
+    return subjectsA[0]?.label < subjectsB[0]?.label ? -1 : 1
+  })
+  return newDatas.map((element) => ({
+    ...element,
+    subjects: element.subjects.sort((subA, subB) => {
+      if (typeOrder === 'DESC') {
+        return subA.label > subB.label ? -1 : 1
+      }
+      return subA.label < subB.label ? -1 : 1
+    }),
+  }))
 }
 
-const sortSubject = (
-  datasTable: DatabaseData[],
+const sortSessionTree = (
+  datasTable: RecordDatabase[],
   typeOrder?: 'ASC' | 'DESC',
 ) => {
-  // const newDatas = JSON.parse(JSON.stringify(datasTable))
-  //   .sort((dA: any, dB: any) => {
-  //     if (typeOrder === 'DESC') {
-  //       if (!dB.sessions) return 1
-  //       return dA.sessions?.sort((a: any, b: any) =>
-  //         a.subject > b.subject ? -1 : 1,
-  //       )[0].subject >
-  //         dB.sessions?.sort((a: any, b: any) =>
-  //           a.subject > b.subject ? -1 : 1,
-  //         )[0].subject
-  //         ? -1
-  //         : 1
-  //     }
-  //     if (!dB.sessions) return -1
-  //     return dB.sessions?.sort((a: any, b: any) =>
-  //       b.subject > a.subject ? -1 : 1,
-  //     )[0].subject >
-  //       dA.sessions?.sort((a: any, b: any) =>
-  //         b.subject > a.subject ? -1 : 1,
-  //       )[0].subject
-  //       ? -1
-  //       : 1
-  //   })
-  //   .map((el: any) => ({
-  //     ...el,
-  //     sessions: el.sessions?.sort((a: any, b: any) => {
-  //       if (typeOrder === 'ASC') {
-  //         return a.subject > b.subject ? 1 : -1
-  //       }
-  //       return b.subject > a.subject ? -1 : 1
-  //     }),
-  //   }))
-  // return newDatas
+  const newDatas = datasTable
+    .sort((dataA, dataB) => {
+      const sessionsA = dataA.subjects
+        .map((sub) => {
+          const subSess = sub.sessions.sort((sA, sB) => {
+            if (typeOrder === 'DESC') {
+              return sA.label > sB.label ? -1 : 1
+            }
+            return sA.label < sB.label ? -1 : 1
+          })
+          return subSess
+        })
+        .flat()
+        .sort((dataA, dataB) => {
+          if (typeOrder === 'DESC') {
+            return dataA.label > dataB.label ? -1 : 1
+          }
+          return dataA.label < dataB.label ? -1 : 1
+        })
+      const sessionsB = dataB.subjects
+        .map((sub) => {
+          const subSess = sub.sessions.sort((sA, sB) => {
+            if (typeOrder === 'DESC') {
+              return sA.label > sB.label ? -1 : 1
+            }
+            return sA.label < sB.label ? -1 : 1
+          })
+          return subSess
+        })
+        .flat()
+        .sort((dataA, dataB) => {
+          if (typeOrder === 'DESC') {
+            return dataA.label > dataB.label ? -1 : 1
+          }
+          return dataA.label < dataB.label ? -1 : 1
+        })
+      if (typeOrder === 'DESC') {
+        return sessionsA[0]?.label > sessionsB[0]?.label ? -1 : 1
+      }
+      return sessionsA[0]?.label < sessionsB[0]?.label ? -1 : 1
+    })
+    .map((element) => ({
+      ...element,
+      subjects: element.subjects
+        .sort((subA, subB) => {
+          const subSessA = subA.sessions.sort((sA, sB) => {
+            if (typeOrder === 'DESC') {
+              return sA.label > sB.label ? -1 : 1
+            }
+            return sA.label < sB.label ? -1 : 1
+          })
+          const subSessB = subB.sessions.sort((sA, sB) => {
+            if (typeOrder === 'DESC') {
+              return sA.label > sB.label ? -1 : 1
+            }
+            return sA.label < sB.label ? -1 : 1
+          })
+          if (typeOrder === 'DESC') {
+            return subSessA[0]?.label > subSessB[0]?.label ? -1 : 1
+          }
+          return subSessA[0]?.label < subSessB[0]?.label ? -1 : 1
+        })
+        .map((sub) => ({
+          ...sub,
+          sessions: sub.sessions.sort((ssA, ssB) => {
+            if (typeOrder === 'DESC') {
+              return ssA.label > ssB.label ? -1 : 1
+            }
+            return ssA.label < ssB.label ? -1 : 1
+          }),
+        })),
+    }))
+  return newDatas
 }
 
-const sortDatatypes = (
-  datasTable: DatabaseData[],
+const sortDataTypeTree = (
+  datasTable: RecordDatabase[],
   typeOrder?: 'ASC' | 'DESC',
 ) => {
-  // const newDatas = JSON.parse(JSON.stringify(datasTable)).sort(
-  //   (dA: any, dB: any) => {
-  //     if (typeOrder !== 'DESC') {
-  //       if (!dB.sessions) return 1
-  //       return (
-  //         dA.sessions?.sort(
-  //           (a: any, b: any) => a.datatypes?.title - b.datatypes?.title,
-  //         )[0].title -
-  //         dB.sessions?.sort(
-  //           (a: any, b: any) => a.datatypes?.title - b.datatypes?.title,
-  //         )[0].title
-  //       )
-  //     }
-  //     if (!dB.sessions) return -1
-  //     return (
-  //       dB.sessions?.sort(
-  //         (a: any, b: any) => b.datatypes?.title - a.datatypes?.title,
-  //       )[0].datatypes?.title -
-  //       dA.sessions?.sort(
-  //         (a: any, b: any) => b.datatypes?.title - a.datatypes?.title,
-  //       )[0].datatypes?.title
-  //     )
-  //   },
-  // )
-  // return newDatas
+  const newDatas = datasTable
+    .sort((dataA, dataB) => {
+      const sessionsA = dataA.subjects
+        .map((sub) => {
+          return sub.sessions
+            .map((ses) => {
+              const dataTypeA = ses.datatypes.sort((sA, sB) => {
+                if (typeOrder === 'DESC') {
+                  return sA.label > sB.label ? -1 : 1
+                }
+                return sA.label < sB.label ? -1 : 1
+              })
+              return dataTypeA
+            })
+            .flat()
+        })
+        .flat()
+        .sort((dataA, dataB) => {
+          if (typeOrder === 'DESC') {
+            return dataA.label > dataB.label ? -1 : 1
+          }
+          return dataA.label < dataB.label ? -1 : 1
+        })
+      const sessionsB = dataB.subjects
+        .map((sub) => {
+          return sub.sessions
+            .map((ses) => {
+              const dataTypeA = ses.datatypes.sort((sA, sB) => {
+                if (typeOrder === 'DESC') {
+                  return sA.label > sB.label ? -1 : 1
+                }
+                return sA.label < sB.label ? -1 : 1
+              })
+              return dataTypeA
+            })
+            .flat()
+        })
+        .flat()
+        .sort((dataA, dataB) => {
+          if (typeOrder === 'DESC') {
+            return dataA.label > dataB.label ? -1 : 1
+          }
+          return dataA.label < dataB.label ? -1 : 1
+        })
+      if (typeOrder === 'DESC') {
+        return sessionsA[0]?.label > sessionsB[0]?.label ? -1 : 1
+      }
+      return sessionsA[0]?.label < sessionsB[0]?.label ? -1 : 1
+    })
+    .map((element) => ({
+      ...element,
+      subjects: element.subjects
+        .sort((subA, subB) => {
+          const subSessA = subA.sessions
+            .map((ss) => {
+              return ss.datatypes.sort((sA, sB) => {
+                if (typeOrder === 'DESC') {
+                  return sA.label > sB.label ? -1 : 1
+                }
+                return sA.label < sB.label ? -1 : 1
+              })
+            })
+            .flat()
+            .sort((dataA, dataB) => {
+              if (typeOrder === 'DESC') {
+                return dataA.label > dataB.label ? -1 : 1
+              }
+              return dataA.label < dataB.label ? -1 : 1
+            })
+          const subSessB = subB.sessions
+            .map((ss) => {
+              return ss.datatypes.sort((sA, sB) => {
+                if (typeOrder === 'DESC') {
+                  return sA.label > sB.label ? -1 : 1
+                }
+                return sA.label < sB.label ? -1 : 1
+              })
+            })
+            .flat()
+            .sort((dataA, dataB) => {
+              if (typeOrder === 'DESC') {
+                return dataA.label > dataB.label ? -1 : 1
+              }
+              return dataA.label < dataB.label ? -1 : 1
+            })
+          if (typeOrder === 'DESC') {
+            return subSessA[0]?.label > subSessB[0]?.label ? -1 : 1
+          }
+          return subSessA[0]?.label < subSessB[0]?.label ? -1 : 1
+        })
+        .map((sub) => ({
+          ...sub,
+          sessions: sub.sessions
+            .sort((ssA, ssB) => {
+              const dataTypeA = ssA.datatypes.sort((sA, sB) => {
+                if (typeOrder === 'DESC') {
+                  return sA.label > sB.label ? -1 : 1
+                }
+                return sA.label < sB.label ? -1 : 1
+              })
+              const dataTypeB = ssB.datatypes.sort((sA, sB) => {
+                if (typeOrder === 'DESC') {
+                  return sA.label > sB.label ? -1 : 1
+                }
+                return sA.label < sB.label ? -1 : 1
+              })
+              if (typeOrder === 'DESC') {
+                return dataTypeA[0]?.label > dataTypeB[0]?.label ? -1 : 1
+              }
+              return dataTypeA[0]?.label < dataTypeB[0]?.label ? -1 : 1
+            })
+            .map((ssA) => ({
+              ...ssA,
+              datatypes: ssA.datatypes.sort((typeA, typeB) => {
+                if (typeOrder === 'DESC') {
+                  return typeA.label > typeB.label ? -1 : 1
+                }
+                return typeA.label < typeB.label ? -1 : 1
+              }),
+            })),
+        })),
+    }))
+  return newDatas
 }
 
-const sortImages = (datasTable: DatabaseData, typeOrder?: 'ASC' | 'DESC') => {
-  // if (typeOrder === 'ASC') return datasTable
-  // return JSON.parse(JSON.stringify(datasTable)).reverse()
+const sortAttributesTypeTree = (
+  datasTable: RecordDatabase[],
+  typeOrder?: 'ASC' | 'DESC',
+  key: string = 'type',
+) => {
+  const newDatas = datasTable
+    .sort((dataA, dataB) => {
+      const typeA = dataA.subjects
+        .map((sub) => {
+          return sub.sessions
+            .map((s) => {
+              return s.datatypes
+                .map((type) => {
+                  return type.images.sort((imageA, imageB) => {
+                    if (typeOrder === 'DESC') {
+                      return imageA.attributes[key] > imageB.attributes[key]
+                        ? -1
+                        : 1
+                    }
+                    return imageA.attributes[key] < imageB.attributes[key]
+                      ? -1
+                      : 1
+                  })
+                })
+                .flat()
+            })
+            .flat()
+        })
+        .flat()
+        .sort((dataA, dataB) => {
+          if (typeOrder === 'DESC') {
+            return dataA.attributes[key] > dataB.attributes[key] ? -1 : 1
+          }
+          return dataA.attributes[key] < dataB.attributes[key] ? -1 : 1
+        })
+      const typeB = dataB.subjects
+        .map((sub) => {
+          return sub.sessions
+            .map((s) => {
+              return s.datatypes
+                .map((type) => {
+                  return type.images.sort((imageA, imageB) => {
+                    if (typeOrder === 'DESC') {
+                      return imageA.attributes[key] > imageB.attributes[key]
+                        ? -1
+                        : 1
+                    }
+                    return imageA.attributes[key] < imageB.attributes[key]
+                      ? -1
+                      : 1
+                  })
+                })
+                .flat()
+            })
+            .flat()
+            .sort((dataA, dataB) => {
+              if (typeOrder === 'DESC') {
+                return dataA.attributes[key] > dataB.attributes[key] ? -1 : 1
+              }
+              return dataA.attributes[key] < dataB.attributes[key] ? -1 : 1
+            })
+        })
+        .flat()
+        .sort((dataA, dataB) => {
+          if (typeOrder === 'DESC') {
+            return dataA.attributes[key] > dataB.attributes[key] ? -1 : 1
+          }
+          return dataA.attributes[key] < dataB.attributes[key] ? -1 : 1
+        })
+
+      if (typeOrder === 'DESC') {
+        return typeA[0]?.attributes[key] > typeB[0]?.attributes[key] ? -1 : 1
+      }
+      return typeA[0]?.attributes[key] < typeB[0]?.attributes[key] ? -1 : 1
+    })
+    .map((element) => ({
+      ...element,
+      subjects: element.subjects
+        .sort((subA, subB) => {
+          const subSessA = subA.sessions
+            .map((ss) => {
+              return ss.datatypes
+                .map((type) => {
+                  return type.images.sort((sA, sB) => {
+                    if (typeOrder === 'DESC') {
+                      return sA.attributes[key] > sB.attributes[key] ? -1 : 1
+                    }
+                    return sA.attributes[key] < sB.attributes[key] ? -1 : 1
+                  })
+                })
+                .flat()
+            })
+            .flat()
+            .sort((dataA, dataB) => {
+              if (typeOrder === 'DESC') {
+                return dataA.attributes[key] > dataB.attributes[key] ? -1 : 1
+              }
+              return dataA.attributes[key] < dataB.attributes[key] ? -1 : 1
+            })
+          const subSessB = subB.sessions
+            .map((ss) => {
+              return ss.datatypes
+                .map((type) => {
+                  return type.images.sort((sA, sB) => {
+                    if (typeOrder === 'DESC') {
+                      return sA.attributes[key] > sB.attributes[key] ? -1 : 1
+                    }
+                    return sA.attributes[key] < sB.attributes[key] ? -1 : 1
+                  })
+                })
+                .flat()
+            })
+            .flat()
+            .sort((dataA, dataB) => {
+              if (typeOrder === 'DESC') {
+                return dataA.attributes[key] > dataB.attributes[key] ? -1 : 1
+              }
+              return dataA.attributes[key] < dataB.attributes[key] ? -1 : 1
+            })
+          if (typeOrder === 'DESC') {
+            return subSessA[0]?.attributes[key] > subSessB[0]?.attributes[key]
+              ? -1
+              : 1
+          }
+          return subSessA[0]?.attributes[key] < subSessB[0]?.attributes[key]
+            ? -1
+            : 1
+        })
+        .map((sub) => ({
+          ...sub,
+          sessions: sub.sessions
+            .sort((ssA, ssB) => {
+              const dataTypeA = ssA.datatypes
+                .map((type) => {
+                  return type.images.sort((sA, sB) => {
+                    if (typeOrder === 'DESC') {
+                      return sA.attributes[key] > sB.attributes[key] ? -1 : 1
+                    }
+                    return sA.attributes[key] < sB.attributes[key] ? -1 : 1
+                  })
+                })
+                .flat()
+              const dataTypeB = ssB.datatypes
+                .map((type) => {
+                  return type.images.sort((sA, sB) => {
+                    if (typeOrder === 'DESC') {
+                      return sA.attributes[key] > sB.attributes[key] ? -1 : 1
+                    }
+                    return sA.attributes[key] < sB.attributes[key] ? -1 : 1
+                  })
+                })
+                .flat()
+              if (typeOrder === 'DESC') {
+                return dataTypeA[0]?.attributes[key] >
+                  dataTypeB[0]?.attributes[key]
+                  ? -1
+                  : 1
+              }
+              return dataTypeA[0]?.attributes[key] <
+                dataTypeB[0]?.attributes[key]
+                ? -1
+                : 1
+            })
+            .map((ssA) => ({
+              ...ssA,
+              datatypes: ssA.datatypes
+                .sort((typeA, typeB) => {
+                  const imageA = typeA.images.sort((sA, sB) => {
+                    if (typeOrder === 'DESC') {
+                      return sA.attributes[key] > sB.attributes[key] ? -1 : 1
+                    }
+                    return sA.attributes[key] < sB.attributes[key] ? -1 : 1
+                  })
+                  const imageB = typeB.images.sort((sA, sB) => {
+                    if (typeOrder === 'DESC') {
+                      return sA.attributes[key] > sB.attributes[key] ? -1 : 1
+                    }
+                    return sA.attributes[key] < sB.attributes[key] ? -1 : 1
+                  })
+                  if (typeOrder === 'DESC') {
+                    return imageA[0]?.attributes[key] >
+                      imageB[0]?.attributes[key]
+                      ? -1
+                      : 1
+                  }
+                  return imageA[0]?.attributes[key] < imageB[0]?.attributes[key]
+                    ? -1
+                    : 1
+                })
+                .map((type) => ({
+                  ...type,
+                  images: type.images.sort((sA, sB) => {
+                    if (typeOrder === 'DESC') {
+                      return sA.attributes[key] > sB.attributes[key] ? -1 : 1
+                    }
+                    return sA.attributes[key] < sB.attributes[key] ? -1 : 1
+                  }),
+                })),
+            })),
+        })),
+    }))
+  return newDatas
+}
+
+const sortWithKey = (
+  datasTable: RecordList[],
+  orderKey: string,
+  typeOrder?: 'ASC' | 'DESC',
+) => {
+  return datasTable.sort((dataA: any, dataB: any) => {
+    let valueA = dataA
+    if (orderKey.includes('.')) {
+      const keys = orderKey.split('.')
+      keys.forEach((k) => {
+        valueA = valueA?.[k]
+      })
+    } else valueA = valueA[orderKey]
+
+    let valueB = dataB
+    if (orderKey.includes('.')) {
+      const keys = orderKey.split('.')
+      keys.forEach((k) => {
+        valueB = valueB?.[k]
+      })
+    } else valueB = valueB[orderKey]
+    if (typeOrder === 'DESC') {
+      return valueA > valueB ? -1 : 1
+    }
+    return valueA < valueB ? -1 : 1
+  })
+}
+
+const sortWithTime = (
+  datasTable: (RecordDatabase | RecordList)[],
+  typeOrder: 'ASC' | 'DESC',
+) => {
+  const newDatas = datasTable.sort((a: any, b: any) => {
+    if (typeOrder === 'DESC') {
+      return new Date(a.recording_time) > new Date(b.recording_time) ? -1 : 1
+    }
+    return new Date(a.recording_time) < new Date(b.recording_time) ? -1 : 1
+  })
+  return newDatas
 }
 
 export const onSort = (
-  datasTable: any[],
-  typeOrder: 'ASC' | 'DESC',
+  datasTable: (RecordDatabase | RecordList)[],
+  typeOrder: 'ASC' | 'DESC' | '',
   orderKey: string,
   type: string = 'tree',
-) => {
-  // let newDatas = datasTable
-  // if (type === 'tree') {
-  //   if (['lab_name', 'user_name', 'recording_time'].includes(orderKey)) {
-  //     newDatas = sortWithLabName(datasTable, orderKey, typeOrder)
-  //   } else if (orderKey === 'sessions') {
-  //     newDatas = sortWithSession(datasTable, typeOrder)
-  //   } else if (orderKey === 'subject') {
-  //     newDatas = sortSubject(datasTable, typeOrder)
-  //   } else if (orderKey === 'datatypes') {
-  //     newDatas = sortDatatypes(datasTable, typeOrder)
-  //   } else {
-  //     newDatas = sortImages(datasTable, typeOrder)
-  //   }
-  // } else {
-  //   newDatas = datasTable.sort((a: any, b: any) => {
-  //     if (typeOrder === 'DESC') {
-  //       return a[orderKey] > b[orderKey] ? -1 : 1
-  //     }
-  //     return a[orderKey] > b[orderKey] ? 1 : -1
-  //   })
-  // }
-  // return {
-  //   typeOrder,
-  //   data: newDatas,
-  // }
+): (RecordDatabase | RecordList)[] => {
+  if (!typeOrder) return datasTable
+  let newDatas = datasTable
+  if (type === 'tree') {
+    if (['lab_name', 'user_name'].includes(orderKey)) {
+      newDatas = sortWithLabName(datasTable, orderKey, typeOrder)
+    } else if (orderKey === 'recording_time') {
+      newDatas = sortWithTime(datasTable, typeOrder)
+    } else if (orderKey === 'subject' && type === 'tree') {
+      newDatas = sortSubjectTree(datasTable as RecordDatabase[], typeOrder)
+    } else if (orderKey === 'session' && type === 'tree') {
+      newDatas = sortSessionTree(datasTable as RecordDatabase[], typeOrder)
+    } else if (orderKey === 'datatype' && type === 'tree') {
+      newDatas = sortDataTypeTree(datasTable as RecordDatabase[], typeOrder)
+    } else if (orderKey === 'attributes.type' && type === 'tree') {
+      newDatas = sortAttributesTypeTree(
+        datasTable as RecordDatabase[],
+        typeOrder,
+      )
+    } else if (orderKey === 'attributes.protocol' && type === 'tree') {
+      newDatas = sortAttributesTypeTree(
+        datasTable as RecordDatabase[],
+        typeOrder,
+        'protocol',
+      )
+    } else if (orderKey === 'attributes.size' && type === 'tree') {
+      newDatas = sortAttributesTypeTree(
+        datasTable as RecordDatabase[],
+        typeOrder,
+        'size',
+      )
+    }
+  } else {
+    newDatas = sortWithKey(datasTable as RecordList[], orderKey, typeOrder)
+  }
+  return newDatas
 }
