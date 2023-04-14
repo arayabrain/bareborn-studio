@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  be:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    volumes:
+      - ./firebase_config.json:/app/firebase_config.json
+      - ./mristudio-a799c-firebase-adminsdk-pqsv4-943fa81862.json:/app/mristudio-a799c-firebase-adminsdk-pqsv4-943fa81862.json
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONPATH: /app/
+      TZ: Asia/Tokyo
