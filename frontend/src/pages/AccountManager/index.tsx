@@ -77,7 +77,6 @@ const ModalComponent = ({
 
   const onSubmit = async (e: any) => {
     e.preventDefault()
-    console.log('values.password', values.password , 'values.confirmPassword',values.confirmPassword)
     const errorEmail = validateEmail(values.email)
     const errorPassword = values.password === '' ? 'This field is required' : validatePassword(values.password)
     const errorConfirmPassword = !values.password && !values.confirmPassword ? 'This field is required' : validatePassword(values.confirmPassword)
