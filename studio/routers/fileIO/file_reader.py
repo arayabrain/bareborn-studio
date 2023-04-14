@@ -1,6 +1,6 @@
 import json
 
-from studio.routers.model import JsonTimeSeriesData, OutputData
+from optinist.routers.model import JsonTimeSeriesData, OutputData
 
 
 class Reader:
