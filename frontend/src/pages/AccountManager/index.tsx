@@ -90,7 +90,7 @@ const ModalComponent = ({
         ? 'This field is required'
         : ''
     const errorPassword = values.password === '' ? 'This field is required' : validatePassword(values.password)
-    const errorConfirmPassword = !values.password && !values.confirmPassword ? 'This field is required' : validatePassword(values.confirmPassword)
+    const errorConfirmPassword = !values.password && !values.confirmPassword && type === 'Add' ? 'This field is required' : validatePassword(values.confirmPassword)
     const errorNotMatch =
         formData.password === formData.confirmPassword ? ''
             : 'password is not match'
@@ -110,11 +110,15 @@ const ModalComponent = ({
     try {
       await onSubmitEdit(dataEdit.uid, formData)
       setIsDisabled(false)
-      alert('Your account has been created successfully!')
+      if(type === 'Add') {
+        alert('Your account has been created successfully!')
+      }
     }
     catch {
       setIsDisabled(false)
-      alert('Your account creation failed!')
+      if(type === 'Add') {
+        alert('Your account creation failed!')
+      }
     }
     setIsOpenModal(false)
   }
