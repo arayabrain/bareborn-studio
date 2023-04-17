@@ -303,6 +303,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
 
   const ctrRef = useRef(false)
+  const refTable = useRef<HTMLDivElement | null>(null)
   const refTdSelect = useRef<{
     [key: string]: {
       dom: HTMLTableRowElement
@@ -317,11 +318,13 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     window.addEventListener('keyup', onKeyupEvent)
     window.addEventListener('mouseup', onMouseUp)
     window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('click', onClick)
     return () => {
       window.removeEventListener('keydown', onKeyupEvent)
       window.removeEventListener('keyup', onKeyupEvent)
       window.removeEventListener('mouseup', onMouseUp)
       window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('click', onClick)
     }
     //eslint-disable-next-line
   }, [])
@@ -330,8 +333,12 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     ctrRef.current = event.ctrlKey || event.metaKey
   }
 
-  const onKeyupEvent = (event: KeyboardEvent) => {
-    if (event.ctrlKey || event.metaKey) return
+  const onKeyupEvent = () => {
+    ctrRef.current = false
+  }
+
+  const onClick = (event: any) => {
+    if (refTable.current?.contains?.(event.target)) return
     ctrRef.current = false
     setDrags([])
     onDragEnd?.()
@@ -446,7 +453,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
 
   return (
     <>
-      <TableWrap className={className}>
+      <TableWrap ref={refTable} className={className}>
         <DataTable
           style={{
             width: columns.reduce((a, b) => a + (Number(b.width) || 110), 0),

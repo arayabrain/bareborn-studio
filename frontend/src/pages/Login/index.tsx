@@ -3,7 +3,7 @@ import { getMe, login } from 'api/auth'
 import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {getToken, saveToken} from 'utils/auth'
+import { saveToken } from 'utils/auth'
 
 const Login = () => {
   const { setUser } = useUser()
@@ -90,7 +90,7 @@ const Login = () => {
           </Box>
           <Description>
             Forgot your password?
-            <LinkWrappper to="/reset-password" >Reset password</LinkWrappper>
+            <LinkWrappper to="/reset-password">Reset password</LinkWrappper>
           </Description>
           <Stack
             flexDirection="row"
