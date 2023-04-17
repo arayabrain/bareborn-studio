@@ -2,12 +2,16 @@ import React from 'react'
 import { Button, Typography } from '@mui/material'
 import ButtonGroup from '@mui/material/ButtonGroup'
 
-import { FILE_TREE_TYPE, FILE_TREE_TYPE_SET } from 'api/files/Files'
+import {
+  FILE_TREE_TYPE,
+  // FILE_TREE_TYPE_SET
+} from 'api/files/Files'
 import { LinearProgressWithLabel } from './LinerProgressWithLabel'
 import { FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
 import { getLabelByPath } from 'store/slice/FlowElement/FlowElementUtils'
-import { FileSelectDialog } from 'components/common/FileSelectDialog'
+// import { FileSelectDialog } from 'components/common/FileSelectDialog'
+import { useNavigate } from 'react-router-dom'
 
 export const FileSelect = React.memo<{
   multiSelect?: boolean
@@ -63,32 +67,33 @@ type FileSelectImpleProps = {
 
 export const FileSelectImple = React.memo<FileSelectImpleProps>(
   ({
-    multiSelect = false,
+    // multiSelect = false,
     filePath,
-    onSelectFile,
-    onUploadFile,
-    fileTreeType,
+    // onSelectFile,
+    // onUploadFile,
+    // fileTreeType,
     selectButtonLabel,
-    uploadButtonLabel,
+    // uploadButtonLabel,
   }) => {
-    const onFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      event.preventDefault()
-      if (event.target.files != null && event.target.files[0] != null) {
-        const file = event.target.files[0]
-        const formData = new FormData()
-        formData.append('file', file)
-        const fileName = file.name
-        onUploadFile(formData, fileName)
-      }
-    }
-    const inputRef = React.useRef<HTMLInputElement>(null)
-    const onClick = () => {
-      if (inputRef.current != null) {
-        inputRef.current.click()
-      }
-    }
-    const [open, setOpen] = React.useState(false)
-    const accept = getFileInputAccept(fileTreeType)
+    // const onFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //   event.preventDefault()
+    //   if (event.target.files != null && event.target.files[0] != null) {
+    //     const file = event.target.files[0]
+    //     const formData = new FormData()
+    //     formData.append('file', file)
+    //     const fileName = file.name
+    //     onUploadFile(formData, fileName)
+    //   }
+    // }
+    const navigate = useNavigate()
+    // const inputRef = React.useRef<HTMLInputElement>(null)
+    // const onClick = () => {
+    //   if (inputRef.current != null) {
+    //     inputRef.current.click()
+    //   }
+    // }
+    // const [open, setOpen] = React.useState(false)
+    // const accept = getFileInputAccept(fileTreeType)
     const fileName = getLabelByPath(filePath)
     return (
       <div
@@ -96,16 +101,33 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
           padding: 5,
         }}
       >
-        <ButtonGroup size="small" style={{ marginRight: 4 }}>
-          <Button variant="outlined" onClick={() => setOpen(true)}>
-            {!!selectButtonLabel ? selectButtonLabel : 'Select File'}
-          </Button>
-          <Button onClick={onClick} variant="outlined">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: 16,
+          }}
+        >
+          <ButtonGroup
+            size="small"
+            style={{ marginRight: 4, width: '90%', margin: 'auto' }}
+          >
+            <Button
+              style={{ width: '100%' }}
+              variant="outlined"
+              onClick={() =>
+                navigate('/projects/new-project?id=1&back=/projects/workflow')
+              }
+            >
+              {!!selectButtonLabel ? selectButtonLabel : 'Select File'}
+            </Button>
+            {/* <Button onClick={onClick} variant="outlined">
             {!!uploadButtonLabel ? uploadButtonLabel : 'or Upload'}
-          </Button>
-        </ButtonGroup>
+          </Button> */}
+          </ButtonGroup>
+        </div>
         <div>
-          <input
+          {/* <input
             ref={inputRef}
             type="file"
             onChange={onFileInputChange}
@@ -115,12 +137,12 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
               width: 0,
               height: 0,
             }}
-          />
+          /> */}
           <Typography className="selectFilePath" variant="caption">
             {!!fileName ? fileName : 'No file is selected.'}
           </Typography>
         </div>
-        <FileSelectDialog
+        {/* <FileSelectDialog
           multiSelect={multiSelect}
           initialFilePath={filePath}
           open={open}
@@ -132,21 +154,21 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
             setOpen(false)
           }}
           fileType={fileTreeType}
-        />
+        /> */}
       </div>
     )
   },
 )
 
-function getFileInputAccept(fileType: FILE_TREE_TYPE | undefined) {
-  switch (fileType) {
-    case FILE_TREE_TYPE_SET.IMAGE:
-      return '.tif,.tiff'
-    case FILE_TREE_TYPE_SET.CSV:
-      return '.csv'
-    case FILE_TREE_TYPE_SET.HDF5:
-      return '.hdf5,.nwb'
-    default:
-      return undefined
-  }
-}
+// function getFileInputAccept(fileType: FILE_TREE_TYPE | undefined) {
+//   switch (fileType) {
+//     case FILE_TREE_TYPE_SET.IMAGE:
+//       return '.tif,.tiff'
+//     case FILE_TREE_TYPE_SET.CSV:
+//       return '.csv'
+//     case FILE_TREE_TYPE_SET.HDF5:
+//       return '.hdf5,.nwb'
+//     default:
+//       return undefined
+//   }
+// }

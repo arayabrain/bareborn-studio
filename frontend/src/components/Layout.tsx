@@ -41,11 +41,15 @@ const Layout: FC = ({ children }) => {
     try {
       if (token) {
         const data = await getMe()
-         setUser(data)
-        if(['/login', '/signup', '/reset-password'].includes( window.location.pathname )) {
-          navigate("/")
+        setUser(data)
+        if (
+          ['/login', '/signup', '/reset-password'].includes(
+            window.location.pathname,
+          )
+        ) {
+          navigate('/')
         }
-        return;
+        return
       }
       if (
         // !auth.currentUser &&
@@ -121,7 +125,7 @@ const MenuLeft: FC<{ onResize: any; width: number }> = ({
           </MenuItem>
         </LinkWrapper>
         <LinkWrapper to="/projects">
-          <MenuItem isClose={isClose} active={pathname === '/projects'}>
+          <MenuItem isClose={isClose} active={pathname.includes('/projects')}>
             <SourceIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Projects

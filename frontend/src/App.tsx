@@ -28,7 +28,7 @@ const App: React.FC = () => {
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/workflow" element={<Project />} />
+            <Route path="/projects/workflow" element={<Project />} />
             <Route path="/account-manager" element={<AccountManager />} />
             <Route path="/account" element={<Account />} />
             <Route path="/projects" element={<Projects />} />
@@ -37,7 +37,7 @@ const App: React.FC = () => {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/account-deleted" element={<AccountDelete />} />
-            <Route path="/project/new-project" element={<ProjectFormComponent />} />
+            <Route path="/projects/new-project" element={<ProjectFormComponent />} />
           </Routes>
         </Layout>
       </BrowserRouter>

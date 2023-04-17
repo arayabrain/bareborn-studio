@@ -36,24 +36,24 @@ const Projects = () => {
   ])
 
   const onEdit = useCallback((id: any) => {
-    navigate(`/project/new-project?id=${id}`)
+    navigate(`/projects/new-project?id=${id}`)
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onWorkflow = useCallback((id: any) => {
     console.log('Workflow: ', id)
-    navigate('/workflow')
+    navigate('/projects/workflow')
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onResults = useCallback((id: any) => {
     console.log('Results: ', id)
-    navigate('/workflow?tab=2')
+    navigate('/projects/workflow?tab=2')
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const addNewProject = useCallback(() => {
-    navigate('/project/new-project')
+    navigate('/projects/new-project')
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

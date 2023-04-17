@@ -5,21 +5,31 @@ import { UseRunPipelineReturnType } from 'store/slice/Pipeline/PipelineHook'
 import { NWBSettingButton } from './FlowChart/NWB'
 import { SnakemakeButton } from './FlowChart/Snakemake'
 import { RunButtons } from './RunButtons'
+import { Button } from '@mui/material'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
+import { useNavigate } from 'react-router-dom'
 
-export const ToolBar = React.memo<UseRunPipelineReturnType>((props) => (
-  <Box
-    style={{
-      position: 'absolute',
-      float: 'right',
-      textAlign: 'right',
-      top: -7,
-      right: 10,
-      zIndex: 4,
-      textTransform: 'none',
-    }}
-  >
-    <SnakemakeButton />
-    <NWBSettingButton />
-    <RunButtons {...props} />
-  </Box>
-))
+export const ToolBar = React.memo<UseRunPipelineReturnType>((props) => {
+  const navigate = useNavigate()
+  return (
+    <Box
+      style={{
+        position: 'absolute',
+        float: 'right',
+        textAlign: 'right',
+        top: -7,
+        right: 10,
+        zIndex: 4,
+        textTransform: 'none',
+      }}
+    >
+      <Button onClick={() => navigate('/projects')}>
+        <ArrowBackIosIcon />
+        Projects
+      </Button>
+      <SnakemakeButton />
+      <NWBSettingButton />
+      <RunButtons {...props} />
+    </Box>
+  )
+})

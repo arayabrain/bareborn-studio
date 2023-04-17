@@ -72,7 +72,10 @@ const ProjectFormComponent = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
-  const [initDataTable, /*setInitDataTable */] =
+
+  const routeGoback = searchParams.get('back')
+
+  const [initDataTable /*setInitDataTable */] =
     useState<DatabaseData>(defaultDatabase)
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
@@ -533,7 +536,9 @@ const ProjectFormComponent = () => {
         <ButtonFilter onClick={() => navigate('/projects')}>
           {idEdit ? 'Ok' : 'Add'}
         </ButtonFilter>
-        <ButtonFilter onClick={() => navigate('/projects')}>
+        <ButtonFilter
+          onClick={() => navigate(!routeGoback ? '/projects' : routeGoback)}
+        >
           Cancel
         </ButtonFilter>
       </Box>
