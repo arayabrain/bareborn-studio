@@ -7,6 +7,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { onGet, onRowClick, onSort } from 'utils/database'
+import { User, useUser } from 'providers'
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -493,6 +494,7 @@ export const columns = (
   rowClick: Function,
   setOpenDelete: Function,
   type: 'tree' | 'list' = 'tree',
+  user?: User,
 ) => [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true },
@@ -539,7 +541,8 @@ export const columns = (
   {
     title: '',
     name: 'action',
-    render: (data: RecordDatabase ) => {
+    render: (data: RecordDatabase) => {
+      if (user?.role !== 'ADMIN') return null
       return (
         <BoxButton>
           <ButtonControl
@@ -582,6 +585,7 @@ const Database = () => {
   const [columnSort, setColumnSort] = useState<string>('')
   const [type, setType] = useState<'tree' | 'list'>('tree')
   const [disabled, setDisabled] = useState({ left: false, right: false })
+  const { user } = useUser()
 
   const onCloseImageView = () => {
     setViewer({ open: false, url: '' })
@@ -690,7 +694,7 @@ const Database = () => {
         orderKey={columnSort}
         orderBy={orderBy}
         data={datasTable.records}
-        columns={columns(rowClick, setOpenDelete, type)}
+        columns={columns(rowClick, setOpenDelete, type, user)}
       />
       <ImageView
         disabled={disabled}
