@@ -57,7 +57,7 @@ templates = Jinja2Templates(directory=f"{FRONTEND_DIRPATH}/build")
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.get("/{path}")
+@app.get("/{_:path}")
 async def index(request: Request):
     return await root(request)
 
