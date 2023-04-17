@@ -123,16 +123,20 @@ const RenderColumn = (props: RenderColumnProps): any => {
                   key === 'session' && setOpenChildPrent(!openChildParent)
                 }
               >
-                <BoxCenter>
-                  {renderCol(column, data, recordIndex)}
-                  {renderCol(column, data, recordIndex) && key === 'session' && (
-                    <ArrowDropDownIcon
-                      style={{
-                        transform: `rotate(${!openChildParent ? -180 : 0}deg)`,
-                      }}
-                    />
-                  )}
-                </BoxCenter>
+                {key === 'action' ? null : (
+                  <BoxCenter>
+                    {renderCol(column, data, recordIndex)}
+                    {renderCol(column, data, recordIndex) && key === 'session' && (
+                      <ArrowDropDownIcon
+                        style={{
+                          transform: `rotate(${
+                            !openChildParent ? -180 : 0
+                          }deg)`,
+                        }}
+                      />
+                    )}
+                  </BoxCenter>
+                )}
               </Td>
             )
           })}

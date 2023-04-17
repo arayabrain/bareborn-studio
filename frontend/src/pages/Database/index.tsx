@@ -539,8 +539,7 @@ export const columns = (
   {
     title: '',
     name: 'action',
-    render: (data: any) => {
-      if (!data?.image) return null
+    render: (data: RecordDatabase ) => {
       return (
         <BoxButton>
           <ButtonControl
