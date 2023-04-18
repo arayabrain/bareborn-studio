@@ -542,7 +542,7 @@ export const columns = (
     title: '',
     name: 'action',
     render: (data: RecordDatabase) => {
-      if (user?.role !== 'ADMIN') return null
+      if (user?.role !== 'ADMIN' && user?.role !== 'RESEARCHER') return null
       return (
         <BoxButton>
           <ButtonControl
