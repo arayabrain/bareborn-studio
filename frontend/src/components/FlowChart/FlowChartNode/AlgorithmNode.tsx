@@ -6,7 +6,6 @@ import {
   Typography,
   useTheme,
   Tooltip,
-  FormHelperText,
   IconButton,
   Button,
   LinearProgress,
@@ -38,7 +37,7 @@ import {
   NODE_RESULT_STATUS,
   RUN_STATUS,
 } from 'store/slice/Pipeline/PipelineType'
-import { DialogContext } from 'components/Visualize/DialogContext'
+import { DialogContext } from 'components/FlowChart/DialogContext'
 
 const leftHandleStyle: CSSProperties = {
   width: '4%',
