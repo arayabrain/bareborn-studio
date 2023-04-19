@@ -15,8 +15,8 @@ const ModalComponent = ({
   type,
   dataEdit,
 }: any) => {
-  const regex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/
-  const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,100}$/
+  const regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,255}$/
   const [formData, setFormData] = useState(type !== 'Add' ? dataEdit : {})
   const [isDisabled, setIsDisabled] = useState(false)
   const [errors, setErrors] = useState<{ [key: string]: string }>({
@@ -39,6 +39,7 @@ const ModalComponent = ({
   )
   const validateEmail = (value: string): string => {
     if (!value) return 'This field is required'
+    if(value.length > 255) return 'max length 255'
     if (!regex.test(value)) {
       return 'Invalid email format'
     }
@@ -46,7 +47,8 @@ const ModalComponent = ({
   }
 
   const validatePassword = (value: string): string => {
-    if (!value) return ''
+    if (!value) return 'This field is required'
+    if(value?.length > 255) return 'max length 255'
     if (!regexPassword.test(value)) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
     }
@@ -81,15 +83,15 @@ const ModalComponent = ({
     setIsDisabled(true)
     const errorName = values.display_name === '' || !formData.hasOwnProperty('display_name')
         ? 'This field is required'
-        : ''
+        : values.display_name.length > 100 ? 'max length 100' : ''
     const errorEmail = validateEmail(values.email)
     const errorLab = values.lab === '' || !formData.hasOwnProperty('lab')
         ? 'This field is required'
-        : ''
+        : values.lab.length > 100 ? 'max length 100' : ''
     const errorRole = values.role === '' || !formData.hasOwnProperty('role')
         ? 'This field is required'
-        : ''
-    const errorPassword = values.password === '' ? 'This field is required' : validatePassword(values.password)
+        : values.role.length > 50 ? 'max length 50' : ''
+    const errorPassword = validatePassword(values.password)
     const errorConfirmPassword = !values.password && !values.confirmPassword && type === 'Add' ? 'This field is required' : validatePassword(values.confirmPassword)
     const errorNotMatch =
         formData.password === formData.confirmPassword ? ''
