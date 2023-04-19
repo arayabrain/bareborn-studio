@@ -4,8 +4,9 @@ import ReactPaginate from 'react-paginate'
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import { DataProject } from 'pages/Projects'
 
-type Column = {
+export type Column = {
   width?: number | string
   title: string
   dataIndex?: string
@@ -13,14 +14,14 @@ type Column = {
   align?: string
   filter?: boolean
   render?: (
-    item?: any,
-    value?: any,
+    item: DataProject,
+    value?: string | object | number,
     index?: number,
   ) => JSX.Element | null | undefined
 }
 
 type TableComponentProps = {
-  data?: any[]
+  data?: DataProject[]
   orderBy?: 'ASC' | 'DESC'
   orderKey?: string
   className?: string
@@ -49,11 +50,14 @@ const TableComponent: FC<TableComponentProps> = (props) => {
   } = props
   const pageCount = (paginate?.total || 0) / (paginate?.page_size || 1)
 
-  const renderCol = useCallback((col: Column, item: any, index: number) => {
-    const value = item[col.name || col.dataIndex || '']
-    if (col.render) return col.render(item, value, index)
-    return value || null
-  }, [])
+  const renderCol = useCallback(
+    (col: Column, item: DataProject, index: number) => {
+      const value = item[(col.name || col.dataIndex || '') as keyof DataProject]
+      if (col.render) return col.render(item, value, index)
+      return value || null
+    },
+    [],
+  )
 
   return (
     <Box className={className}>

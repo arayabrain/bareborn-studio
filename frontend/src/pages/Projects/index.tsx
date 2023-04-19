@@ -4,8 +4,9 @@ import TableComponent from '../../components/Table'
 import { useNavigate } from 'react-router-dom'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 
-type DataProject = {
+export type DataProject = {
   id: number | string
+  uid?: number | string
   name: string
   project_type: number
   image_count: number

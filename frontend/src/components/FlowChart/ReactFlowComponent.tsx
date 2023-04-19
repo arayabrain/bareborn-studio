@@ -46,7 +46,7 @@ const initDialogFile = {
   open: false,
   fileTreeType: '',
   multiSelect: false,
-  onSelectFile: (_: any) => null,
+  onSelectFile: (path: string | string[]) => null,
 }
 
 export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(

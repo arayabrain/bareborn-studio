@@ -1,5 +1,12 @@
 import { Box, styled, Typography } from '@mui/material'
-import { MouseEvent, FC, Fragment, useState, useRef, useEffect } from 'react'
+import {
+  MouseEvent as MouseEventReact,
+  FC,
+  Fragment,
+  useState,
+  useRef,
+  useEffect,
+} from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import {
@@ -9,7 +16,11 @@ import {
   SessionsDatabase,
 } from 'pages/Database'
 
-type Column = {
+type Object = {
+  [key: string]: Object | string
+}
+
+export type Column = {
   width?: number
   title: string
   dataIndex?: string
@@ -17,8 +28,8 @@ type Column = {
   child?: string
   filter?: boolean
   render?: (
-    item?: any,
-    value?: any,
+    item?: RecordDatabase | RecordList | ImagesDatabase,
+    value?: string | object | number,
     index?: number,
   ) => JSX.Element | null | undefined | string | number
 }
@@ -30,11 +41,14 @@ type TableComponentProps = {
   orderBy?: 'ASC' | 'DESC' | ''
   orderKey?: string
   onSort?: (orderKey: string, orderBy: 'ASC' | 'DESC') => any
-  rowClick?: (row: any) => any
-  onClickEvent?: (e: any, row: any) => any
+  rowClick?: (row: ImagesDatabase) => any
+  onClickEvent?: (
+    e: MouseEventReact<HTMLTableRowElement>,
+    row: ImagesDatabase,
+  ) => any
   draggable?: boolean
-  onDrag?: (row?: any) => any
-  onDragEnd?: (row?: any) => any
+  onDrag?: (row?: ImagesDatabase[]) => any
+  onDragEnd?: (row?: ImagesDatabase) => any
   defaultExpand?: boolean
 }
 
@@ -44,10 +58,16 @@ type RenderColumnProps = {
   orderBy?: 'ASC' | 'DESC'
   orderKey?: string
   onSort?: (orderKey: string, orderBy: string) => any
-  rowClick?: (e: any, row: any) => any
+  rowClick?: (
+    e: MouseEventReact<HTMLTableRowElement>,
+    row: ImagesDatabase,
+  ) => any
   draggable?: boolean
-  onDrag?: (event: any, row?: any) => any
-  onDragEnd?: (row?: any) => any
+  onDrag?: (
+    event: MouseEventReact<HTMLTableRowElement>,
+    row?: ImagesDatabase[],
+  ) => any
+  onDragEnd?: (row?: ImagesDatabase) => any
   recordIndex: number
   defaultExpand?: boolean
   dataShow?: boolean
@@ -55,25 +75,36 @@ type RenderColumnProps = {
   draggableProps?: boolean
   allowMutilKey?: boolean
   drags: ImagesDatabase[]
-  onMouseDown: (event: MouseEvent<HTMLTableRowElement>, image: any) => any
+  onMouseDown: (
+    event: MouseEventReact<HTMLTableRowElement>,
+    image: ImagesDatabase,
+  ) => any
 }
 
-const renderCol = (col: Column, item: any, index: number) => {
+const renderCol = (
+  col: Column,
+  item: ImagesDatabase | RecordDatabase | RecordList,
+  index: number,
+) => {
   const key = col.name || col.dataIndex || ''
-  let value = item
+  let value: ImagesDatabase | RecordDatabase | RecordList | string = item
   if (key.includes('.')) {
     const keys = key.split('.')
     keys.forEach((k) => {
-      value = value?.[k]
+      value = (value as unknown as Object)?.[k] as
+        | ImagesDatabase
+        | RecordDatabase
+        | RecordList
+        | string
     })
-  } else value = item[key]
+  } else value = (item as unknown as Object)[key] as string
   if (col.render) return col.render(item, value, index)
   return typeof value === 'object' || Array.isArray(value) ? null : value
 }
 
-const RenderColumn = (props: RenderColumnProps): any => {
+const RenderColumn = (props: RenderColumnProps) => {
   const { columns, data, recordIndex, rowClick, drags, onMouseDown } = props
-  const { draggable, onDrag, onDragEnd } = props
+  const { draggable, onDrag } = props
   const [openChild, setOpenChild] = useState(true)
   const [openChildParent, setOpenChildPrent] = useState(true)
   const [openSubjects, setOpenSubjects] = useState<number[]>(
@@ -88,7 +119,10 @@ const RenderColumn = (props: RenderColumnProps): any => {
     )
   })
 
-  const onDragEvent = (event: any, image: any) => {
+  const onDragEvent = (
+    event: MouseEventReact<HTMLTableRowElement>,
+    image: ImagesDatabase,
+  ) => {
     return onDrag?.(event, [image])
   }
 
@@ -105,10 +139,6 @@ const RenderColumn = (props: RenderColumnProps): any => {
     return (
       <Fragment>
         <Tr
-          onClick={(e) => rowClick?.(e, data)}
-          draggable={draggable}
-          onDragStart={(e) => onDragEvent?.(e, data)}
-          onDragEnd={onDragEnd}
           style={{
             transition: 'all 0.3s',
             backgroundColor: 'rgb(238, 238, 238)',
@@ -125,16 +155,25 @@ const RenderColumn = (props: RenderColumnProps): any => {
               >
                 {key === 'action' ? null : (
                   <BoxCenter>
-                    {renderCol(column, data, recordIndex)}
-                    {renderCol(column, data, recordIndex) && key === 'session' && (
-                      <ArrowDropDownIcon
-                        style={{
-                          transform: `rotate(${
-                            !openChildParent ? -180 : 0
-                          }deg)`,
-                        }}
-                      />
+                    {renderCol(
+                      column,
+                      data as RecordDatabase | RecordList,
+                      recordIndex,
                     )}
+                    {renderCol(
+                      column,
+                      data as RecordDatabase | RecordList,
+                      recordIndex,
+                    ) &&
+                      key === 'session' && (
+                        <ArrowDropDownIcon
+                          style={{
+                            transform: `rotate(${
+                              !openChildParent ? -180 : 0
+                            }deg)`,
+                          }}
+                        />
+                      )}
                   </BoxCenter>
                 )}
               </Td>
@@ -268,11 +307,10 @@ const RenderColumn = (props: RenderColumnProps): any => {
 
   return (
     <Tr
-      onClick={(e) => rowClick?.(e, data)}
+      onClick={(e) => rowClick?.(e, data as ImagesDatabase)}
       draggable={draggable}
-      onDragStart={(e) => onDragEvent?.(e, data)}
-      onMouseDown={(e) => onMouseDown(e, data)}
-      onDragEnd={onDragEnd}
+      onDragStart={(e) => onDragEvent?.(e, data as ImagesDatabase)}
+      onMouseDown={(e) => onMouseDown(e, data as ImagesDatabase)}
       style={{
         transition: 'all 0.3s',
         backgroundColor: isDrag ? 'rgba(25,118,210,0.15)' : '',
@@ -281,7 +319,7 @@ const RenderColumn = (props: RenderColumnProps): any => {
       {columns.map((column) => {
         return (
           <Td key={`col_${column.name || column.dataIndex}`}>
-            {renderCol(column, data, recordIndex)}
+            {renderCol(column, data as ImagesDatabase, recordIndex)}
           </Td>
         )
       })}
@@ -341,8 +379,8 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     ctrRef.current = false
   }
 
-  const onClick = (event: any) => {
-    if (refTable.current?.contains?.(event.target)) return
+  const onClick = (event: MouseEvent) => {
+    if (refTable.current?.contains?.(event.target as Element)) return
     ctrRef.current = false
     setDrags([])
     onDragEnd?.()
@@ -353,8 +391,8 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   }
 
   const onRowClickEvent = (
-    event: MouseEvent<HTMLTableColElement>,
-    image: any,
+    event: MouseEventReact<HTMLTableRowElement>,
+    image: ImagesDatabase,
   ) => {
     const idDom = `${image.id}_${image.datatype_index}_${image.session_id}`
     if (!ctrRef.current) {
@@ -392,7 +430,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     ) {
       setDrags(
         drags.filter(
-          (drag: any) =>
+          (drag: ImagesDatabase) =>
             drag.id === image.id &&
             drag.datatype_index === image.datatype_index &&
             drag.session_index === image.session_index,
@@ -416,7 +454,10 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     }
   }
 
-  const onMouseDown = (event: MouseEvent<HTMLTableRowElement>, image: any) => {
+  const onMouseDown = (
+    event: MouseEventReact<HTMLTableRowElement>,
+    image: ImagesDatabase,
+  ) => {
     if (
       !drags.length ||
       !draggable ||
@@ -441,7 +482,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     }, 100)
   }
 
-  const onMouseMove = (event: any) => {
+  const onMouseMove = (event: MouseEvent) => {
     if (!mouseStart.current || !draggable || !mouseStart.current) return
     setBeginDrag(true)
     setMouseMoveRect({
@@ -450,7 +491,10 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     })
   }
 
-  const onBeginDrag = (e: any, image: any) => {
+  const onBeginDrag = (
+    e: MouseEventReact<HTMLTableRowElement>,
+    image?: ImagesDatabase[],
+  ) => {
     e.preventDefault()
     onDrag?.(image)
   }

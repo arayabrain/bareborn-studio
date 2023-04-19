@@ -1,7 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { FC, useEffect, useState } from 'react'
-import { drawerWidth } from './FlowChart/FlowChart'
 import Header from './Header'
 import { KeyboardBackspace } from '@mui/icons-material'
 import HomeIcon from '@mui/icons-material/Home'
@@ -12,6 +11,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { UserContext, useUser } from 'providers'
 import { getToken } from 'utils/auth'
 import { getMe } from 'api/auth'
+
+export const drawerWidth = 240
 
 const ignorePaths = ['/login', '/account-delete', '/reset-password']
 
@@ -89,7 +90,7 @@ const Layout: FC = ({ children }) => {
   )
 }
 
-const MenuLeft: FC<{ onResize: any; width: number }> = ({
+const MenuLeft: FC<{ onResize: () => void; width: number }> = ({
   onResize,
   width,
 }) => {

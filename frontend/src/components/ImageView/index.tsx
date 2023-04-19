@@ -11,7 +11,7 @@ type ImageViewProps = {
   onNext?: () => void
   onPrevious?: () => void
   url?: string
-  jsonData?: { [key: string]: any }
+  jsonData?: { [key: string]: object }
   disabled?: { left: boolean; right: boolean }
 }
 

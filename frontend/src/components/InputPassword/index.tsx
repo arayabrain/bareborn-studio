@@ -1,6 +1,6 @@
 import { Box, styled, Typography } from '@mui/material'
 import { Input } from 'components/common/Input'
-import { FC, useState } from 'react'
+import { ChangeEvent, FC, FocusEvent, useState } from 'react'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
@@ -13,7 +13,15 @@ const style: object = {
   color: 'rgba(0,0,0,0.6)',
 }
 
-const InputPassword: FC<any> = (props) => {
+type InputPasswordProps = {
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
+  error?: string
+  name?: string
+  placeholder?: string
+  onBlur?:  (event: FocusEvent<HTMLInputElement>) => void
+}
+
+const InputPassword: FC<InputPasswordProps> = ({ error, ...p }) => {
   const [type, setType] = useState('password')
 
   const onShow = () => {
@@ -26,13 +34,13 @@ const InputPassword: FC<any> = (props) => {
 
   return (
     <Box sx={{ position: 'relative' }}>
-      <Input {...props} type={type} />
+      <Input {...p} type={type} />
       {type === 'password' ? (
         <VisibilityIcon style={style} onClick={onShow} />
       ) : (
         <VisibilityOffIcon style={style} onClick={onHidden} />
       )}
-      <TextError>{props.error}</TextError>
+      <TextError>{error}</TextError>
     </Box>
   )
 }

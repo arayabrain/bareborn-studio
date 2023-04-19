@@ -1,6 +1,6 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
 import { ChangeEvent, useEffect, useState } from 'react'
-import DatabaseTableComponent from 'components/DatabaseTable'
+import DatabaseTableComponent, { Column } from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
@@ -495,7 +495,7 @@ export const columns = (
   setOpenDelete: Function,
   type: 'tree' | 'list' = 'tree',
   user?: User,
-) => [
+): Column[] => [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true },
   { title: 'Date', name: 'recording_time', filter: true },
@@ -541,7 +541,7 @@ export const columns = (
   {
     title: '',
     name: 'action',
-    render: (data: RecordDatabase) => {
+    render: (data) => {
       if (user?.role !== 'ADMIN' && user?.role !== 'RESEARCHER') return null
       return (
         <BoxButton>

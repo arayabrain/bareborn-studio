@@ -1,15 +1,33 @@
-import { Box, Button, styled } from '@mui/material'
+import { Box, Button, SelectChangeEvent, styled } from '@mui/material'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import TableComponent from 'components/Table'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import TableComponent, { Column } from 'components/Table'
+import {
+  ChangeEvent,
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  MouseEvent,
+} from 'react'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InputError from '../../components/common/InputError'
 import SelectError from '../../components/common/SelectError'
 import { createUser, deleteUser, editUser, listUser } from 'api/auth'
 import { useUser } from 'providers'
+import { DataProject } from 'pages/Projects'
 
-const ModalComponent = ({
+type ModalComponentProps = {
+  onSubmitEdit: (id: number | string, data: { [key: string]: string }) => void
+  setIsOpenModal: (v: boolean) => void
+  type: string
+  dataEdit: {
+    [key: string]: string
+  }
+}
+
+const ModalComponent: FC<ModalComponentProps> = ({
   onSubmitEdit,
   setIsOpenModal,
   type,
@@ -55,7 +73,12 @@ const ModalComponent = ({
   }
 
   const onChangeData = useCallback(
-    (e: any, type: string) => {
+    (
+      e:
+        | ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+        | SelectChangeEvent,
+      type: string,
+    ) => {
       setFormData({ ...formData, [type]: e.target.value })
       const { value } = e.target
       setValues((pre) => ({ ...pre, [type]: value }))
@@ -63,28 +86,31 @@ const ModalComponent = ({
     [formData],
   )
   const onBlurData = useCallback(
-    (e: any, type: string, validate?: Function) => {
+    (
+      e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+      type: string,
+      validate?: Function,
+    ) => {
       const { value } = e.target
       setValues((pre) => ({ ...pre, [type]: value }))
       setErrors((pre) => ({
         ...pre,
-        [type]:
-          value === ''
-            ? 'This field is required'
-            : validate?.(value),
+        [type]: value === '' ? 'This field is required' : validate?.(value),
       }))
     },
     [],
   )
 
-  const onSubmit = async (e: any) => {
+  const onSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     setIsDisabled(true)
-    const errorName = values.display_name === '' || !formData.hasOwnProperty('display_name')
+    const errorName =
+      values.display_name === '' || !formData.hasOwnProperty('display_name')
         ? 'This field is required'
         : values.display_name.length > 100 ? 'max length 100' : ''
     const errorEmail = validateEmail(values.email)
-    const errorLab = values.lab === '' || !formData.hasOwnProperty('lab')
+    const errorLab =
+      values.lab === '' || !formData.hasOwnProperty('lab')
         ? 'This field is required'
         : values.lab.length > 100 ? 'max length 100' : ''
     const errorRole = values.role === '' || !formData.hasOwnProperty('role')
@@ -93,9 +119,18 @@ const ModalComponent = ({
     const errorPassword = values.password === '' ? 'This field is required' : values.password?.length > 255 ? 'max length 255' : validatePassword(values.password)
     const errorConfirmPassword = !values.password && !values.confirmPassword && type === 'Add' ? 'This field is required' : validatePassword(values.confirmPassword)
     const errorNotMatch =
-        formData.password === formData.confirmPassword ? ''
-            : 'password is not match'
-    if (errorEmail || errorPassword || errorConfirmPassword || errorNotMatch || errorName || errorRole || errorLab) {
+      formData.password === formData.confirmPassword
+        ? ''
+        : 'password is not match'
+    if (
+      errorEmail ||
+      errorPassword ||
+      errorConfirmPassword ||
+      errorNotMatch ||
+      errorName ||
+      errorRole ||
+      errorLab
+    ) {
       setErrors({
         email: errorEmail,
         password: errorPassword,
@@ -111,13 +146,12 @@ const ModalComponent = ({
     try {
       await onSubmitEdit(dataEdit.uid, formData)
       setIsDisabled(false)
-      if(type === 'Add') {
+      if (type === 'Add') {
         alert('Your account has been created successfully!')
       }
-    }
-    catch {
+    } catch {
       setIsDisabled(false)
-      if(type === 'Add') {
+      if (type === 'Add') {
         alert('Your account creation failed!')
       }
     }
@@ -134,30 +168,30 @@ const ModalComponent = ({
           <LabelModal>Lab: </LabelModal>
           <InputError
             value={formData?.lab || ''}
-            onChange={(e: any) => onChangeData(e, 'lab')}
-            onBlur={(e: any) => onBlurData(e, 'lab')}
+            onChange={(e) => onChangeData(e, 'lab')}
+            onBlur={(e) => onBlurData(e, 'lab')}
             errorMessage={errors.lab}
           />
           <LabelModal>Name: </LabelModal>
           <InputError
             value={formData?.display_name || ''}
-            onChange={(e: any) => onChangeData(e, 'display_name')}
-            onBlur={(e: any) => onBlurData(e, 'display_name')}
+            onChange={(e) => onChangeData(e, 'display_name')}
+            onBlur={(e) => onBlurData(e, 'display_name')}
             errorMessage={errors.display_name}
           />
           <LabelModal>Role: </LabelModal>
           <SelectError
             value={formData?.role || ''}
             options={['ADMIN', 'RESEARCHER', 'MANAGER']}
-            onChange={(e: any) => onChangeData(e, 'role')}
-            onBlur={(e: any) => onBlurData(e, 'role')}
+            onChange={(e) => onChangeData(e, 'role')}
+            onBlur={(e) => onBlurData(e, 'role')}
             errorMessage={errors.role}
           />
           <LabelModal>e-mail: </LabelModal>
           <InputError
             value={formData?.email || ''}
-            onChange={(e: any) => onChangeData(e, 'email')}
-            onBlur={(e: any) => onBlurData(e, 'email', validateEmail)}
+            onChange={(e) => onChangeData(e, 'email')}
+            onBlur={(e) => onBlurData(e, 'email', validateEmail)}
             errorMessage={errors.email}
           />
           {type === 'Add' ? (
@@ -165,16 +199,16 @@ const ModalComponent = ({
               <LabelModal>Password: </LabelModal>
               <InputError
                 value={formData?.password || ''}
-                onChange={(e: any) => onChangeData(e, 'password')}
-                onBlur={(e: any) => onBlurData(e, 'password', validatePassword)}
+                onChange={(e) => onChangeData(e, 'password')}
+                onBlur={(e) => onBlurData(e, 'password', validatePassword)}
                 type={'password'}
                 errorMessage={errors.password}
               />
               <LabelModal>Confirm Password: </LabelModal>
               <InputError
                 value={formData?.confirmPassword || ''}
-                onChange={(e: any) => onChangeData(e, 'confirmPassword')}
-                onBlur={(e: any) =>
+                onChange={(e) => onChangeData(e, 'confirmPassword')}
+                onBlur={(e) =>
                   onBlurData(e, 'confirmPassword', validatePassword)
                 }
                 type={'password'}
@@ -184,7 +218,9 @@ const ModalComponent = ({
           ) : null}
         </BoxData>
         <ButtonModal>
-          <Button disabled = {isDisabled} onClick={(e) => onSubmit(e)}>Ok</Button>
+          <Button disabled={isDisabled} onClick={(e) => onSubmit(e)}>
+            Ok
+          </Button>
           <Button onClick={() => onCancel()}>Cancel</Button>
         </ButtonModal>
       </ModalBox>
@@ -241,12 +277,12 @@ const AccountManager = () => {
     setOpenDelete(false)
   }
 
-  const onConfirmDelete = (id: string) => {
-    setIdDel(id)
+  const onConfirmDelete = (id: string | number) => {
+    setIdDel(String(id))
     setOpenDelete(true)
   }
 
-  const onForgotPassword = (data: any) => {
+  const onForgotPassword = (data: DataProject) => {
     //todo call api
     setDataEdit(data)
     setIsOpenModal(true)
@@ -277,7 +313,7 @@ const AccountManager = () => {
   }
 
   const columns = useMemo(
-    () => [
+    (): Column[] => [
       { title: 'Lab', name: 'lab' },
       { title: 'Name', name: 'display_name' },
       { title: 'Role', name: 'role' },
@@ -286,8 +322,8 @@ const AccountManager = () => {
         title: '',
         name: 'action',
         width: 185,
-        render: (data: any) => {
-          if (data.uid === user?.uid) return null
+        render: (data) => {
+          if (data.id === user?.uid) return null
           return (
             <>
               <ALink
@@ -298,7 +334,7 @@ const AccountManager = () => {
               </ALink>
               <ALink
                 sx={{ ml: 1.25 }}
-                onClick={() => onConfirmDelete(data.uid)}
+                onClick={() => onConfirmDelete(data.id)}
               >
                 <DeleteIcon sx={{ color: 'red' }} />
               </ALink>
@@ -342,7 +378,6 @@ const AccountManager = () => {
       />
       {isOpenModal ? (
         <ModalComponent
-          data={data}
           onSubmitEdit={onSubmitEdit}
           type={type}
           setIsOpenModal={setIsOpenModal}
