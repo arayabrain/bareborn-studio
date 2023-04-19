@@ -47,8 +47,7 @@ const ModalComponent = ({
   }
 
   const validatePassword = (value: string): string => {
-    if (!value) return 'This field is required'
-    if(value?.length > 255) return 'max length 255'
+    if (!value) return ''
     if (!regexPassword.test(value)) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
     }
@@ -91,7 +90,7 @@ const ModalComponent = ({
     const errorRole = values.role === '' || !formData.hasOwnProperty('role')
         ? 'This field is required'
         : values.role.length > 50 ? 'max length 50' : ''
-    const errorPassword = validatePassword(values.password)
+    const errorPassword = values.password === '' ? 'This field is required' : values.password?.length > 255 ? 'max length 255' : validatePassword(values.password)
     const errorConfirmPassword = !values.password && !values.confirmPassword && type === 'Add' ? 'This field is required' : validatePassword(values.confirmPassword)
     const errorNotMatch =
         formData.password === formData.confirmPassword ? ''
