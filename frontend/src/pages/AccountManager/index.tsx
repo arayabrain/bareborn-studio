@@ -55,7 +55,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
     dataEdit || initState,
   )
   const validateEmail = (value: string): string => {
-    const error = validateField('email', 255)
+    const error = validateField('email', 255, value)
     if (error) return error
     if (!regex.test(value)) {
       return 'Invalid email format'
@@ -78,17 +78,34 @@ const ModalComponent: FC<ModalComponentProps> = ({
     return ''
   }
 
-  const validateField = (name: string, length: number) => {
-    if (!formData[name]) return 'This field is required'
+  const validateField = (name: string, length: number, value?: string) => {
+    if (!formData[name] && !value) return 'This field is required'
     return validateLength(name, length)
   }
 
   const validateLength = (name: string, length: number) => {
     if (formData[name]?.length > length) {
-      return `${name} must be less than ${length} characters`
+      return `The text may not be longer than ${length} characters`
     }
     return ''
   }
+
+  const validateForm = useCallback((): { [key: string]: string } => {
+    const errorName = validateField('display_name', 100)
+    const errorEmail = validateEmail(values.email)
+    const errorLab = validateField('lab', 100)
+    const errorRole = validateField('role', 50)
+    const errorPassword = validatePassword(values.password)
+    const errorConfirmPassword = validatePassword(values.confirmPassword, true)
+    return {
+      email: errorEmail,
+      password: errorPassword,
+      confirmPassword: errorConfirmPassword,
+      display_name: errorName,
+      lab: errorLab,
+      role: errorRole,
+    }
+  }, [formData])
 
   const onChangeData = useCallback(
     (
@@ -99,7 +116,27 @@ const ModalComponent: FC<ModalComponentProps> = ({
     ) => {
       setFormData({ ...formData, [type]: e.target.value })
       const { value } = e.target
+      const length =
+        type === 'role'
+          ? 50
+          : type === 'lab' || type === 'display_name'
+          ? 100
+          : 255
+      const error =
+        value === ''
+          ? 'This field is required'
+          : type === 'password' || type === 'confirmPassword'
+          ? validatePassword(value)
+          : type === 'email'
+          ? validateEmail(value)
+          : value.length > length
+          ? `The text may not be longer than ${length} characters`
+          : ''
       setValues((pre) => ({ ...pre, [type]: value }))
+      setErrors((pre) => ({
+        ...pre,
+        [type]: error,
+      }))
     },
     [formData],
   )
@@ -122,22 +159,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   const onSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     setIsDisabled(true)
-    const errorName = validateField('display_name', 100)
-    const errorEmail = validateEmail(values.email)
-    const errorLab = validateField('lab', 100)
-    const errorRole = validateField('role', 50)
-    const errorPassword = validatePassword(values.password)
-    const errorConfirmPassword = validatePassword(values.confirmPassword, true)
-
-    const newErrors: { [key: string]: string } = {
-      email: errorEmail,
-      password: errorPassword,
-      confirmPassword: errorConfirmPassword,
-      display_name: errorName,
-      lab: errorLab,
-      role: errorRole,
-    }
-
+    const newErrors = validateForm()
     if (Object.keys(newErrors).some((key) => !!newErrors[key])) {
       setErrors(newErrors)
       setIsDisabled(false)
@@ -192,7 +214,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
             onBlur={(e) => onBlurData(e, 'email', validateEmail)}
             errorMessage={errors.email}
           />
-          {dataEdit?.uid ? (
+          {!dataEdit?.uid ? (
             <>
               <LabelModal>Password: </LabelModal>
               <InputError
@@ -228,7 +250,6 @@ const ModalComponent: FC<ModalComponentProps> = ({
 const AccountManager = () => {
   const [openDelete, setOpenDelete] = useState(false)
   const [isOpenModal, setIsOpenModal] = useState(false)
-  const [type, setType] = useState<string>('')
   const [dataEdit, setDataEdit] = useState({})
   const [idDel, setIdDel] = useState<string | undefined>()
   const [data, setData] = useState<any[]>([])
@@ -266,9 +287,8 @@ const AccountManager = () => {
     }))
   }
 
-  const onOpenModal = (type: string) => {
+  const onOpenModal = () => {
     setIsOpenModal(true)
-    setType(type)
   }
 
   const handleCloseDelete = () => {
@@ -284,7 +304,6 @@ const AccountManager = () => {
     //todo call api
     setDataEdit(data)
     setIsOpenModal(true)
-    setType('Edit')
   }
 
   const onDelete = () => {
@@ -355,7 +374,7 @@ const AccountManager = () => {
         onSubmit={onDelete}
       />
       <BoxButton>
-        <ButtonAdd onClick={() => onOpenModal('Add')} variant="contained">
+        <ButtonAdd onClick={() => onOpenModal()} variant="contained">
           Add
         </ButtonAdd>
       </BoxButton>
@@ -374,7 +393,12 @@ const AccountManager = () => {
       {isOpenModal ? (
         <ModalComponent
           onSubmitEdit={onSubmitEdit}
-          setIsOpenModal={setIsOpenModal}
+          setIsOpenModal={(flag) => {
+            setIsOpenModal(flag)
+            if (!flag) {
+              setDataEdit({})
+            }
+          }}
           dataEdit={dataEdit}
         />
       ) : null}
