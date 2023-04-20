@@ -2,9 +2,10 @@ import { Box, styled, Typography } from '@mui/material'
 import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { Link } from 'react-router-dom'
 import { useUser } from 'providers'
+import { isAdmin } from 'utils/auth'
 
 const Dashboard = () => {
   const { user } = useUser()
@@ -37,7 +38,7 @@ const Dashboard = () => {
               </Box>
             </BoxMenu>
           </LinkWrapper>
-          {user?.role === 'ADMIN' ? (
+          {isAdmin(user?.role) ? (
             <LinkWrapper to="/account-manager">
               <BoxMenu>
                 <Box>
