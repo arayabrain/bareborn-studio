@@ -6,6 +6,15 @@ import {
   RecordList,
 } from 'pages/Database'
 
+export type OrderKey =
+  | keyof (RecordDatabase | RecordList)
+  | 'subject'
+  | 'session'
+  | 'datatype'
+  | 'attributes.type'
+  | 'attributes.protocol'
+  | 'attributes.size'
+
 export const onRowClick = (
   datas: DatabaseData | DatabaseListData,
   row: ImagesDatabase | RecordList,
@@ -86,15 +95,17 @@ export const onGet = (
 
 const sortWithLabName = (
   datasTable: (RecordDatabase | RecordList)[],
-  orderKey: string,
+  orderKey: keyof (RecordDatabase | RecordList),
   typeOrder?: 'ASC' | 'DESC',
 ) => {
-  const newDatas = datasTable.sort((a: any, b: any) => {
-    if (typeOrder === 'DESC') {
-      return a[orderKey] > b[orderKey] ? -1 : 1
-    }
-    return a[orderKey] < b[orderKey] ? -1 : 1
-  })
+  const newDatas = datasTable.sort(
+    (a: RecordDatabase | RecordList, b: RecordDatabase | RecordList) => {
+      if (typeOrder === 'DESC') {
+        return a[orderKey] > b[orderKey] ? -1 : 1
+      }
+      return a[orderKey] < b[orderKey] ? -1 : 1
+    },
+  )
   return newDatas
 }
 
@@ -545,25 +556,29 @@ const sortAttributesTypeTree = (
 
 const sortWithKey = (
   datasTable: RecordList[],
-  orderKey: string,
+  orderKey: keyof RecordList,
   typeOrder?: 'ASC' | 'DESC',
 ) => {
-  return datasTable.sort((dataA: any, dataB: any) => {
-    let valueA = dataA
+  return datasTable.sort((dataA: RecordList, dataB: RecordList) => {
+    let valueA: RecordList | string = dataA
     if (orderKey.includes('.')) {
       const keys = orderKey.split('.')
       keys.forEach((k) => {
-        valueA = valueA?.[k]
+        if (typeof valueA !== 'string') {
+          valueA = valueA?.[k as keyof RecordList] as string
+        }
       })
-    } else valueA = valueA[orderKey]
+    } else valueA = valueA[orderKey] as string
 
-    let valueB = dataB
+    let valueB: RecordList | string = dataB
     if (orderKey.includes('.')) {
       const keys = orderKey.split('.')
       keys.forEach((k) => {
-        valueB = valueB?.[k]
+        if (typeof valueB !== 'string') {
+          valueB = valueB?.[k as keyof RecordList] as string
+        }
       })
-    } else valueB = valueB[orderKey]
+    } else valueB = valueB[orderKey] as string
     if (typeOrder === 'DESC') {
       return valueA > valueB ? -1 : 1
     }
@@ -575,26 +590,32 @@ const sortWithTime = (
   datasTable: (RecordDatabase | RecordList)[],
   typeOrder: 'ASC' | 'DESC',
 ) => {
-  const newDatas = datasTable.sort((a: any, b: any) => {
-    if (typeOrder === 'DESC') {
-      return new Date(a.recording_time) > new Date(b.recording_time) ? -1 : 1
-    }
-    return new Date(a.recording_time) < new Date(b.recording_time) ? -1 : 1
-  })
+  const newDatas = datasTable.sort(
+    (a: RecordDatabase | RecordList, b: RecordDatabase | RecordList) => {
+      if (typeOrder === 'DESC') {
+        return new Date(a.recording_time) > new Date(b.recording_time) ? -1 : 1
+      }
+      return new Date(a.recording_time) < new Date(b.recording_time) ? -1 : 1
+    },
+  )
   return newDatas
 }
 
 export const onSort = (
   datasTable: (RecordDatabase | RecordList)[],
   typeOrder: 'ASC' | 'DESC' | '',
-  orderKey: string,
+  orderKey: OrderKey,
   type: string = 'tree',
 ): (RecordDatabase | RecordList)[] => {
   if (!typeOrder) return datasTable
   let newDatas = datasTable
   if (type === 'tree') {
     if (['lab_name', 'user_name'].includes(orderKey)) {
-      newDatas = sortWithLabName(datasTable, orderKey, typeOrder)
+      newDatas = sortWithLabName(
+        datasTable,
+        orderKey as 'lab_name' | 'user_name',
+        typeOrder,
+      )
     } else if (orderKey === 'recording_time') {
       newDatas = sortWithTime(datasTable, typeOrder)
     } else if (orderKey === 'subject' && type === 'tree') {
@@ -622,7 +643,11 @@ export const onSort = (
       )
     }
   } else {
-    newDatas = sortWithKey(datasTable as RecordList[], orderKey, typeOrder)
+    newDatas = sortWithKey(
+      datasTable as RecordList[],
+      orderKey as keyof RecordList,
+      typeOrder,
+    )
   }
   return newDatas
 }

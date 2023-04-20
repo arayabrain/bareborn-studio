@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import { onGet, onRowClick, onSort } from 'utils/database'
+import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
 
 type PopupSearchProps = {
@@ -74,6 +74,10 @@ export const PopupSearch = ({
   )
 }
 
+export type Object = {
+  [key: string]: Object | string | number
+}
+
 export type Image = {
   id: number
   parent_id: number
@@ -83,14 +87,14 @@ export type Image = {
     id: number
     parent_id: number
     image_url: string
-    attributes: { [key: string]: any }
+    attributes: Object
   }
 }
 
 export type Viewer = {
   open: boolean
   url: string
-  jsonData?: { [key: string]: any }
+  jsonData?: Object
   id?: number
   session_id?: number
   parent_id?: number
@@ -103,7 +107,7 @@ export type ImagesDatabase = {
   image_url: string
   datatype_label?: string
   type?: string
-  attributes: { [key: string]: any }
+  attributes: Object
   session_id?: number
   record_index?: number
   subject_index?: number
@@ -623,7 +627,7 @@ const Database = () => {
     const data = onSort(
       JSON.parse(JSON.stringify(initDataTable.records)),
       orderbyCheck,
-      orderKey,
+      orderKey as OrderKey,
       type,
     )
     setDatasTable({ ...datasTable, records: data as any })

@@ -1,6 +1,6 @@
 import { Box, Button, styled } from '@mui/material'
 import { useCallback, useMemo, useState } from 'react'
-import TableComponent from '../../components/Table'
+import TableComponent, { Column } from '../../components/Table'
 import { useNavigate } from 'react-router-dom'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 
@@ -16,7 +16,7 @@ export type DataProject = {
 
 const Projects = () => {
   const navigate = useNavigate()
-  const [idDelete, setIdDelete] = useState<string | undefined>()
+  const [idDelete, setIdDelete] = useState<number | string | undefined>()
   const [data, setData] = useState<DataProject[]>([
     {
       id: '1',
@@ -36,18 +36,18 @@ const Projects = () => {
     },
   ])
 
-  const onEdit = useCallback((id: any) => {
+  const onEdit = useCallback((id: number | string) => {
     navigate(`/projects/new-project?id=${id}`)
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const onWorkflow = useCallback((id: any) => {
+  const onWorkflow = useCallback((id: number | string) => {
     console.log('Workflow: ', id)
     navigate('/projects/workflow')
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const onResults = useCallback((id: any) => {
+  const onResults = useCallback((id: number | string) => {
     console.log('Results: ', id)
     navigate('/projects/workflow?tab=2')
     //eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,7 +58,7 @@ const Projects = () => {
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const onDelete = (id: string) => {
+  const onDelete = (id: number | string) => {
     setIdDelete(id)
   }
 
@@ -73,7 +73,7 @@ const Projects = () => {
   }
 
   const columns = useMemo(
-    () => [
+    (): Column[] => [
       { title: 'Project Name', name: 'name' },
       { title: 'Created', name: 'created_time' },
       { title: 'Updated', name: 'updated_time' },
@@ -82,26 +82,31 @@ const Projects = () => {
         title: '',
         name: 'action',
         width: 185,
-        render: (data: any) => (
-          <BoxButton>
-            <ButtonAdd variant="contained" onClick={() => onEdit(data.id)}>
-              Edit
-            </ButtonAdd>
-            <ButtonAdd variant="contained" onClick={() => onWorkflow(data.id)}>
-              Workflow
-            </ButtonAdd>
-            <ButtonAdd variant="contained" onClick={() => onResults(data.id)}>
-              Results
-            </ButtonAdd>
-            <ButtonAdd
-              variant="contained"
-              onClick={() => onDelete(data.id)}
-              sx={{ backgroundColor: 'red !important' }}
-            >
-              Del
-            </ButtonAdd>
-          </BoxButton>
-        ),
+        render: (data) => {
+          return (
+            <BoxButton>
+              <ButtonAdd variant="contained" onClick={() => onEdit(data.id)}>
+                Edit
+              </ButtonAdd>
+              <ButtonAdd
+                variant="contained"
+                onClick={() => onWorkflow(data.id)}
+              >
+                Workflow
+              </ButtonAdd>
+              <ButtonAdd variant="contained" onClick={() => onResults(data.id)}>
+                Results
+              </ButtonAdd>
+              <ButtonAdd
+                variant="contained"
+                onClick={() => onDelete(data.id)}
+                sx={{ backgroundColor: 'red !important' }}
+              >
+                Del
+              </ButtonAdd>
+            </BoxButton>
+          )
+        },
       },
     ],
     [onWorkflow, onResults, onEdit],

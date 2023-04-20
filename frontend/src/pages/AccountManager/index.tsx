@@ -19,55 +19,73 @@ import { useUser } from 'providers'
 import { DataProject } from 'pages/Projects'
 
 type ModalComponentProps = {
-  onSubmitEdit: (id: number | string, data: { [key: string]: string }) => void
+  onSubmitEdit: (
+    id: number | string | undefined,
+    data: { [key: string]: string },
+  ) => void
   setIsOpenModal: (v: boolean) => void
-  type: string
-  dataEdit: {
+  dataEdit?: {
     [key: string]: string
   }
+}
+
+const initState = {
+  email: '',
+  password: '',
+  role: '',
+  lab: '',
+  display_name: '',
+  confirmPassword: '',
 }
 
 const ModalComponent: FC<ModalComponentProps> = ({
   onSubmitEdit,
   setIsOpenModal,
-  type,
   dataEdit,
-}: any) => {
-  const regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+}) => {
+  const regex =
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,255}$/
-  const [formData, setFormData] = useState(type !== 'Add' ? dataEdit : {})
+  const [formData, setFormData] = useState<{ [key: string]: string }>(
+    dataEdit || initState,
+  )
   const [isDisabled, setIsDisabled] = useState(false)
-  const [errors, setErrors] = useState<{ [key: string]: string }>({
-    email: '',
-    password: '',
-    role: '',
-    lab: '',
-    display_name: '',
-    confirmPassword: '',
-  })
+  const [errors, setErrors] = useState<{ [key: string]: string }>(initState)
   const [values, setValues] = useState<{ [key: string]: string }>(
-    dataEdit || {
-      email: '',
-      password: '',
-      role: '',
-      lab: '',
-      display_name: '',
-      confirmPassword: '',
-    },
+    dataEdit || initState,
   )
   const validateEmail = (value: string): string => {
-    if (!value) return 'This field is required'
-    if(value.length > 255) return 'max length 255'
+    const error = validateField('email', 255)
+    if (error) return error
     if (!regex.test(value)) {
       return 'Invalid email format'
     }
     return ''
   }
 
-  const validatePassword = (value: string): string => {
-    if (!value) return ''
+  const validatePassword = (value: string, isConfirm?: boolean): string => {
+    if (!value && !dataEdit?.uid) return 'This field is required'
+    const errorLength = validateLength('password', 255)
+    if (errorLength) {
+      return errorLength
+    }
     if (!regexPassword.test(value)) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
+    }
+    if (isConfirm && formData.password !== formData.confirmPassword) {
+      return 'password is not match'
+    }
+    return ''
+  }
+
+  const validateField = (name: string, length: number) => {
+    if (!formData[name]) return 'This field is required'
+    return validateLength(name, length)
+  }
+
+  const validateLength = (name: string, length: number) => {
+    if (formData[name]?.length > length) {
+      return `${name} must be less than ${length} characters`
     }
     return ''
   }
@@ -104,54 +122,34 @@ const ModalComponent: FC<ModalComponentProps> = ({
   const onSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     setIsDisabled(true)
-    const errorName =
-      values.display_name === '' || !formData.hasOwnProperty('display_name')
-        ? 'This field is required'
-        : values.display_name.length > 100 ? 'max length 100' : ''
+    const errorName = validateField('display_name', 100)
     const errorEmail = validateEmail(values.email)
-    const errorLab =
-      values.lab === '' || !formData.hasOwnProperty('lab')
-        ? 'This field is required'
-        : values.lab.length > 100 ? 'max length 100' : ''
-    const errorRole = values.role === '' || !formData.hasOwnProperty('role')
-        ? 'This field is required'
-        : values.role.length > 50 ? 'max length 50' : ''
-    const errorPassword = values.password === '' ? 'This field is required' : values.password?.length > 255 ? 'max length 255' : validatePassword(values.password)
-    const errorConfirmPassword = !values.password && !values.confirmPassword && type === 'Add' ? 'This field is required' : validatePassword(values.confirmPassword)
-    const errorNotMatch =
-      formData.password === formData.confirmPassword
-        ? ''
-        : 'password is not match'
-    if (
-      errorEmail ||
-      errorPassword ||
-      errorConfirmPassword ||
-      errorNotMatch ||
-      errorName ||
-      errorRole ||
-      errorLab
-    ) {
-      setErrors({
-        email: errorEmail,
-        password: errorPassword,
-        confirmPassword:
-          errorConfirmPassword === '' ? errorNotMatch : errorConfirmPassword,
-        display_name: errorName,
-        lab: errorLab,
-        role: errorRole,
-      })
+    const errorLab = validateField('lab', 100)
+    const errorRole = validateField('role', 50)
+    const errorPassword = validatePassword(values.password)
+    const errorConfirmPassword = validatePassword(values.confirmPassword, true)
+
+    const newErrors: { [key: string]: string } = {
+      email: errorEmail,
+      password: errorPassword,
+      confirmPassword: errorConfirmPassword,
+      display_name: errorName,
+      lab: errorLab,
+      role: errorRole,
+    }
+
+    if (Object.keys(newErrors).some((key) => !!newErrors[key])) {
+      setErrors(newErrors)
       setIsDisabled(false)
       return
     }
     try {
-      await onSubmitEdit(dataEdit.uid, formData)
-      setIsDisabled(false)
-      if (type === 'Add') {
+      await onSubmitEdit(dataEdit?.uid, formData)
+      if (!dataEdit?.uid) {
         alert('Your account has been created successfully!')
       }
     } catch {
-      setIsDisabled(false)
-      if (type === 'Add') {
+      if (!dataEdit?.uid) {
         alert('Your account creation failed!')
       }
     }
@@ -163,7 +161,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   return (
     <Modal>
       <ModalBox>
-        <TitleModal>{type} Account</TitleModal>
+        <TitleModal>{dataEdit?.uid ? 'Edit' : 'Add'} Account</TitleModal>
         <BoxData>
           <LabelModal>Lab: </LabelModal>
           <InputError
@@ -194,7 +192,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
             onBlur={(e) => onBlurData(e, 'email', validateEmail)}
             errorMessage={errors.email}
           />
-          {type === 'Add' ? (
+          {dataEdit?.uid ? (
             <>
               <LabelModal>Password: </LabelModal>
               <InputError
@@ -300,7 +298,7 @@ const AccountManager = () => {
   }
 
   const onSubmitEdit = async (
-    id: number | string,
+    id: number | string | undefined,
     data: { [key: string]: string },
   ) => {
     if (id !== undefined) {
@@ -332,10 +330,7 @@ const AccountManager = () => {
               >
                 <EditIcon sx={{ color: 'black' }} />
               </ALink>
-              <ALink
-                sx={{ ml: 1.25 }}
-                onClick={() => onConfirmDelete(data.id)}
-              >
+              <ALink sx={{ ml: 1.25 }} onClick={() => onConfirmDelete(data.id)}>
                 <DeleteIcon sx={{ color: 'red' }} />
               </ALink>
             </>
@@ -379,7 +374,6 @@ const AccountManager = () => {
       {isOpenModal ? (
         <ModalComponent
           onSubmitEdit={onSubmitEdit}
-          type={type}
           setIsOpenModal={setIsOpenModal}
           dataEdit={dataEdit}
         />

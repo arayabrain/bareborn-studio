@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import ChangeDrag from './ChangeSize'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
+import { Object } from 'pages/Database'
 
 type ImageViewProps = {
   open: boolean
@@ -11,7 +12,7 @@ type ImageViewProps = {
   onNext?: () => void
   onPrevious?: () => void
   url?: string
-  jsonData?: { [key: string]: object }
+  jsonData?: Object
   disabled?: { left: boolean; right: boolean }
 }
 

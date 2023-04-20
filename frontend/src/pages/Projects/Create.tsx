@@ -10,7 +10,13 @@ import {
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import DatabaseTableComponent from 'components/DatabaseTable'
-import React, { useState, DragEvent, Fragment, useRef } from 'react'
+import React, {
+  useState,
+  DragEvent,
+  Fragment,
+  useRef,
+  CSSProperties,
+} from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
 import {
@@ -21,7 +27,10 @@ import {
   Viewer,
 } from '../Database'
 import ImageView from 'components/ImageView'
-import { onGet, onRowClick, onSort } from 'utils/database'
+import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
+import { Object } from '../Database'
+import { ChangeEvent } from 'react'
+import { RecordDatabase } from '../Database'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
@@ -45,11 +54,13 @@ const columns = [
 ]
 
 type ProjectAdd = {
-  project_name: string
-  project_type: number
+  project_name?: string
+  project_type?: string
   image_count: number
+  image_url: string
   protocol: string
   id: string
+  jsonData: Object
 }
 
 type DataWithin = {
@@ -91,7 +102,7 @@ const ProjectFormComponent = () => {
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
-  const onChangeName = (e: any) => {
+  const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value)
   }
 
@@ -178,11 +189,11 @@ const ProjectFormComponent = () => {
     )
   }
 
-  const onDragRow = (row: any) => {
+  const onDragRow = (row: ImagesDatabase[] = []) => {
     setRowDrag(row)
   }
 
-  const onDragEnd = (row: any) => {
+  const onDragEnd = () => {
     setRowDrag(undefined)
   }
 
@@ -195,15 +206,15 @@ const ProjectFormComponent = () => {
     if (!Array.isArray(rowDrag) && !rowDrag?.image_url) {
       return
     }
-    let newData: any[] = []
+    let newData: ProjectAdd[] = []
     if (!Array.isArray(rowDrag)) {
       newData = [
         {
           id: getNanoId(),
           project_name: rowDrag.datatype_label,
           image_count: 1,
-          project_type: rowDrag.attributes.type,
-          protocol: rowDrag.attributes.protocol,
+          project_type: rowDrag.attributes.type as string,
+          protocol: rowDrag.attributes.protocol as string,
           image_url: rowDrag?.image_url,
           jsonData: rowDrag?.attributes,
         },
@@ -213,8 +224,8 @@ const ProjectFormComponent = () => {
         id: getNanoId(),
         project_name: row.datatype_label,
         image_count: 1,
-        project_type: row.attributes.type,
-        protocol: row.attributes.protocol,
+        project_type: row.attributes.type as string,
+        protocol: row.attributes.protocol as string,
         image_url: row?.image_url,
         jsonData: row?.attributes,
       }))
@@ -294,8 +305,8 @@ const ProjectFormComponent = () => {
 
   const renderData = (
     data: ProjectAdd[],
-    style: any,
-    onDelete?: (row: ProjectAdd) => any,
+    style?: CSSProperties,
+    onDelete?: (row: ProjectAdd) => void,
   ) => {
     return data.map((e, index) => (
       <BoxItem
@@ -333,7 +344,7 @@ const ProjectFormComponent = () => {
     setDisabled({ left: !checkPre, right: !checkNext })
   }
 
-  const rowDataClick = (row: any) => {
+  const rowDataClick = (row: ProjectAdd) => {
     if (!row?.image_url || !timeoutClick.current) {
       timeoutClick.current = setTimeout(() => {
         timeoutClick.current = undefined
@@ -356,16 +367,16 @@ const ProjectFormComponent = () => {
     const data = onSort(
       JSON.parse(JSON.stringify(initDataTable.records)),
       orderbyCheck,
-      orderKey,
+      orderKey as OrderKey,
     )
-    setDatasTable({ ...datasTable, records: data as any })
+    setDatasTable({ ...datasTable, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
     setOrdeBy(orderbyCheck)
   }
 
   const onNext = () => {
     if (!viewer.image) return
-    const imageNext = onGet(datasTable as any, viewer.image, false)
+    const imageNext = onGet(datasTable, viewer.image, false)
     if (imageNext) rowClick(imageNext as ImagesDatabase)
   }
 
