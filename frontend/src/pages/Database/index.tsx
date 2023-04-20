@@ -8,6 +8,7 @@ import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
+import { isAdmin, isReseacher } from 'utils/auth'
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -546,7 +547,7 @@ export const columns = (
     title: '',
     name: 'action',
     render: (data) => {
-      if (user?.role !== 'ADMIN' && user?.role !== 'RESEARCHER') return null
+      if (!isAdmin(user?.role) && !isReseacher(user?.role)) return null
       return (
         <BoxButton>
           <ButtonControl

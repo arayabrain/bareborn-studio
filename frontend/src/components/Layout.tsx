@@ -9,7 +9,7 @@ import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { UserContext, useUser } from 'providers'
-import { getToken } from 'utils/auth'
+import { getToken, isAdmin } from 'utils/auth'
 import { getMe } from 'api/auth'
 
 export const drawerWidth = 240
@@ -43,20 +43,14 @@ const Layout: FC = ({ children }) => {
       if (token) {
         const data = await getMe()
         setUser(data)
-        if (
-          ['/login', '/signup', '/reset-password'].includes(
-            window.location.pathname,
-          )
-        ) {
+        if (['/login', '/reset-password'].includes(window.location.pathname)) {
           navigate('/')
         }
         return
       }
       if (
         // !auth.currentUser &&
-        !['/login', '/signup', '/reset-password'].includes(
-          window.location.pathname,
-        )
+        !['/login', '/reset-password'].includes(window.location.pathname)
       ) {
         navigate('/login')
       }
@@ -133,7 +127,7 @@ const MenuLeft: FC<{ onResize: () => void; width: number }> = ({
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
-        {user?.role === 'ADMIN' ? (
+        {isAdmin(user?.role) ? (
           <LinkWrapper to="/account-manager">
             <MenuItem
               isClose={isClose}

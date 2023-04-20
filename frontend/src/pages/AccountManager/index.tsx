@@ -17,6 +17,7 @@ import SelectError from '../../components/common/SelectError'
 import { createUser, deleteUser, editUser, listUser } from 'api/auth'
 import { useUser } from 'providers'
 import { DataProject } from 'pages/Projects'
+import { isAdmin, optionsRole } from 'utils/auth'
 
 type ModalComponentProps = {
   onSubmitEdit: (
@@ -203,7 +204,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
           <LabelModal>Role: </LabelModal>
           <SelectError
             value={formData?.role || ''}
-            options={['ADMIN', 'RESEARCHER', 'MANAGER']}
+            options={optionsRole}
             onChange={(e) => onChangeData(e, 'role')}
             onBlur={(e) => onBlurData(e, 'role')}
             errorMessage={errors.role}
@@ -361,7 +362,7 @@ const AccountManager = () => {
     [user?.uid],
   )
 
-  if (user?.role !== 'ADMIN') {
+  if (!isAdmin(user?.role)) {
     return null
   }
 
