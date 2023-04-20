@@ -65,7 +65,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
 
   const validatePassword = (value: string, isConfirm?: boolean): string => {
     if (!value && !dataEdit?.uid) return 'This field is required'
-    const errorLength = validateLength('password', 255)
+    const errorLength = validateLength('password', 255, value)
     if (errorLength) {
       return errorLength
     }
@@ -80,11 +80,12 @@ const ModalComponent: FC<ModalComponentProps> = ({
 
   const validateField = (name: string, length: number, value?: string) => {
     if (!formData[name] && !value) return 'This field is required'
-    return validateLength(name, length)
+    return validateLength(name, length, value)
   }
 
-  const validateLength = (name: string, length: number) => {
-    if (formData[name]?.length > length) {
+  const validateLength = (name: string, length: number, value?: string) => {
+    if(value && value.length > length) return `The text may not be longer than ${length} characters`
+    if (formData[name]?.length && value && value.length > length) {
       return `The text may not be longer than ${length} characters`
     }
     return ''
