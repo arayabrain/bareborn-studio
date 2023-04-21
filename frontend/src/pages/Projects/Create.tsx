@@ -16,7 +16,6 @@ import React, {
   Fragment,
   useRef,
   CSSProperties,
-  useEffect,
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
@@ -32,7 +31,6 @@ import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { Object } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
-import { useUser } from 'providers'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
@@ -85,7 +83,6 @@ const ProjectFormComponent = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
-  const { onScroll } = useUser()
 
   const routeGoback = searchParams.get('back')
 
@@ -105,17 +102,6 @@ const ProjectFormComponent = () => {
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
-  useEffect(() => {
-    window.addEventListener('wheel', onWheel)
-    return () => {
-      window.removeEventListener('wheel', onWheel)
-    }
-    //eslint-disable-next-line
-  }, [])
-
-  const onWheel = (event: WheelEvent) => {
-    onScroll(event.deltaY)
-  }
 
   const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value)
@@ -633,6 +619,8 @@ const DropAndDropBox = styled(Box)(({ theme }) => ({
   width: '100%',
   display: 'flex',
   gap: theme.spacing(2),
+  height: 'calc(100% - 177px)',
+  overflow: 'hidden',
 }))
 
 const DragBox = styled(Box)(({ theme }) => ({
@@ -640,12 +628,16 @@ const DragBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1, 2),
   border: '1px solid #000',
   minHeight: 100,
+  height: 'calc(100% - 18px)',
+  overflow: 'auto',
 }))
 
 const DropBox = styled(Box)(({ theme }) => ({
   width: '60%',
   padding: theme.spacing(1, 2),
   border: '1px solid #dedede',
+  height: 'calc(100% - 18px)',
+  overflow: 'auto',
 }))
 
 const NewRowButton = styled(Button)(({ theme }) => ({

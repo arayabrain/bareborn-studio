@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import Header from './Header'
 import { KeyboardBackspace } from '@mui/icons-material'
 import HomeIcon from '@mui/icons-material/Home'
@@ -21,10 +21,6 @@ const Layout: FC = ({ children }) => {
   const location = useLocation()
   const [width, setWidth] = useState(drawerWidth)
   const navigate = useNavigate()
-  const enableScroll = useRef<boolean>(false)
-
-  const refChild = useRef<HTMLDivElement | null>(null)
-
   const onResize = () => {
     setWidth(width === drawerWidth ? 54 : drawerWidth)
   }
@@ -62,28 +58,8 @@ const Layout: FC = ({ children }) => {
     }
   }
 
-  const onScroll = (deltaY: number) => {
-    if (refChild.current && enableScroll.current) {
-      refChild.current.scrollTo({
-        top: refChild.current.scrollTop + deltaY,
-        behavior: 'smooth',
-      })
-    }
-  }
-
-  const getScrollTop = () => {
-    if (!refChild.current) return 0
-    return refChild.current.scrollTop
-  }
-
-  const setEnableScroll = (flag: boolean) => {
-    enableScroll.current = flag
-  }
-
   return (
-    <UserContext.Provider
-      value={{ user, setUser, onScroll, setEnableScroll, getScrollTop }}
-    >
+    <UserContext.Provider value={{ user, setUser }}>
       <LayoutWrapper>
         {ignorePaths.includes(location.pathname) ? null : <Header />}
         <ContentBodyWrapper>
@@ -91,7 +67,6 @@ const Layout: FC = ({ children }) => {
             <MenuLeft onResize={onResize} width={width} />
           )}
           <ChildrenWrapper
-            ref={refChild}
             style={{
               width: `calc(100% - ${
                 ignorePaths.includes(location.pathname) ? 0 : width + 10

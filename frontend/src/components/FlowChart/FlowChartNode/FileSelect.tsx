@@ -2,15 +2,10 @@ import React from 'react'
 import { Button, Typography } from '@mui/material'
 import ButtonGroup from '@mui/material/ButtonGroup'
 
-import {
-  FILE_TREE_TYPE,
-  // FILE_TREE_TYPE_SET
-} from 'api/files/Files'
+import { FILE_TREE_TYPE } from 'api/files/Files'
 import { LinearProgressWithLabel } from './LinerProgressWithLabel'
 import { FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
-import { getLabelByPath } from 'store/slice/FlowElement/FlowElementUtils'
-// import { FileSelectDialog } from 'components/common/FileSelectDialog'
 import { useNavigate } from 'react-router-dom'
 
 export const FileSelect = React.memo<{
@@ -66,109 +61,40 @@ type FileSelectImpleProps = {
 }
 
 export const FileSelectImple = React.memo<FileSelectImpleProps>(
-  ({
-    // multiSelect = false,
-    filePath,
-    // onSelectFile,
-    // onUploadFile,
-    // fileTreeType,
-    selectButtonLabel,
-    // uploadButtonLabel,
-  }) => {
-    // const onFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    //   event.preventDefault()
-    //   if (event.target.files != null && event.target.files[0] != null) {
-    //     const file = event.target.files[0]
-    //     const formData = new FormData()
-    //     formData.append('file', file)
-    //     const fileName = file.name
-    //     onUploadFile(formData, fileName)
-    //   }
-    // }
+  ({ filePath }) => {
     const navigate = useNavigate()
-    // const inputRef = React.useRef<HTMLInputElement>(null)
-    // const onClick = () => {
-    //   if (inputRef.current != null) {
-    //     inputRef.current.click()
-    //   }
-    // }
-    // const [open, setOpen] = React.useState(false)
-    // const accept = getFileInputAccept(fileTreeType)
-    const fileName = getLabelByPath(filePath)
+
+    const getNameSelectec = () => {
+      if (Array.isArray(filePath)) {
+        return `${filePath.length} images selected.`
+      }
+      return `${filePath ? 1 : 0} images selected.`
+    }
+
     return (
-      <div
-        style={{
-          padding: 5,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            marginBottom: 16,
-          }}
-        >
-          <ButtonGroup
-            size="small"
-            style={{ marginRight: 4, width: '90%', margin: 'auto' }}
+      <div style={{ padding: 16 }}>
+        <ButtonGroup size="small" style={{ width: '90%', margin: 'auto' }}>
+          <Button
+            style={{ width: '80%' }}
+            variant="outlined"
+            onClick={() =>
+              navigate('/projects/new-project?id=1&back=/projects/workflow')
+            }
           >
-            <Button
-              style={{ width: '100%' }}
-              variant="outlined"
-              onClick={() =>
-                navigate('/projects/new-project?id=1&back=/projects/workflow')
-              }
-            >
-              {!!selectButtonLabel ? selectButtonLabel : 'Select File'}
-            </Button>
-            {/* <Button onClick={onClick} variant="outlined">
-            {!!uploadButtonLabel ? uploadButtonLabel : 'or Upload'}
-          </Button> */}
-          </ButtonGroup>
-        </div>
-        <div>
-          {/* <input
-            ref={inputRef}
-            type="file"
-            onChange={onFileInputChange}
-            accept={accept}
-            style={{
-              visibility: 'hidden',
-              width: 0,
-              height: 0,
-            }}
-          /> */}
+            EDIT IMAGESET
+          </Button>
+        </ButtonGroup>
+        <div style={{ marginTop: 8 }}>
           <Typography className="selectFilePath" variant="caption">
-            {!!fileName ? fileName : 'No file is selected.'}
+            {getNameSelectec()}
           </Typography>
         </div>
-        {/* <FileSelectDialog
-          multiSelect={multiSelect}
-          initialFilePath={filePath}
-          open={open}
-          onClickOk={(path) => {
-            onSelectFile(path)
-            setOpen(false)
-          }}
-          onClickCancel={() => {
-            setOpen(false)
-          }}
-          fileType={fileTreeType}
-        /> */}
+        <ButtonGroup size="small" style={{ width: '90%', margin: '8px 0' }}>
+          <Button style={{ width: '80%' }} variant="outlined">
+            ALIGNMENT
+          </Button>
+        </ButtonGroup>
       </div>
     )
   },
 )
-
-// function getFileInputAccept(fileType: FILE_TREE_TYPE | undefined) {
-//   switch (fileType) {
-//     case FILE_TREE_TYPE_SET.IMAGE:
-//       return '.tif,.tiff'
-//     case FILE_TREE_TYPE_SET.CSV:
-//       return '.csv'
-//     case FILE_TREE_TYPE_SET.HDF5:
-//       return '.hdf5,.nwb'
-//     default:
-//       return undefined
-//   }
-// }
