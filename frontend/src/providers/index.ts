@@ -12,6 +12,14 @@ export type User = {
 export const UserContext = createContext<{
   user?: User
   setUser: Function
-}>({ setUser: () => null })
+  onScroll: (deltaY: number) => void
+  setEnableScroll: (flag: boolean) => void
+  getScrollTop: () => number
+}>({
+  setUser: () => null,
+  onScroll: () => null,
+  setEnableScroll: () => null,
+  getScrollTop: () => 0,
+})
 
 export const useUser = () => useContext(UserContext)

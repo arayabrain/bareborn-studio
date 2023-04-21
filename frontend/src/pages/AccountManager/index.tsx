@@ -45,7 +45,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   dataEdit,
 }) => {
   const regex =
-    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,255}$/
   const [formData, setFormData] = useState<{ [key: string]: string }>(
     dataEdit || initState,
@@ -92,7 +92,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
     return ''
   }
 
-  const validateForm = useCallback((): { [key: string]: string } => {
+  const validateForm = (): { [key: string]: string } => {
     const errorName = validateField('display_name', 100)
     const errorEmail = validateEmail(values.email)
     const errorLab = validateField('lab', 100)
@@ -107,41 +107,20 @@ const ModalComponent: FC<ModalComponentProps> = ({
       lab: errorLab,
       role: errorRole,
     }
-  }, [formData])
+  }
 
-  const onChangeData = useCallback(
-    (
-      e:
-        | ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-        | SelectChangeEvent,
-      type: string,
-    ) => {
-      setFormData({ ...formData, [type]: e.target.value })
-      const { value } = e.target
-      const length =
-        type === 'role'
-          ? 50
-          : type === 'lab' || type === 'display_name'
-          ? 100
-          : 255
-      const error =
-        value === ''
-          ? 'This field is required'
-          : type === 'password' || type === 'confirmPassword'
-          ? validatePassword(value)
-          : type === 'email'
-          ? validateEmail(value)
-          : value.length > length
-          ? `The text may not be longer than ${length} characters`
-          : ''
-      setValues((pre) => ({ ...pre, [type]: value }))
-      setErrors((pre) => ({
-        ...pre,
-        [type]: error,
-      }))
-    },
-    [formData],
-  )
+  const onChangeData = (
+    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement> | SelectChangeEvent,
+    type: string,
+    length: number,
+  ) => {
+    setFormData({ ...formData, [type]: e.target.value })
+    const { value } = e.target
+    const error = validateField(e.target.name, length, value)
+    setValues((pre) => ({ ...pre, [type]: value }))
+    setErrors({ ...errors, [e.target.name]: error })
+  }
+
   const onBlurData = useCallback(
     (
       e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
@@ -152,7 +131,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
       setValues((pre) => ({ ...pre, [type]: value }))
       setErrors((pre) => ({
         ...pre,
-        [type]: value === '' ? 'This field is required' : validate?.(value),
+        [type]: validate?.(value),
       }))
     },
     [],
@@ -189,15 +168,17 @@ const ModalComponent: FC<ModalComponentProps> = ({
         <BoxData>
           <LabelModal>Lab: </LabelModal>
           <InputError
+            name="lab"
             value={formData?.lab || ''}
-            onChange={(e) => onChangeData(e, 'lab')}
+            onChange={(e) => onChangeData(e, 'lab', 100)}
             onBlur={(e) => onBlurData(e, 'lab')}
             errorMessage={errors.lab}
           />
           <LabelModal>Name: </LabelModal>
           <InputError
+            name="display_name"
             value={formData?.display_name || ''}
-            onChange={(e) => onChangeData(e, 'display_name')}
+            onChange={(e) => onChangeData(e, 'display_name', 100)}
             onBlur={(e) => onBlurData(e, 'display_name')}
             errorMessage={errors.display_name}
           />
@@ -205,14 +186,15 @@ const ModalComponent: FC<ModalComponentProps> = ({
           <SelectError
             value={formData?.role || ''}
             options={optionsRole}
-            onChange={(e) => onChangeData(e, 'role')}
+            onChange={(e) => onChangeData(e, 'role', 50)}
             onBlur={(e) => onBlurData(e, 'role')}
             errorMessage={errors.role}
           />
           <LabelModal>e-mail: </LabelModal>
           <InputError
+            name="email"
             value={formData?.email || ''}
-            onChange={(e) => onChangeData(e, 'email')}
+            onChange={(e) => onChangeData(e, 'email', 255)}
             onBlur={(e) => onBlurData(e, 'email', validateEmail)}
             errorMessage={errors.email}
           />
@@ -220,16 +202,18 @@ const ModalComponent: FC<ModalComponentProps> = ({
             <>
               <LabelModal>Password: </LabelModal>
               <InputError
+                name="password"
                 value={formData?.password || ''}
-                onChange={(e) => onChangeData(e, 'password')}
+                onChange={(e) => onChangeData(e, 'password', 255)}
                 onBlur={(e) => onBlurData(e, 'password', validatePassword)}
                 type={'password'}
                 errorMessage={errors.password}
               />
               <LabelModal>Confirm Password: </LabelModal>
               <InputError
+                name="confirmPassword"
                 value={formData?.confirmPassword || ''}
-                onChange={(e) => onChangeData(e, 'confirmPassword')}
+                onChange={(e) => onChangeData(e, 'confirmPassword', 255)}
                 onBlur={(e) =>
                   onBlurData(e, 'confirmPassword', validatePassword)
                 }

@@ -15,6 +15,7 @@ import {
   RecordList,
   SessionsDatabase,
 } from 'pages/Database'
+import { useUser } from 'providers'
 
 type Object = {
   [key: string]: Object | string
@@ -354,6 +355,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   }>({})
   const mouseStart = useRef<{ pageX: number; pageY: number } | undefined>()
   const [beginDrag, setBeginDrag] = useState(false)
+  const { setEnableScroll, getScrollTop } = useUser()
 
   useEffect(() => {
     window.addEventListener('keydown', onKeydownEvent)
@@ -370,6 +372,18 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     }
     //eslint-disable-next-line
   }, [])
+
+  useEffect(() => {
+    window.addEventListener('wheel', onWheel)
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+    }
+    //eslint-disable-next-line
+  }, [])
+
+  const onWheel = (event: WheelEvent) => {
+    onMouseMove(event)
+  }
 
   const onKeydownEvent = (event: KeyboardEvent) => {
     ctrRef.current = event.ctrlKey || event.metaKey
@@ -470,11 +484,17 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     ) {
       return
     }
-    mouseStart.current = { pageX: event.pageX, pageY: event.pageY }
+    mouseStart.current = {
+      pageX: event.pageX,
+      pageY: event.pageY + getScrollTop(),
+    }
+    setMouseMoveRect({ pageX: 0, pageY: 0 })
     onDrag?.(drags)
+    setEnableScroll(true)
   }
 
   const onMouseUp = () => {
+    setEnableScroll(false)
     mouseStart.current = undefined
     setBeginDrag(false)
     setTimeout(() => {
@@ -566,7 +586,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
           const style = {
             width,
             height,
-            top: top - window.scrollY + mouseMoveRect.pageY,
+            top: top + getScrollTop() + mouseMoveRect.pageY,
             left: left + mouseMoveRect.pageX,
           }
           return (

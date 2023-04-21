@@ -16,6 +16,7 @@ import React, {
   Fragment,
   useRef,
   CSSProperties,
+  useEffect,
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
@@ -31,6 +32,7 @@ import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { Object } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
+import { useUser } from 'providers'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
@@ -83,6 +85,7 @@ const ProjectFormComponent = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
+  const { onScroll } = useUser()
 
   const routeGoback = searchParams.get('back')
 
@@ -101,6 +104,18 @@ const ProjectFormComponent = () => {
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
+
+  useEffect(() => {
+    window.addEventListener('wheel', onWheel)
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+    }
+    //eslint-disable-next-line
+  }, [])
+
+  const onWheel = (event: WheelEvent) => {
+    onScroll(event.deltaY)
+  }
 
   const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value)
@@ -591,8 +606,6 @@ const BoxFactor = styled(Box)({})
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
-  overflow: 'auto',
-  height: 'calc(100% - 32px)',
   marginBottom: theme.spacing(3),
 }))
 

@@ -12,6 +12,7 @@ type SelectErrorProps = {
   onChange?: (value: SelectChangeEvent, child: React.ReactNode) => void
   onBlur?: (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
   errorMessage: string
+  name?: string
   options: string[]
 }
 
@@ -21,10 +22,12 @@ const SelectError: FC<SelectErrorProps> = ({
   onBlur,
   errorMessage,
   options,
+  name,
 }) => {
   return (
     <>
       <SelectModal
+        name={name}
         value={value}
         onChange={
           onChange as (
