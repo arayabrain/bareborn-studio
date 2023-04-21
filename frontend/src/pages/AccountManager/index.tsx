@@ -174,7 +174,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
       }
     } catch {
       if (!dataEdit?.uid) {
-        alert('Your account creation failed!')
+        alert('This email already exists')
       }
     }
     setIsOpenModal(false)
