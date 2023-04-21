@@ -78,7 +78,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   }
 
   const validateField = (name: string, length: number, value?: string) => {
-    if (!formData[name] && !value) return 'This field is required'
+    if (!value) return 'This field is required'
     return validateLength(name, length, value)
   }
 
@@ -91,10 +91,10 @@ const ModalComponent: FC<ModalComponentProps> = ({
   }
 
   const validateForm = (): { [key: string]: string } => {
-    const errorName = validateField('display_name', 100)
+    const errorName = validateField('display_name', 100, formData.display_name)
     const errorEmail = validateEmail(formData.email)
-    const errorLab = validateField('lab', 100)
-    const errorRole = validateField('role', 50)
+    const errorLab = validateField('lab', 100, formData.lab)
+    const errorRole = validateField('role', 50, formData.role)
     const errorPassword = validatePassword(formData.password)
     const errorConfirmPassword = validatePassword(formData.confirmPassword, true)
     return {
@@ -114,7 +114,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
     const { value, name } = e.target
     const newDatas = { ...formData, [name]: value }
     setFormData(newDatas)
-    let error:string = validateField(name, length, value)
+    let error: string = name === 'email' ? validateEmail(value) : validateField(name, length, value)
     let errorConfirm = errors.confirmPassword
     if(name.toLowerCase().includes('password')) {
       error = validatePassword(value, name === "confirmPassword", newDatas)
@@ -138,13 +138,14 @@ const ModalComponent: FC<ModalComponentProps> = ({
       await onSubmitEdit(dataEdit?.uid, formData)
       if (!dataEdit?.uid) {
         alert('Your account has been created successfully!')
+        setIsOpenModal(false)
       }
     } catch {
       if (!dataEdit?.uid) {
         alert('This email already exists')
+        setIsDisabled(false)
       }
     }
-    setIsOpenModal(false)
   }
   const onCancel = () => {
     setIsOpenModal(false)
