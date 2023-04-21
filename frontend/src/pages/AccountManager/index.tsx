@@ -4,7 +4,6 @@ import TableComponent, { Column } from 'components/Table'
 import {
   ChangeEvent,
   FC,
-  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -52,9 +51,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   )
   const [isDisabled, setIsDisabled] = useState(false)
   const [errors, setErrors] = useState<{ [key: string]: string }>(initState)
-  const [values, setValues] = useState<{ [key: string]: string }>(
-    dataEdit || initState,
-  )
+
   const validateEmail = (value: string): string => {
     const error = validateField('email', 255, value)
     if (error) return error
@@ -64,16 +61,17 @@ const ModalComponent: FC<ModalComponentProps> = ({
     return ''
   }
 
-  const validatePassword = (value: string, isConfirm?: boolean): string => {
+  const validatePassword = (value: string, isConfirm: boolean = false, values?: { [key: string]: string }): string => {
     if (!value && !dataEdit?.uid) return 'This field is required'
     const errorLength = validateLength('password', 255, value)
     if (errorLength) {
       return errorLength
     }
+    let datas = values || formData
     if (!regexPassword.test(value)) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
     }
-    if (isConfirm && formData.password !== formData.confirmPassword) {
+    if (isConfirm && datas.password !== value) {
       return 'password is not match'
     }
     return ''
@@ -94,11 +92,11 @@ const ModalComponent: FC<ModalComponentProps> = ({
 
   const validateForm = (): { [key: string]: string } => {
     const errorName = validateField('display_name', 100)
-    const errorEmail = validateEmail(values.email)
+    const errorEmail = validateEmail(formData.email)
     const errorLab = validateField('lab', 100)
     const errorRole = validateField('role', 50)
-    const errorPassword = validatePassword(values.password)
-    const errorConfirmPassword = validatePassword(values.confirmPassword, true)
+    const errorPassword = validatePassword(formData.password)
+    const errorConfirmPassword = validatePassword(formData.confirmPassword, true)
     return {
       email: errorEmail,
       password: errorPassword,
@@ -111,31 +109,21 @@ const ModalComponent: FC<ModalComponentProps> = ({
 
   const onChangeData = (
     e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement> | SelectChangeEvent,
-    type: string,
     length: number,
   ) => {
-    setFormData({ ...formData, [type]: e.target.value })
-    const { value } = e.target
-    const error = validateField(e.target.name, length, value)
-    setValues((pre) => ({ ...pre, [type]: value }))
-    setErrors({ ...errors, [e.target.name]: error })
+    const { value, name } = e.target
+    const newDatas = { ...formData, [name]: value }
+    setFormData(newDatas)
+    let error:string = validateField(name, length, value)
+    let errorConfirm = errors.confirmPassword
+    if(name.toLowerCase().includes('password')) {
+      error = validatePassword(value, name === "confirmPassword", newDatas)
+      if(name !== 'confirmPassword' && formData.confirmPassword) {
+        errorConfirm = validatePassword(newDatas.confirmPassword, true, newDatas)
+      }
+    }
+    setErrors({ ...errors, confirmPassword: errorConfirm, [name]: error })
   }
-
-  const onBlurData = useCallback(
-    (
-      e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
-      type: string,
-      validate?: Function,
-    ) => {
-      const { value } = e.target
-      setValues((pre) => ({ ...pre, [type]: value }))
-      setErrors((pre) => ({
-        ...pre,
-        [type]: validate?.(value),
-      }))
-    },
-    [],
-  )
 
   const onSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
@@ -170,42 +158,41 @@ const ModalComponent: FC<ModalComponentProps> = ({
           <InputError
             name="lab"
             value={formData?.lab || ''}
-            onChange={(e) => onChangeData(e, 'lab', 100)}
-            onBlur={(e) => onBlurData(e, 'lab')}
+            onChange={(e) => onChangeData(e, 100)}
+            onBlur={(e) => onChangeData(e, 100)}
             errorMessage={errors.lab}
           />
           <LabelModal>Name: </LabelModal>
           <InputError
             name="display_name"
             value={formData?.display_name || ''}
-            onChange={(e) => onChangeData(e, 'display_name', 100)}
-            onBlur={(e) => onBlurData(e, 'display_name')}
+            onChange={(e) => onChangeData(e, 100)}
+            onBlur={(e) => onChangeData(e, 100)}
             errorMessage={errors.display_name}
           />
           <LabelModal>Role: </LabelModal>
           <SelectError
             value={formData?.role || ''}
             options={optionsRole}
-            onChange={(e) => onChangeData(e, 'role', 50)}
-            onBlur={(e) => onBlurData(e, 'role')}
+            name="role"
+            onChange={(e) => onChangeData(e, 50)}
+            onBlur={(e) => onChangeData(e, 50)}
             errorMessage={errors.role}
           />
           <LabelModal>e-mail: </LabelModal>
           <InputError
             name="email"
             value={formData?.email || ''}
-            onChange={(e) => onChangeData(e, 'email', 255)}
-            onBlur={(e) => onBlurData(e, 'email', validateEmail)}
+            onChange={(e) => onChangeData(e, 255)}
+            onBlur={(e) =>  onChangeData(e, 255)}
             errorMessage={errors.email}
           />
-          {!dataEdit?.uid ? (
-            <>
               <LabelModal>Password: </LabelModal>
               <InputError
                 name="password"
                 value={formData?.password || ''}
-                onChange={(e) => onChangeData(e, 'password', 255)}
-                onBlur={(e) => onBlurData(e, 'password', validatePassword)}
+                onChange={(e) => onChangeData(e, 255)}
+                onBlur={(e) => onChangeData(e, 255)}
                 type={'password'}
                 errorMessage={errors.password}
               />
@@ -213,15 +200,11 @@ const ModalComponent: FC<ModalComponentProps> = ({
               <InputError
                 name="confirmPassword"
                 value={formData?.confirmPassword || ''}
-                onChange={(e) => onChangeData(e, 'confirmPassword', 255)}
-                onBlur={(e) =>
-                  onBlurData(e, 'confirmPassword', validatePassword)
-                }
+                onChange={(e) => onChangeData(e, 255)}
+                onBlur={(e) => onChangeData(e, 255)}
                 type={'password'}
                 errorMessage={errors.confirmPassword}
               />
-            </>
-          ) : null}
         </BoxData>
         <ButtonModal>
           <Button disabled={isDisabled} onClick={(e) => onSubmit(e)}>
