@@ -62,16 +62,16 @@ const ModalComponent: FC<ModalComponentProps> = ({
   }
 
   const validatePassword = (value: string, isConfirm: boolean = false, values?: { [key: string]: string }): string => {
-    if (!value) return 'This field is required'
+    if (!value && ((formData.password || formData.confirmPassword) || !dataEdit?.uid)) return 'This field is required'
     const errorLength = validateLength('password', 255, value)
     if (errorLength) {
       return errorLength
     }
     let datas = values || formData
-    if (!regexPassword.test(value)) {
+    if (!regexPassword.test(value) && value) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
     }
-    if (isConfirm && datas.password !== value) {
+    if (isConfirm && datas.password !== value && value) {
       return 'password is not match'
     }
     return ''
@@ -292,6 +292,7 @@ const AccountManager = () => {
   ) => {
     if (id !== undefined) {
       await editUser(id, data)
+      setIsOpenModal(false)
     } else {
       await createUser(data)
     }
