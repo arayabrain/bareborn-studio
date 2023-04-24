@@ -62,7 +62,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   }
 
   const validatePassword = (value: string, isConfirm: boolean = false, values?: { [key: string]: string }): string => {
-    if (!value && !dataEdit?.uid) return 'This field is required'
+    if (!value) return 'This field is required'
     const errorLength = validateLength('password', 255, value)
     if (errorLength) {
       return errorLength
@@ -265,7 +265,7 @@ const AccountManager = () => {
     setOpenDelete(false)
   }
 
-  const onConfirmDelete = (id: string | number) => {
+  const onConfirmDelete = (id?: string | number) => {
     setIdDel(String(id))
     setOpenDelete(true)
   }
@@ -310,7 +310,7 @@ const AccountManager = () => {
         name: 'action',
         width: 185,
         render: (data) => {
-          if (data.id === user?.uid) return null
+          if (data?.uid === user?.uid) return null
           return (
             <>
               <ALink
@@ -319,7 +319,7 @@ const AccountManager = () => {
               >
                 <EditIcon sx={{ color: 'black' }} />
               </ALink>
-              <ALink sx={{ ml: 1.25 }} onClick={() => onConfirmDelete(data.id)}>
+              <ALink sx={{ ml: 1.25 }} onClick={() => onConfirmDelete(data?.uid)}>
                 <DeleteIcon sx={{ color: 'red' }} />
               </ALink>
             </>
