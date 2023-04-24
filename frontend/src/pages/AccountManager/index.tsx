@@ -62,7 +62,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   }
 
   const validatePassword = (value: string, isConfirm: boolean = false, values?: { [key: string]: string }): string => {
-    if (!value && ((formData.password || formData.confirmPassword) || !dataEdit?.uid)) return 'This field is required'
+    if (!value && !dataEdit?.uid) return 'This field is required'
     const errorLength = validateLength('password', 255, value)
     if (errorLength) {
       return errorLength
@@ -136,15 +136,20 @@ const ModalComponent: FC<ModalComponentProps> = ({
     }
     try {
       await onSubmitEdit(dataEdit?.uid, formData)
-      if (!dataEdit?.uid) {
-        alert('Your account has been created successfully!')
-        setIsOpenModal(false)
-      }
+      setTimeout(()=>{
+        if (!dataEdit?.uid) {
+          alert('Your account has been created successfully!')
+        }
+        else {
+          alert('Your account has been successfully updated!')
+        }
+      },1)
+      setIsOpenModal(false)
     } catch {
       if (!dataEdit?.uid) {
-        alert('This email already exists')
-        setIsDisabled(false)
+          alert('This email already exists!')
       }
+      setIsDisabled(false)
     }
   }
   const onCancel = () => {
@@ -188,24 +193,29 @@ const ModalComponent: FC<ModalComponentProps> = ({
             onBlur={(e) =>  onChangeData(e, 255)}
             errorMessage={errors.email}
           />
-              <LabelModal>Password: </LabelModal>
-              <InputError
-                name="password"
-                value={formData?.password || ''}
-                onChange={(e) => onChangeData(e, 255)}
-                onBlur={(e) => onChangeData(e, 255)}
-                type={'password'}
-                errorMessage={errors.password}
-              />
-              <LabelModal>Confirm Password: </LabelModal>
-              <InputError
-                name="confirmPassword"
-                value={formData?.confirmPassword || ''}
-                onChange={(e) => onChangeData(e, 255)}
-                onBlur={(e) => onChangeData(e, 255)}
-                type={'password'}
-                errorMessage={errors.confirmPassword}
-              />
+          {
+            !dataEdit?.uid ?
+                <>
+                  <LabelModal>Password: </LabelModal>
+                  <InputError
+                      name="password"
+                      value={formData?.password || ''}
+                      onChange={(e) => onChangeData(e, 255)}
+                      onBlur={(e) => onChangeData(e, 255)}
+                      type={'password'}
+                      errorMessage={errors.password}
+                  />
+                  <LabelModal>Confirm Password: </LabelModal>
+                  <InputError
+                      name="confirmPassword"
+                      value={formData?.confirmPassword || ''}
+                      onChange={(e) => onChangeData(e, 255)}
+                      onBlur={(e) => onChangeData(e, 255)}
+                      type={'password'}
+                      errorMessage={errors.confirmPassword}
+                  />
+                </> : null
+          }
         </BoxData>
         <ButtonModal>
           <Button disabled={isDisabled} onClick={(e) => onSubmit(e)}>
@@ -279,6 +289,9 @@ const AccountManager = () => {
   const onDelete = () => {
     if (idDel === undefined) return
     deleteUser(idDel).then(() => {
+      setTimeout(()=> {
+        alert('Your account has been successfully deleted!')
+      },100)
       handleCloseDelete()
       setIdDel(undefined)
       setOpenDelete(false)
