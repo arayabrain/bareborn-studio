@@ -620,20 +620,16 @@ const Database = () => {
     setOpenDelete(false)
   }
 
-  const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC') => {
-    let orderbyCheck: 'DESC' | 'ASC' | '' = orderByValue
-    if (orderBy === 'DESC' && orderByValue === 'ASC') {
-      orderbyCheck = ''
-    }
+  const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
     const data = onSort(
       JSON.parse(JSON.stringify(initDataTable.records)),
-      orderbyCheck,
+      orderByValue,
       orderKey as OrderKey,
       type,
     )
     setDatasTable({ ...datasTable, records: data as any })
     setColumnSort(orderKey)
-    setOrdeBy(orderbyCheck)
+    setOrdeBy(orderByValue)
   }
 
   const onNext = () => {

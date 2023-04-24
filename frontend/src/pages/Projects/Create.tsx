@@ -102,7 +102,6 @@ const ProjectFormComponent = () => {
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
-
   const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value)
   }
@@ -360,19 +359,15 @@ const ProjectFormComponent = () => {
     setDisabled({ left: true, right: true })
   }
 
-  const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC') => {
-    let orderbyCheck: 'DESC' | 'ASC' | '' = orderByValue
-    if (orderBy === 'DESC' && orderByValue === 'ASC') {
-      orderbyCheck = ''
-    }
+  const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
     const data = onSort(
       JSON.parse(JSON.stringify(initDataTable.records)),
-      orderbyCheck,
+      orderByValue,
       orderKey as OrderKey,
     )
     setDatasTable({ ...datasTable, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
-    setOrdeBy(orderbyCheck)
+    setOrdeBy(orderByValue)
   }
 
   const onNext = () => {

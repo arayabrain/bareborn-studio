@@ -40,15 +40,15 @@ type TableComponentProps = {
   columns?: Column[]
   orderBy?: 'ASC' | 'DESC' | ''
   orderKey?: string
-  onSort?: (orderKey: string, orderBy: 'ASC' | 'DESC') => any
-  rowClick?: (row: ImagesDatabase) => any
+  onSort?: (orderKey: string, orderBy: 'ASC' | 'DESC' | '') => void
+  rowClick?: (row: ImagesDatabase) => void
   onClickEvent?: (
     e: MouseEventReact<HTMLTableRowElement>,
     row: ImagesDatabase,
-  ) => any
+  ) => void
   draggable?: boolean
-  onDrag?: (row?: ImagesDatabase[]) => any
-  onDragEnd?: (row?: ImagesDatabase) => any
+  onDrag?: (row?: ImagesDatabase[]) => void
+  onDragEnd?: (row?: ImagesDatabase) => void
   defaultExpand?: boolean
 }
 
@@ -57,17 +57,17 @@ type RenderColumnProps = {
   columns: Column[]
   orderBy?: 'ASC' | 'DESC'
   orderKey?: string
-  onSort?: (orderKey: string, orderBy: string) => any
+  onSort?: (orderKey: string, orderBy: string) => void
   rowClick?: (
     e: MouseEventReact<HTMLTableRowElement>,
     row: ImagesDatabase,
-  ) => any
+  ) => void
   draggable?: boolean
   onDrag?: (
     event: MouseEventReact<HTMLTableRowElement>,
     row?: ImagesDatabase[],
-  ) => any
-  onDragEnd?: (row?: ImagesDatabase) => any
+  ) => void
+  onDragEnd?: (row?: ImagesDatabase) => void
   recordIndex: number
   defaultExpand?: boolean
   dataShow?: boolean
@@ -78,7 +78,7 @@ type RenderColumnProps = {
   onMouseDown: (
     event: MouseEventReact<HTMLTableRowElement>,
     image: ImagesDatabase,
-  ) => any
+  ) => void
 }
 
 const renderCol = (
@@ -387,7 +387,15 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   }
 
   const onSortHandle = (nameCol: string) => {
-    onSort?.(nameCol, orderBy === 'ASC' ? 'DESC' : 'ASC')
+    if (orderKey === nameCol) {
+      let order: 'ASC' | 'DESC' | '' = ''
+      if (orderBy === 'ASC') {
+        order = 'DESC'
+      } else if (!orderBy) {
+        order = 'ASC'
+      }
+      onSort?.(nameCol, order)
+    } else onSort?.(nameCol, 'ASC')
   }
 
   const onRowClickEvent = (
