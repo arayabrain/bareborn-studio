@@ -21,14 +21,14 @@ class UserAuth(BaseModel):
 
 
 class UserCreate(UserAuth):
-    display_name: Optional[str] = Field(max_length=100)
-    lab: Optional[str] = Field(max_length=100)
+    display_name: str = Field(max_length=100)
+    lab: str = Field(max_length=100)
     role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
 
 
 class UserUpdate(BaseModel):
-    display_name: Optional[str] = Field(max_length=100)
-    lab: Optional[str] = Field(max_length=100)
+    display_name: str = Field(max_length=100)
+    lab: str = Field(max_length=100)
     role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
 
 
