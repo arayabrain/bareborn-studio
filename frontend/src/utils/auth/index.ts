@@ -7,3 +7,13 @@ export const getToken = () => {
 export const removeToken = () => {
   return localStorage.removeItem('access_token')
 }
+
+export const isAdmin = (role?: string) => {
+  return role === 'ADMIN'
+}
+
+export const isReseacher = (role?: string) => {
+  return role === 'RESEARCHER'
+}
+
+export const optionsRole = ['ADMIN', 'RESEARCHER', 'MANAGER']

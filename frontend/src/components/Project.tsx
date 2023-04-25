@@ -86,8 +86,8 @@ const StyledAppBar = styled(Box)(({ theme }) => ({
 
 interface TabPanelProps {
   children?: React.ReactNode
-  index: any
-  value: any
+  index: number
+  value: number
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -107,7 +107,7 @@ function TabPanel(props: TabPanelProps) {
   )
 }
 
-function a11yProps(index: any) {
+function a11yProps(index: number | string) {
   return {
     id: `simple-tab-${index}`,
     'aria-controls': `simple-tabpanel-${index}`,

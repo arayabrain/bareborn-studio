@@ -1,116 +1,156 @@
-import { Box, Button, styled } from '@mui/material'
+import { Box, Button, SelectChangeEvent, styled } from '@mui/material'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import TableComponent from 'components/Table'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import TableComponent, { Column } from 'components/Table'
+import {
+  ChangeEvent,
+  FC,
+  useEffect,
+  useMemo,
+  useState,
+  MouseEvent,
+} from 'react'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InputError from '../../components/common/InputError'
 import SelectError from '../../components/common/SelectError'
-// import { listUser } from 'api/auth'
+import { createUser, deleteUser, editUser, listUser } from 'api/auth'
+import { useUser } from 'providers'
+import { DataProject } from 'pages/Projects'
+import { isAdmin, optionsRole } from 'utils/auth'
 
-const ModalComponent = ({
-  data,
-  setData,
+type ModalComponentProps = {
+  onSubmitEdit: (
+    id: number | string | undefined,
+    data: { [key: string]: string },
+  ) => void
+  setIsOpenModal: (v: boolean) => void
+  dataEdit?: {
+    [key: string]: string
+  }
+}
+
+const initState = {
+  email: '',
+  password: '',
+  role: '',
+  lab: '',
+  display_name: '',
+  confirmPassword: '',
+}
+
+const ModalComponent: FC<ModalComponentProps> = ({
+  onSubmitEdit,
   setIsOpenModal,
-  type,
   dataEdit,
-}: any) => {
-  const regex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/
-  const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,100}$/
-  const [formData, setFormData] = useState(type !== 'Add' ? dataEdit : {})
-  const [errors, setErrors] = useState<{ [key: string]: string }>({
-    email: '',
-    password: '',
-    role: '',
-    lab: '',
-    name: '',
-    confirmPassword: '',
-  })
-  const [values, setValues] = useState<{ [key: string]: string }>(
-    dataEdit || {
-      email: '',
-      password: '',
-      role: '',
-      lab: '',
-      name: '',
-      confirmPassword: '',
-    },
+}) => {
+  const regex =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,255}$/
+  const [formData, setFormData] = useState<{ [key: string]: string }>(
+    dataEdit || initState,
   )
+  const [isDisabled, setIsDisabled] = useState(false)
+  const [errors, setErrors] = useState<{ [key: string]: string }>(initState)
+
   const validateEmail = (value: string): string => {
-    if (!value) return 'This field is required'
+    const error = validateField('email', 255, value)
+    if (error) return error
     if (!regex.test(value)) {
       return 'Invalid email format'
     }
     return ''
   }
 
-  const validatePassword = (value: string): string => {
-    if (!value) return 'This field is required'
-    if (!regexPassword.test(value)) {
+  const validatePassword = (value: string, isConfirm: boolean = false, values?: { [key: string]: string }): string => {
+    if (!value && !dataEdit?.uid) return 'This field is required'
+    const errorLength = validateLength('password', 255, value)
+    if (errorLength) {
+      return errorLength
+    }
+    let datas = values || formData
+    if (!regexPassword.test(value) && value) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
+    }
+    if (isConfirm && datas.password !== value && value) {
+      return 'password is not match'
     }
     return ''
   }
 
-  const onChangeData = useCallback(
-    (e: any, type: string) => {
-      setFormData({ ...formData, [type]: e.target.value })
-      const { value } = e.target
-      setValues((pre) => ({ ...pre, [type]: value }))
-    },
-    [formData],
-  )
-  const onBlurData = useCallback(
-    (e: any, type: string, validate?: Function) => {
-      const { value } = e.target
-      setValues((pre) => ({ ...pre, [type]: value }))
-      setErrors((pre) => ({
-        ...pre,
-        [type]: value === '' ? 'This field is required' : validate?.(value),
-      }))
-    },
-    [],
-  )
+  const validateField = (name: string, length: number, value?: string) => {
+    if (!value) return 'This field is required'
+    return validateLength(name, length, value)
+  }
 
-  const onSubmit = (e: any) => {
+  const validateLength = (name: string, length: number, value?: string) => {
+    if(value && value.length > length) return `The text may not be longer than ${length} characters`
+    if (formData[name]?.length && value && value.length > length) {
+      return `The text may not be longer than ${length} characters`
+    }
+    return ''
+  }
+
+  const validateForm = (): { [key: string]: string } => {
+    const errorName = validateField('display_name', 100, formData.display_name)
+    const errorEmail = validateEmail(formData.email)
+    const errorLab = validateField('lab', 100, formData.lab)
+    const errorRole = validateField('role', 50, formData.role)
+    const errorPassword = validatePassword(formData.password)
+    const errorConfirmPassword = validatePassword(formData.confirmPassword, true)
+    return {
+      email: errorEmail,
+      password: errorPassword,
+      confirmPassword: errorConfirmPassword,
+      display_name: errorName,
+      lab: errorLab,
+      role: errorRole,
+    }
+  }
+
+  const onChangeData = (
+    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement> | SelectChangeEvent,
+    length: number,
+  ) => {
+    const { value, name } = e.target
+    const newDatas = { ...formData, [name]: value }
+    setFormData(newDatas)
+    let error: string = name === 'email' ? validateEmail(value) : validateField(name, length, value)
+    let errorConfirm = errors.confirmPassword
+    if(name.toLowerCase().includes('password')) {
+      error = validatePassword(value, name === "confirmPassword", newDatas)
+      if(name !== 'confirmPassword' && formData.confirmPassword) {
+        errorConfirm = validatePassword(newDatas.confirmPassword, true, newDatas)
+      }
+    }
+    setErrors({ ...errors, confirmPassword: errorConfirm, [name]: error })
+  }
+
+  const onSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
-    const errorEmail = validateEmail(values.email)
-    const errorPassword = validatePassword(values.password)
-    const errorConfirmPassword = validatePassword(values.confirmPassword)
-    const errorNotMatch =
-      formData.password === formData.confirmPassword
-        ? ''
-        : 'password is not match'
-    if (errorEmail || errorPassword || errorConfirmPassword || errorNotMatch) {
-      setErrors({
-        email: errorEmail,
-        password: errorPassword,
-        confirmPassword:
-          errorConfirmPassword === '' ? errorNotMatch : errorConfirmPassword,
-        name:
-          values.name === '' || !formData.hasOwnProperty('name')
-            ? 'This field is required'
-            : '',
-        lab:
-          values.lab === '' || !formData.hasOwnProperty('lab')
-            ? 'This field is required'
-            : '',
-        role:
-          values.role === '' || !formData.hasOwnProperty('role')
-            ? 'This field is required'
-            : '',
-      })
+    setIsDisabled(true)
+    const newErrors = validateForm()
+    if (Object.keys(newErrors).some((key) => !!newErrors[key])) {
+      setErrors(newErrors)
+      setIsDisabled(false)
       return
     }
-    if (type === 'Add') {
-      setData([...data, { ...formData, id: String(Math.random() * 100) }])
-    } else {
-      setData((pre: any) => {
-        pre.splice(data.indexOf(dataEdit), 1, formData)
-        return pre
-      })
+    try {
+      await onSubmitEdit(dataEdit?.uid, formData)
+      setTimeout(()=>{
+        if (!dataEdit?.uid) {
+          alert('Your account has been created successfully!')
+        }
+        else {
+          alert('Your account has been successfully updated!')
+        }
+      },1)
+      setIsOpenModal(false)
+    } catch {
+      if (!dataEdit?.uid) {
+          alert('This email already exists!')
+      }
+      setIsDisabled(false)
     }
-    setIsOpenModal(false)
   }
   const onCancel = () => {
     setIsOpenModal(false)
@@ -118,58 +158,69 @@ const ModalComponent = ({
   return (
     <Modal>
       <ModalBox>
-        <TitleModal>{type} Account</TitleModal>
+        <TitleModal>{dataEdit?.uid ? 'Edit' : 'Add'} Account</TitleModal>
         <BoxData>
           <LabelModal>Lab: </LabelModal>
           <InputError
+            name="lab"
             value={formData?.lab || ''}
-            onChange={(e: any) => onChangeData(e, 'lab')}
-            onBlur={(e: any) => onBlurData(e, 'lab')}
+            onChange={(e) => onChangeData(e, 100)}
+            onBlur={(e) => onChangeData(e, 100)}
             errorMessage={errors.lab}
           />
           <LabelModal>Name: </LabelModal>
           <InputError
-            value={formData?.name || ''}
-            onChange={(e: any) => onChangeData(e, 'name')}
-            onBlur={(e: any) => onBlurData(e, 'name')}
-            errorMessage={errors.name}
+            name="display_name"
+            value={formData?.display_name || ''}
+            onChange={(e) => onChangeData(e, 100)}
+            onBlur={(e) => onChangeData(e, 100)}
+            errorMessage={errors.display_name}
           />
           <LabelModal>Role: </LabelModal>
           <SelectError
             value={formData?.role || ''}
-            options={['Admin', 'Researcher', 'Manager']}
-            onChange={(e: any) => onChangeData(e, 'role')}
-            onBlur={(e: any) => onBlurData(e, 'role')}
+            options={optionsRole}
+            name="role"
+            onChange={(e) => onChangeData(e, 50)}
+            onBlur={(e) => onChangeData(e, 50)}
             errorMessage={errors.role}
           />
           <LabelModal>e-mail: </LabelModal>
           <InputError
+            name="email"
             value={formData?.email || ''}
-            onChange={(e: any) => onChangeData(e, 'email')}
-            onBlur={(e: any) => onBlurData(e, 'email', validateEmail)}
+            onChange={(e) => onChangeData(e, 255)}
+            onBlur={(e) =>  onChangeData(e, 255)}
             errorMessage={errors.email}
           />
-          <LabelModal>Password: </LabelModal>
-          <InputError
-            value={formData?.password || ''}
-            onChange={(e: any) => onChangeData(e, 'password')}
-            onBlur={(e: any) => onBlurData(e, 'password', validatePassword)}
-            type={'password'}
-            errorMessage={errors.password}
-          />
-          <LabelModal>Confirm Password: </LabelModal>
-          <InputError
-            value={formData?.confirmPassword || ''}
-            onChange={(e: any) => onChangeData(e, 'confirmPassword')}
-            onBlur={(e: any) =>
-              onBlurData(e, 'confirmPassword', validatePassword)
-            }
-            type={'password'}
-            errorMessage={errors.confirmPassword}
-          />
+          {
+            !dataEdit?.uid ?
+                <>
+                  <LabelModal>Password: </LabelModal>
+                  <InputError
+                      name="password"
+                      value={formData?.password || ''}
+                      onChange={(e) => onChangeData(e, 255)}
+                      onBlur={(e) => onChangeData(e, 255)}
+                      type={'password'}
+                      errorMessage={errors.password}
+                  />
+                  <LabelModal>Confirm Password: </LabelModal>
+                  <InputError
+                      name="confirmPassword"
+                      value={formData?.confirmPassword || ''}
+                      onChange={(e) => onChangeData(e, 255)}
+                      onBlur={(e) => onChangeData(e, 255)}
+                      type={'password'}
+                      errorMessage={errors.confirmPassword}
+                  />
+                </> : null
+          }
         </BoxData>
         <ButtonModal>
-          <Button onClick={(e) => onSubmit(e)}>Ok</Button>
+          <Button disabled={isDisabled} onClick={(e) => onSubmit(e)}>
+            Ok
+          </Button>
           <Button onClick={() => onCancel()}>Cancel</Button>
         </ButtonModal>
       </ModalBox>
@@ -179,85 +230,127 @@ const ModalComponent = ({
 const AccountManager = () => {
   const [openDelete, setOpenDelete] = useState(false)
   const [isOpenModal, setIsOpenModal] = useState(false)
-  const [type, setType] = useState<string>('')
-  const [dataEdit, setDateEdit] = useState({})
+  const [dataEdit, setDataEdit] = useState({})
   const [idDel, setIdDel] = useState<string | undefined>()
-  const [data, setData] = useState([
-    {
-      id: '1',
-      lab: 'Lab1',
-      name: 'Mail Address',
-      role: 'Admin',
-      email: 'sfdsf@gmail.com',
-      password: 'abcxyz',
-      confirmPassword: 'abcxyz',
-    },
-  ])
+  const [data, setData] = useState<any[]>([])
+  const [paginate, setPaginate] = useState({
+    total: 0,
+    per_page: 10,
+    page: -1,
+    next_page_token: [],
+  })
+  const { user } = useUser()
 
   useEffect(() => {
     getList()
+    //eslint-disable-next-line
   }, [])
 
-  const getList = async () => {
-    // const data = await listUser()
+  const getList = async (page: number = 0) => {
+    const query: { [key: string]: string | number } = {
+      offset: paginate.per_page * page,
+    }
+    if (paginate.next_page_token[page - 1]) {
+      query.next_page_token = paginate.next_page_token[page - 1]
+    }
+    const data = await listUser(query)
+    const nextPageToken: string[] = paginate.next_page_token
+    if (page > paginate.page) {
+      nextPageToken.push(data.next_page_token)
+    }
+    setData(data.data)
+    setPaginate((pre) => ({
+      ...pre,
+      total: data.total_page * paginate.per_page,
+      next_page_token: nextPageToken as any,
+      page,
+    }))
   }
 
-  const onOpenModal = (type: string) => {
+  const onOpenModal = () => {
     setIsOpenModal(true)
-    setType(type)
   }
 
   const handleCloseDelete = () => {
     setOpenDelete(false)
   }
 
-  const onConfirmDelete = (id: string) => {
-    setIdDel(id)
+  const onConfirmDelete = (id?: string | number) => {
+    setIdDel(String(id))
     setOpenDelete(true)
   }
 
-  const onForgotPassword = (data: any) => {
+  const onForgotPassword = (data: DataProject) => {
     //todo call api
-    setDateEdit(data)
+    setDataEdit(data)
     setIsOpenModal(true)
-    setType('Edit')
   }
 
   const onDelete = () => {
-    const index = data.findIndex((item) => item.id === idDel)
-    data.splice(index, 1)
-    //todo call api
-    handleCloseDelete()
+    if (idDel === undefined) return
+    deleteUser(idDel).then(() => {
+      setTimeout(()=> {
+        alert('Your account has been successfully deleted!')
+      },100)
+      handleCloseDelete()
+      setIdDel(undefined)
+      setOpenDelete(false)
+      getList()
+    })
+  }
+
+  const onSubmitEdit = async (
+    id: number | string | undefined,
+    data: { [key: string]: string },
+  ) => {
+    if (id !== undefined) {
+      await editUser(id, data)
+      setIsOpenModal(false)
+    } else {
+      await createUser(data)
+    }
+    await getList(id !== undefined ? paginate.page : 0)
+    return undefined
   }
 
   const columns = useMemo(
-    () => [
+    (): Column[] => [
       { title: 'Lab', name: 'lab' },
-      { title: 'Name', name: 'name' },
+      { title: 'Name', name: 'display_name' },
       { title: 'Role', name: 'role' },
       { title: 'Mail', name: 'email' },
       {
         title: '',
         name: 'action',
         width: 185,
-        render: (data: any) => (
-          <>
-            <ALink sx={{ color: 'red' }} onClick={() => onForgotPassword(data)}>
-              <EditIcon sx={{ color: 'black' }} />
-            </ALink>
-            <ALink sx={{ ml: 1.25 }} onClick={() => onConfirmDelete(data.id)}>
-              <DeleteIcon sx={{ color: 'red' }} />
-            </ALink>
-          </>
-        ),
+        render: (data) => {
+          if (data?.uid === user?.uid) return null
+          return (
+            <>
+              <ALink
+                sx={{ color: 'red' }}
+                onClick={() => onForgotPassword(data)}
+              >
+                <EditIcon sx={{ color: 'black' }} />
+              </ALink>
+              <ALink sx={{ ml: 1.25 }} onClick={() => onConfirmDelete(data?.uid)}>
+                <DeleteIcon sx={{ color: 'red' }} />
+              </ALink>
+            </>
+          )
+        },
       },
     ],
-    [],
+    [user?.uid],
   )
+
+  if (!isAdmin(user?.role)) {
+    return null
+  }
 
   return (
     <AccountManagerWrapper>
-       <h1 style={{ paddingLeft: 16 }}>Account Manager</h1>
+      <h1 style={{ paddingLeft: 16 }}>Account Manager</h1>
       <ModalDeleteAccount
         titleSubmit="Delete Account"
         onClose={handleCloseDelete}
@@ -265,21 +358,31 @@ const AccountManager = () => {
         onSubmit={onDelete}
       />
       <BoxButton>
-        <ButtonAdd onClick={() => onOpenModal('Add')} variant="contained">
+        <ButtonAdd onClick={() => onOpenModal()} variant="contained">
           Add
         </ButtonAdd>
       </BoxButton>
       <TableComponent
-        paginate={{ total: 100, page: 1, page_size: 10 }}
+        paginate={{
+          total: paginate.total,
+          page: paginate.page,
+          page_size: paginate.per_page,
+          onPageChange: ({ selected }) => {
+            getList(selected)
+          },
+        }}
         data={data}
         columns={columns}
       />
       {isOpenModal ? (
         <ModalComponent
-          data={data}
-          setData={setData}
-          type={type}
-          setIsOpenModal={setIsOpenModal}
+          onSubmitEdit={onSubmitEdit}
+          setIsOpenModal={(flag) => {
+            setIsOpenModal(flag)
+            if (!flag) {
+              setDataEdit({})
+            }
+          }}
           dataEdit={dataEdit}
         />
       ) : null}

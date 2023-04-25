@@ -10,7 +10,27 @@ export const getMe = async () => {
   return response.data
 }
 
-export const listUser = async () => {
-  const response = await axios.get('/admin/user')
+export const listUser = async (query?: object) => {
+  const response = await axios.get('/admin/user', { params: query })
+  return response.data
+}
+
+export const createUser = async (data: object) => {
+  const response = await axios.post(`/admin/user`, data)
+  return response.data
+}
+
+export const editUser = async (userId: string | number, data: object) => {
+  const response = await axios.put(`/admin/user/${userId}`, data)
+  return response.data
+}
+
+export const deleteUser = async (userId: string | number) => {
+  const response = await axios.delete(`/admin/user/${userId}`)
+  return response.data
+}
+
+export const resetPassword = async (email: string) => {
+  const response = await axios.post(`/admin/user/send_reset_password?email=${email}`, email)
   return response.data
 }

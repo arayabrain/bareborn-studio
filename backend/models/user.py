@@ -1,30 +1,44 @@
 from datetime import datetime
 from typing import Optional, Literal, List
+from enum import Enum
+from pydantic import BaseModel, EmailStr, Field, validator
 
-from pydantic import BaseModel, EmailStr
-
+class UserRole(str, Enum):
+    ADMIN = 'ADMIN'
+    RESEARCHER = 'RESEARCHER'
+    MANAGER = 'MANAGER'
 
 class UserAuth(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(max_length=255)
+
+
+    @validator('email')
+    def email_must_less_than_255(cls, value):
+        if len(value) >= 255:
+            raise ValueError("Email too long")
+        return value
 
 
 class UserCreate(UserAuth):
-    display_name: Optional[str]
-    role: Literal['USER', 'ADMIN']
+    display_name: str = Field(max_length=100)
+    lab: str = Field(max_length=100)
+    role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
 
 
 class UserUpdate(BaseModel):
-    display_name: Optional[str]
-    role: Literal['USER', 'ADMIN']
+    display_name: str = Field(max_length=100)
+    lab: str = Field(max_length=100)
+    role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
 
 
 class User(BaseModel):
     uid: str
     email: EmailStr
-    display_name: Optional[str]
+    display_name: Optional[str] = Field(max_length=100)
     created_time: Optional[datetime] = None
-    role: Optional[str]
+    role: Optional[Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]]
+    lab: Optional[str] = Field(max_length=100)
     last_login_time: Optional[datetime] = None
 
 
@@ -34,7 +48,7 @@ class UserSendResetPasswordEmail(BaseModel):
 
 class UserVerifyResetPasswordCode(BaseModel):
     reset_code: str
-    new_password: str
+    new_password: str = Field(max_length=255)
 
 
 class ListUserPaging(BaseModel):

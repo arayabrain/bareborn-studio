@@ -6,31 +6,61 @@ import {
   Radio,
   RadioGroup,
   styled,
+  Typography,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import DatabaseTableComponent from 'components/DatabaseTable'
-import React, { useState, DragEvent, Fragment } from 'react'
+import React, {
+  useState,
+  DragEvent,
+  Fragment,
+  useRef,
+  CSSProperties,
+} from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
-import { defaultDatabase, PopupSearch, Viewer } from '../Database'
+import {
+  DatabaseData,
+  defaultDatabase,
+  ImagesDatabase,
+  PopupSearch,
+  Viewer,
+} from '../Database'
 import ImageView from 'components/ImageView'
-import { onGet, onSort } from 'utils/database'
+import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
+import { Object } from '../Database'
+import { ChangeEvent } from 'react'
+import { RecordDatabase } from '../Database'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
-  { title: 'Date', name: 'recording_time', filter: true },
-  { title: 'Session', name: 'sessions', child: 'label', filter: true },
-  { title: 'Dataset', name: 'datatypes', child: 'label', filter: true },
-  { title: 'Type', name: 'type', filter: true },
-  { title: 'Protocol', name: 'protocol', filter: true },
+  { title: 'Date', name: 'recording_time', filter: true, width: 100 },
+  { title: 'Subject', name: 'subject', filter: true },
+  {
+    title: 'Session',
+    name: 'session',
+    child: 'label',
+    filter: true,
+    width: 100,
+  },
+  {
+    title: 'Dataset',
+    name: 'datatype',
+    filter: true,
+    width: 100,
+  },
+  { title: 'Size', name: 'attributes.size', filter: true },
+  { title: 'Voxel size', name: 'attributes.voxel_size', filter: true },
 ]
 
 type ProjectAdd = {
-  project_name: string
-  project_type: number
+  project_name?: string
+  project_type?: string
   image_count: number
+  image_url: string
   protocol: string
   id: string
+  jsonData: Object
 }
 
 type DataWithin = {
@@ -43,16 +73,6 @@ type DataFactor = {
   within: DataWithin[]
 } & DataWithin
 
-type RowDrag = {
-  label: string
-  protocol: string
-  type: string
-  image?: {
-    image_url: string
-    attributes: { [key: string]: any }
-  }
-}
-
 const nameDefault = 'DEFAULT'
 
 const ProjectFormComponent = () => {
@@ -60,22 +80,29 @@ const ProjectFormComponent = () => {
 
   const idEdit = searchParams.get('id')
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
-  const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | undefined>()
+  const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
-  const [datasTable, setDatasTable] = useState<any[]>(defaultDatabase)
+  const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
+
+  const routeGoback = searchParams.get('back')
+
+  const [initDataTable /*setInitDataTable */] =
+    useState<DatabaseData>(defaultDatabase)
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
     'factor',
   )
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
-  const [rowDrag, setRowDrag] = useState<(RowDrag | undefined) | RowDrag[]>()
+  const [rowDrag, setRowDrag] = useState<ImagesDatabase | ImagesDatabase[]>()
   const [dataFactors, setDataFactors] = useState<DataFactor[]>([
     { name: nameDefault, within: [], id: getNanoId(), data: [] },
   ])
+  const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
+  const [isEditName, setIsEditName] = useState(false)
 
-  const onChangeName = (e: any) => {
+  const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value)
   }
 
@@ -162,11 +189,11 @@ const ProjectFormComponent = () => {
     )
   }
 
-  const onDragRow = (row: any) => {
+  const onDragRow = (row: ImagesDatabase[] = []) => {
     setRowDrag(row)
   }
 
-  const onDragEnd = (row: any) => {
+  const onDragEnd = () => {
     setRowDrag(undefined)
   }
 
@@ -176,31 +203,31 @@ const ProjectFormComponent = () => {
   }
 
   const onDropData = (factor: DataFactor, within?: DataWithin) => {
-    if (!Array.isArray(rowDrag) && !rowDrag?.image) {
+    if (!Array.isArray(rowDrag) && !rowDrag?.image_url) {
       return
     }
-    let newData: any[] = []
+    let newData: ProjectAdd[] = []
     if (!Array.isArray(rowDrag)) {
       newData = [
         {
           id: getNanoId(),
-          project_name: rowDrag.label,
+          project_name: rowDrag.datatype_label,
           image_count: 1,
-          project_type: rowDrag.type,
-          protocol: rowDrag.protocol,
-          image_url: rowDrag.image?.image_url,
-          jsonData: rowDrag.image?.attributes,
+          project_type: rowDrag.attributes.type as string,
+          protocol: rowDrag.attributes.protocol as string,
+          image_url: rowDrag?.image_url,
+          jsonData: rowDrag?.attributes,
         },
       ]
     } else if (Array.isArray(rowDrag)) {
       newData = rowDrag.map((row) => ({
         id: getNanoId(),
-        project_name: row.label,
+        project_name: row.datatype_label,
         image_count: 1,
-        project_type: row.type,
-        protocol: row.protocol,
-        image_url: row.image?.image_url,
-        jsonData: row.image?.attributes,
+        project_type: row.attributes.type as string,
+        protocol: row.attributes.protocol as string,
+        image_url: row?.image_url,
+        jsonData: row?.attributes,
       }))
     }
     if (projectLevel !== 'within-factor') {
@@ -278,8 +305,8 @@ const ProjectFormComponent = () => {
 
   const renderData = (
     data: ProjectAdd[],
-    style: any,
-    onDelete?: (row: ProjectAdd) => any,
+    style?: CSSProperties,
+    onDelete?: (row: ProjectAdd) => void,
   ) => {
     return data.map((e, index) => (
       <BoxItem
@@ -311,28 +338,19 @@ const ProjectFormComponent = () => {
     setViewer({ open: false, url: '' })
   }
 
-  const rowClick = (row: any) => {
-    if (!row?.image?.image_url) return
-    const view = {
-      open: true,
-      url: row.image.image_url,
-      id: row.id,
-      session_id: row.session_id,
-      parent_id: row.parent_id,
-      jsonData: row.image.attributes,
-    }
-    const checkNext = onGet(defaultDatabase as any, view)
-    const checkPre = onGet(
-      JSON.parse(JSON.stringify(defaultDatabase)).reverse() as any,
-      view,
-      true,
-    )
-    setDisabled({ left: !checkPre, right: !checkNext })
+  const rowClick = (row: ImagesDatabase) => {
+    const { view, checkNext, checkPre } = onRowClick(datasTable, row)
     setViewer(view)
+    setDisabled({ left: !checkPre, right: !checkNext })
   }
 
-  const rowDataClick = (row: any) => {
-    if (!row?.image_url) return
+  const rowDataClick = (row: ProjectAdd) => {
+    if (!row?.image_url || !timeoutClick.current) {
+      timeoutClick.current = setTimeout(() => {
+        timeoutClick.current = undefined
+      }, 300)
+      return
+    }
     setViewer({
       open: true,
       url: row.image_url,
@@ -341,32 +359,27 @@ const ProjectFormComponent = () => {
     setDisabled({ left: true, right: true })
   }
 
-  const handleSort = (orderKey: string) => {
+  const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
+    const data = onSort(
+      JSON.parse(JSON.stringify(initDataTable.records)),
+      orderByValue,
+      orderKey as OrderKey,
+    )
+    setDatasTable({ ...datasTable, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
-    let typeOrder: 'ASC' | 'DESC' | undefined = undefined
-    if (!orderBy || orderKey !== columnSort) {
-      typeOrder = 'ASC'
-    } else if (orderBy === 'ASC') {
-      typeOrder = 'DESC'
-    }
-    setOrdeBy(typeOrder)
-    if (!typeOrder) {
-      setDatasTable(defaultDatabase)
-      return
-    }
-    const { data } = onSort(datasTable, typeOrder, orderKey, 'tree')
-    setDatasTable(data)
+    setOrdeBy(orderByValue)
   }
 
   const onNext = () => {
-    const imageNext = onGet(defaultDatabase as any, viewer)
-    rowClick(imageNext)
+    if (!viewer.image) return
+    const imageNext = onGet(datasTable, viewer.image, false)
+    if (imageNext) rowClick(imageNext as ImagesDatabase)
   }
 
   const onPrevious = () => {
-    const datas = JSON.parse(JSON.stringify(defaultDatabase))
-    const imageNext = onGet(datas.reverse() as any, viewer, true)
-    rowClick(imageNext)
+    if (!viewer.image) return
+    const imagePre = onGet(datasTable, viewer.image, true)
+    if (imagePre) rowClick(imagePre as ImagesDatabase)
   }
 
   return (
@@ -381,23 +394,36 @@ const ProjectFormComponent = () => {
         onNext={onNext}
         onPrevious={onPrevious}
       />
-      <InputName value={projectName} onChange={onChangeName} />
+      {isEditName ? (
+        <InputName
+          autoFocus
+          onBlur={() => setIsEditName(false)}
+          value={projectName}
+          onChange={onChangeName}
+        />
+      ) : (
+        <TextName onClick={() => setIsEditName(true)}>{projectName}</TextName>
+      )}
       <BoxOptions
         aria-labelledby="demo-radio-buttons-group-label"
         value={projectLevel}
         name="radio-buttons-group"
         onChange={handleChangeLevel}
       >
-        <FormControlLabel
-          value="factor"
-          control={<Radio />}
-          label="Between factor"
-        />
-        <FormControlLabel
-          value="within-factor"
-          control={<Radio />}
-          label="Between factor-within factor"
-        />
+        <Box>
+          <Box>
+            <FormControlLabel
+              value="factor"
+              control={<Radio />}
+              label="Between factor"
+            />
+          </Box>
+          <FormControlLabel
+            value="within-factor"
+            control={<Radio />}
+            label="Between factor-within factor"
+          />
+        </Box>
       </BoxOptions>
       <DropAndDropBox>
         <DragBox>
@@ -502,7 +528,7 @@ const ProjectFormComponent = () => {
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
             draggable
-            data={datasTable}
+            data={datasTable.records}
             columns={columns}
           />
         </DropBox>
@@ -517,13 +543,25 @@ const ProjectFormComponent = () => {
         <ButtonFilter onClick={() => navigate('/projects')}>
           {idEdit ? 'Ok' : 'Add'}
         </ButtonFilter>
-        <ButtonFilter onClick={() => navigate('/projects')}>
+        <ButtonFilter
+          onClick={() => navigate(!routeGoback ? '/projects' : routeGoback)}
+        >
           Cancel
         </ButtonFilter>
       </Box>
     </ProjectsWrapper>
   )
 }
+
+const TextName = styled(Typography)(({ theme }) => ({
+  textOverflow: 'ellipsis',
+  width: 'calc(40% - 16px)',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+  padding: theme.spacing(1),
+  borderWidth: 1,
+  fontSize: 16,
+}))
 
 const BoxItem = styled(Box)({
   display: 'flex',
@@ -549,14 +587,14 @@ const BoxFactor = styled(Box)({})
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
-  overflow: 'auto',
-  height: 'calc(100% - 32px)',
   marginBottom: theme.spacing(3),
 }))
 
 const BoxOptions = styled(RadioGroup)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(1, 2),
+  display: 'flex',
+  flexDirection: 'inherit',
 }))
 
 const InputName = styled('input')(({ theme }) => ({
@@ -564,7 +602,7 @@ const InputName = styled('input')(({ theme }) => ({
   outline: 'none',
   borderColor: 'transparent',
   fontSize: 18,
-  width: 'calc(100% - 32px)',
+  width: 'calc(40% - 16px)',
   '&:focus': {
     borderColor: '#000',
   },
@@ -576,6 +614,8 @@ const DropAndDropBox = styled(Box)(({ theme }) => ({
   width: '100%',
   display: 'flex',
   gap: theme.spacing(2),
+  height: 'calc(100% - 177px)',
+  overflow: 'hidden',
 }))
 
 const DragBox = styled(Box)(({ theme }) => ({
@@ -583,12 +623,16 @@ const DragBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1, 2),
   border: '1px solid #000',
   minHeight: 100,
+  height: 'calc(100% - 18px)',
+  overflow: 'auto',
 }))
 
 const DropBox = styled(Box)(({ theme }) => ({
   width: '60%',
   padding: theme.spacing(1, 2),
   border: '1px solid #dedede',
+  height: 'calc(100% - 18px)',
+  overflow: 'auto',
 }))
 
 const NewRowButton = styled(Button)(({ theme }) => ({
