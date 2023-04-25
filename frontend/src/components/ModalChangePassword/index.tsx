@@ -72,7 +72,7 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
               Old Password <span style={{ color: 'red' }}>*</span>
             </Label>
             <InputPassword
-              onChange={(e: any) => onChangeValue(e, validatePassword)}
+              onChange={(e) => onChangeValue(e, validatePassword)}
               name="password"
               error={errors.password}
               placeholder="Old Password"
@@ -83,7 +83,7 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
               New Password <span style={{ color: 'red' }}>*</span>
             </Label>
             <InputPassword
-              onChange={(e: any) => onChangeValue(e, validatePassword)}
+              onChange={(e) => onChangeValue(e, validatePassword)}
               name="new_password"
               error={errors.new_password}
               placeholder="New Password"
@@ -95,7 +95,7 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
               Confirm Password <span style={{ color: 'red' }}>*</span>
             </Label>
             <InputPassword
-              onChange={(e: any) => onChangeValue(e, validateReEnter)}
+              onChange={(e) => onChangeValue(e, validateReEnter)}
               name="confirm_password"
               error={errors.confirm_password}
               placeholder="Confirm Password"

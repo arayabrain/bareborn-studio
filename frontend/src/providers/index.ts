@@ -9,9 +9,8 @@ export type User = {
   uid: string
 }
 
-export const UserContext = createContext<{
-  user?: User
-  setUser: Function
-}>({ setUser: () => null })
+export const UserContext = createContext<{ user?: User; setUser: Function }>({
+  setUser: () => null,
+})
 
 export const useUser = () => useContext(UserContext)

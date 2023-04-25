@@ -36,7 +36,6 @@ const Login = () => {
     setUser(data)
     navigate('/')
   }
-
   const validateSubmit = () => {
     let errors = { email: '', password: '' }
     if (!values.email) {
@@ -58,13 +57,14 @@ const Login = () => {
   return (
     <LoginWrapper>
       <LoginContent>
-        <Title>Sign in to your account</Title>
+        <Title data-testid="title">Sign in to your account</Title>
         <FormSignUp autoComplete="off" onSubmit={onSubmit}>
           <Box sx={{ position: 'relative' }}>
             <LabelField>
               Email<LableRequired>*</LableRequired>
             </LabelField>
             <Input
+              data-testid="email"
               autoComplete="off"
               error={!!errors.email}
               name="email"
@@ -72,13 +72,14 @@ const Login = () => {
               value={values.email}
               placeholder="Enter your email"
             />
-            <TextError>{errors.email}</TextError>
+            <TextError data-testid="error-email">{errors.email}</TextError>
           </Box>
           <Box sx={{ position: 'relative' }}>
             <LabelField>
               Password<LableRequired>*</LableRequired>
             </LabelField>
             <Input
+              data-testid="password"
               autoComplete="off"
               error={!!errors.password}
               onChange={onChangeValue}
@@ -87,11 +88,11 @@ const Login = () => {
               value={values.password}
               placeholder="Enter your password"
             />
-            <TextError>{errors.password}</TextError>
+            <TextError data-testid="error-password">{errors.password}</TextError>
           </Box>
           <Description>
             Forgot your password?
-            <LinkWrappper to="/reset-password" >Reset password</LinkWrappper>
+            <LinkWrappper to="/reset-password">Reset password</LinkWrappper>
           </Description>
           <Stack
             flexDirection="row"
@@ -100,7 +101,9 @@ const Login = () => {
             alignItems="center"
             justifyContent="flex-end"
           >
-            <ButtonLogin type="submit">SIGN IN</ButtonLogin>
+            <ButtonLogin data-testid="button-submit" type="submit">
+              SIGN IN
+            </ButtonLogin>
           </Stack>
         </FormSignUp>
       </LoginContent>

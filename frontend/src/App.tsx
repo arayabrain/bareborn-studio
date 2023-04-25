@@ -12,7 +12,6 @@ import AccountDelete from 'pages/AccountDelete'
 import Projects from './pages/Projects'
 import Database from './pages/Database'
 import Login from 'pages/Login'
-import Signup from 'pages/Signup'
 import ProjectFormComponent from "./pages/Projects/Create";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -28,16 +27,15 @@ const App: React.FC = () => {
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/workflow" element={<Project />} />
+            <Route path="/projects/workflow" element={<Project />} />
             <Route path="/account-manager" element={<AccountManager />} />
             <Route path="/account" element={<Account />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/database" element={<Database />} />
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/signup" element={<Signup />} />
             <Route path="/account-deleted" element={<AccountDelete />} />
-            <Route path="/project/new-project" element={<ProjectFormComponent />} />
+            <Route path="/projects/new-project" element={<ProjectFormComponent />} />
           </Routes>
         </Layout>
       </BrowserRouter>

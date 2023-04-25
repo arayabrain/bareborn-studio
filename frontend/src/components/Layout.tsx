@@ -1,7 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { FC, useEffect, useState } from 'react'
-import { drawerWidth } from './FlowChart/FlowChart'
 import Header from './Header'
 import { KeyboardBackspace } from '@mui/icons-material'
 import HomeIcon from '@mui/icons-material/Home'
@@ -10,17 +9,18 @@ import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { UserContext, useUser } from 'providers'
-import { getToken } from 'utils/auth'
+import { getToken, isAdmin } from 'utils/auth'
 import { getMe } from 'api/auth'
 
-const ignorePaths = ['/login', '/account-delete','/reset-password']
+export const drawerWidth = 240
+
+const ignorePaths = ['/login', '/account-delete', '/reset-password']
 
 const Layout: FC = ({ children }) => {
   const [user, setUser] = useState()
   const location = useLocation()
   const [width, setWidth] = useState(drawerWidth)
   const navigate = useNavigate()
-
   const onResize = () => {
     setWidth(width === drawerWidth ? 54 : drawerWidth)
   }
@@ -41,11 +41,15 @@ const Layout: FC = ({ children }) => {
     try {
       if (token) {
         const data = await getMe()
-        return setUser(data)
+        setUser(data)
+        if (['/login', '/reset-password'].includes(window.location.pathname)) {
+          navigate('/')
+        }
+        return
       }
       if (
         // !auth.currentUser &&
-        !['/login', '/signup', '/reset-password'].includes(window.location.pathname)
+        !['/login', '/reset-password'].includes(window.location.pathname)
       ) {
         navigate('/login')
       }
@@ -67,6 +71,8 @@ const Layout: FC = ({ children }) => {
               width: `calc(100% - ${
                 ignorePaths.includes(location.pathname) ? 0 : width + 10
               }px)`,
+              height: '100%',
+              overflow: 'auto',
             }}
           >
             {children}
@@ -77,7 +83,7 @@ const Layout: FC = ({ children }) => {
   )
 }
 
-const MenuLeft: FC<{ onResize: any; width: number }> = ({
+const MenuLeft: FC<{ onResize: () => void; width: number }> = ({
   onResize,
   width,
 }) => {
@@ -113,14 +119,14 @@ const MenuLeft: FC<{ onResize: any; width: number }> = ({
           </MenuItem>
         </LinkWrapper>
         <LinkWrapper to="/projects">
-          <MenuItem isClose={isClose} active={pathname === '/projects'}>
+          <MenuItem isClose={isClose} active={pathname.includes('/projects')}>
             <SourceIcon />
             <TypographyMenu style={{ opacity: Number(width === drawerWidth) }}>
               Projects
             </TypographyMenu>
           </MenuItem>
         </LinkWrapper>
-        {user?.role === 'ADMIN' ? (
+        {isAdmin(user?.role) ? (
           <LinkWrapper to="/account-manager">
             <MenuItem
               isClose={isClose}
