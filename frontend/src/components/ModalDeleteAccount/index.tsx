@@ -1,6 +1,7 @@
 import { Box, Button, Modal, styled, Typography } from '@mui/material'
 import { Input } from 'components/common/Input'
 import { FC, useState } from 'react'
+import Loading from "../common/Loading";
 
 type ModalDeleteAccountProps = {
   onClose: () => void
@@ -8,11 +9,13 @@ type ModalDeleteAccountProps = {
   onSubmit: () => void
   titleSubmit: string
   description?: string
+  isLoading?: boolean
 }
 const ModalDeleteAccount: FC<ModalDeleteAccountProps> = ({
   onClose,
   open,
   onSubmit,
+  isLoading,
   titleSubmit,
   description,
 }) => {
@@ -25,39 +28,44 @@ const ModalDeleteAccount: FC<ModalDeleteAccountProps> = ({
   }
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-    >
-      <ContentDelete>
-        <Typography style={{ whiteSpace: 'pre-wrap' }}>
-          {description || 'Delete account will erase all of your data.'}This
-          operation cannot be undone. To continue, type "
-          <span style={{ fontWeight: 600 }}>DELETE</span>" in the box below:
-        </Typography>
-        <BoxConfirm>
-          <Input
-            placeholder="DELETE"
-            value={textDelete}
-            onChange={(e) => setTextDelete(e.target.value)}
-          />
-          <ButtonConfirm onClick={onConfirm}>{titleSubmit}</ButtonConfirm>
-        </BoxConfirm>
-        <Button onClick={onClose}>
-          <Typography
-            sx={{
-              textDecoration: 'underline',
-              textTransform: 'none',
-              lineHeight: '17px',
-            }}
-          >
-            Close
+    <>
+      <Modal
+          open={open}
+          onClose={onClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+      >
+        <ContentDelete>
+          <Typography style={{ whiteSpace: 'pre-wrap' }}>
+            {description || 'Delete account will erase all of your data.'}This
+            operation cannot be undone. To continue, type "
+            <span style={{ fontWeight: 600 }}>DELETE</span>" in the box below:
           </Typography>
-        </Button>
-      </ContentDelete>
-    </Modal>
+          <BoxConfirm>
+            <Input
+                placeholder="DELETE"
+                value={textDelete}
+                onChange={(e) => setTextDelete(e.target.value)}
+            />
+            <ButtonConfirm onClick={onConfirm}>{titleSubmit}</ButtonConfirm>
+          </BoxConfirm>
+          <Button onClick={onClose}>
+            <Typography
+                sx={{
+                  textDecoration: 'underline',
+                  textTransform: 'none',
+                  lineHeight: '17px',
+                }}
+            >
+              Close
+            </Typography>
+          </Button>
+        </ContentDelete>
+      </Modal>
+      {
+        isLoading ? <Loading /> : null
+      }
+    </>
   )
 }
 

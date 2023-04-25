@@ -17,6 +17,7 @@ import { createUser, deleteUser, editUser, listUser } from 'api/auth'
 import { useUser } from 'providers'
 import { DataProject } from 'pages/Projects'
 import { isAdmin, optionsRole } from 'utils/auth'
+import Loading from "../../components/common/Loading";
 
 type ModalComponentProps = {
   onSubmitEdit: (
@@ -224,6 +225,9 @@ const ModalComponent: FC<ModalComponentProps> = ({
           <Button onClick={() => onCancel()}>Cancel</Button>
         </ButtonModal>
       </ModalBox>
+      {
+        isDisabled ? <Loading /> : null
+      }
     </Modal>
   )
 }
@@ -233,6 +237,7 @@ const AccountManager = () => {
   const [dataEdit, setDataEdit] = useState({})
   const [idDel, setIdDel] = useState<string | undefined>()
   const [data, setData] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [paginate, setPaginate] = useState({
     total: 0,
     per_page: 10,
@@ -286,9 +291,21 @@ const AccountManager = () => {
     setIsOpenModal(true)
   }
 
-  const onDelete = () => {
+  const onDelete = async () => {
     if (idDel === undefined) return
-    deleteUser(idDel).then(() => {
+    setIsLoading(true)
+    // deleteUser(idDel).then(() => {
+    //   setTimeout(()=> {
+    //     alert('Your account has been successfully deleted!')
+    //   },100)
+    //   handleCloseDelete()
+    //   setIdDel(undefined)
+    //   setOpenDelete(false)
+    //   getList()
+    // })
+    try {
+      await deleteUser(idDel)
+      setIsLoading(false)
       setTimeout(()=> {
         alert('Your account has been successfully deleted!')
       },100)
@@ -296,7 +313,10 @@ const AccountManager = () => {
       setIdDel(undefined)
       setOpenDelete(false)
       getList()
-    })
+    }
+    catch {
+
+    }
   }
 
   const onSubmitEdit = async (
@@ -355,6 +375,7 @@ const AccountManager = () => {
         titleSubmit="Delete Account"
         onClose={handleCloseDelete}
         open={openDelete}
+        isLoading={isLoading}
         onSubmit={onDelete}
       />
       <BoxButton>
