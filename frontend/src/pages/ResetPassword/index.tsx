@@ -1,7 +1,9 @@
 import { Box, Stack, styled, Typography } from '@mui/material'
 import { ChangeEvent, FormEvent, useState } from 'react'
+import {resetPassword} from "../../api/auth";
 
-const regexEmail = /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/
+const regexEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+
 const ResetPassword = () => {
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({
@@ -11,25 +13,38 @@ const ResetPassword = () => {
         email: '',
     })
 
-    const onReset = (event: FormEvent<HTMLFormElement>) => {
+    const onReset = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
         const errorCheck = validateSubmit()
         if (errors.email || errorCheck) return
+        try {
+            await resetPassword(values.email)
+            alert(` You'll receive a link to reset your password at ${values.email}. Pls check you mail!`)
+        }
+        catch {
+            alert('Email does not exist!')
+        }
     }
+
+    const validateEmail = (value: string): string => {
+        if(!value) return 'This field is required'
+        if(value.length > 255) return 'The text may not be longer than 255 characters'
+        if(!regexEmail.test(value)) return 'This field is validate'
+        return ''
+    }
+
     const validateSubmit = () => {
         let errors = { email: '' }
-        if (!values.email) {
-            errors.email = 'This field is required'
-        }
-        if(!regexEmail.test(values.email)) errors.email = 'This field is validate'
+        errors.email = validateEmail(values.email)
         setErrors(errors)
         return errors.email
     }
 
     const onChangeValue = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target
+        const error = validateEmail(value)
         setValues({ ...values, [name]: value })
-        setErrors({ ...errors, [name]: !value ? 'This field is required' : '' })
+        setErrors({ ...errors, [name]: error })
     }
 
     return (
@@ -141,5 +156,9 @@ const TextError = styled(Typography)({
     position: 'absolute',
     bottom: 4,
 })
+
+const WrapperMes = styled(Box)(({})=>({
+
+}))
 
 export default ResetPassword

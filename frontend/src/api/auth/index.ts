@@ -29,3 +29,8 @@ export const deleteUser = async (userId: string | number) => {
   const response = await axios.delete(`/admin/user/${userId}`)
   return response.data
 }
+
+export const resetPassword = async (email: string) => {
+  const response = await axios.post(`/admin/user/send_reset_password?email=${email}`, email)
+  return response.data
+}
