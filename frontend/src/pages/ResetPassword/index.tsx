@@ -1,11 +1,13 @@
 import { Box, Stack, styled, Typography } from '@mui/material'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import {resetPassword} from "../../api/auth";
+import Loading from "../../components/common/Loading";
 
 const regexEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
 const ResetPassword = () => {
 
+    const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState<{ [key: string]: string }>({
         email: '',
     })
@@ -15,14 +17,22 @@ const ResetPassword = () => {
 
     const onReset = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
+        setIsLoading(true)
         const errorCheck = validateSubmit()
         if (errors.email || errorCheck) return
         try {
             await resetPassword(values.email)
-            alert(` You'll receive a link to reset your password at ${values.email}. Pls check you mail!`)
+            setTimeout(()=>{
+                alert(` You'll receive a link to reset your password at ${values.email}. Pls check your mail!`)
+            },300)
         }
         catch {
-            alert('Email does not exist!')
+            setTimeout(()=>{
+                alert('Email does not exists!')
+            },300)
+        }
+        finally {
+            setIsLoading(false)
         }
     }
 
@@ -78,6 +88,9 @@ const ResetPassword = () => {
                     </Stack>
                 </FormSignUp>
             </LoginContent>
+            {
+                isLoading && <Loading />
+            }
         </LoginWrapper>
     )
 }

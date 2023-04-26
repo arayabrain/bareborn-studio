@@ -14,8 +14,7 @@ const LoaderWrapper = styled(Box)(({theme}) => ({
     left: 0,
     right: 0,
     position: 'fixed',
-    backgroundColor: '#000',
-    opacity: 0.8,
+    backgroundColor: 'rgba(255,255,255,0.6)',
     zIndex: 100000,
 }))
 
@@ -38,8 +37,8 @@ const Loader = styled('span')(({ theme })=> ({
     borderRadius: '50%',
     position: 'relative',
     zIndex: 100,
-    top: '50%',
-    left: '50%',
+    top: 'calc(50% - 24px)',
+    left: 'calc(50% - 24px)',
     animation: `${rotate} 1s linear infinite`,
     '&:before': {
         content: "''",
@@ -47,7 +46,7 @@ const Loader = styled('span')(({ theme })=> ({
         position: 'absolute',
         inset: 0,
         borderRadius: '50%',
-        border: '5px solid #FFF',
+        border: '3px solid rgba(0,0,0,0.8)',
         animation: `${prixClipFix} 2s linear infinite`
     }
 }))
