@@ -148,8 +148,12 @@ const ModalComponent: FC<ModalComponentProps> = ({
       setIsOpenModal(false)
     } catch {
       if (!dataEdit?.uid) {
-          alert('This email already exists!')
+          setTimeout(()=>{
+            alert('This email already exists!')
+          },300)
       }
+    }
+    finally {
       setIsDisabled(false)
     }
   }
@@ -294,15 +298,6 @@ const AccountManager = () => {
   const onDelete = async () => {
     if (idDel === undefined) return
     setIsLoading(true)
-    // deleteUser(idDel).then(() => {
-    //   setTimeout(()=> {
-    //     alert('Your account has been successfully deleted!')
-    //   },100)
-    //   handleCloseDelete()
-    //   setIdDel(undefined)
-    //   setOpenDelete(false)
-    //   getList()
-    // })
     try {
       await deleteUser(idDel)
       setIsLoading(false)
@@ -316,6 +311,9 @@ const AccountManager = () => {
     }
     catch {
 
+    }
+    finally {
+      setIsLoading(false)
     }
   }
 
