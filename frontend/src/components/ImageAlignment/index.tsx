@@ -27,7 +27,6 @@ const ImageAlignment: FC<ImageViewProps> =
     const [opacity, setOpacity] = useState(0)
     const [isLoadFile, setIsLoadFile] = useState(false)
     const volumes = useRef<any>()
-        console.log(url)
     useEffect(() => {
         if (open) {
             setTimeout(loadFile, 0)
@@ -50,9 +49,7 @@ const ImageAlignment: FC<ImageViewProps> =
 
     const onNextImage = () => {
         const index = urls.findIndex(item => item === url)
-        console.log(index)
         if(index === urls.length - 1) return
-        console.log(urls[index+1])
         setUrl(urls[index+1])
     }
 
