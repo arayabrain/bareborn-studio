@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useContext, useState} from 'react'
 import { Button, Typography } from '@mui/material'
 import ButtonGroup from '@mui/material/ButtonGroup'
 
@@ -7,6 +7,7 @@ import { LinearProgressWithLabel } from './LinerProgressWithLabel'
 import { FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
 import { useNavigate } from 'react-router-dom'
+import {DialogContext} from "../../Visualize/DialogContext";
 
 export const FileSelect = React.memo<{
   multiSelect?: boolean
@@ -63,7 +64,7 @@ type FileSelectImpleProps = {
 export const FileSelectImple = React.memo<FileSelectImpleProps>(
   ({ filePath }) => {
     const navigate = useNavigate()
-
+    const { onOpenImageAlignment } = useContext(DialogContext)
     const getNameSelectec = () => {
       if (Array.isArray(filePath)) {
         return `${filePath.length} images selected.`
@@ -90,7 +91,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
           </Typography>
         </div>
         <ButtonGroup size="small" style={{ width: '90%', margin: '8px 0' }}>
-          <Button style={{ width: '80%' }} variant="outlined">
+          <Button onClick={() => onOpenImageAlignment(true)} style={{ width: '80%' }} variant="outlined">
             ALIGNMENT
           </Button>
         </ButtonGroup>

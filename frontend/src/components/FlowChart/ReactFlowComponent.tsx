@@ -40,6 +40,7 @@ import { AlgorithmOutputDialog } from './FlowChartNode/AlgorithmOutputDialog'
 import { DialogContext } from 'components/Visualize/DialogContext'
 import { FileSelectDialog } from 'components/common/FileSelectDialog'
 import { FormHelperText, Popover } from '@mui/material'
+import ImageAlignment from "../ImageAlignment";
 
 const initDialogFile = {
   filePath: '',
@@ -53,6 +54,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
   (props) => {
     const flowElements = useSelector(selectFlowElements)
     const dispatch = useDispatch()
+    const [openPopup, setOpenPopup] = useState(false)
     const [dialogNodeId, setDialogNodeId] = useState('')
     const [dialogFile, setDialogFile] = useState(initDialogFile)
     const [messageError, setMessageError] = useState({
@@ -139,8 +141,9 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
           value={{
             onOpen: setDialogNodeId,
             onOpenDialogFile: setDialogFile as any,
-            onMessageError: setMessageError as any
-          }}
+            onMessageError: setMessageError as any,
+            onOpenImageAlignment: setOpenPopup as any
+        }}
         >
           <ReactFlowProvider>
             <div className="reactflow-wrapper" ref={wrapparRef}>
@@ -163,6 +166,11 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
               </ReactFlow>
             </div>
           </ReactFlowProvider>
+          <ImageAlignment
+              open={openPopup}
+              onClose={()=> setOpenPopup(!openPopup)}
+              urls={['/lib/test.nii']}
+          />
           {dialogNodeId && (
             <AlgorithmOutputDialog
               nodeId={dialogNodeId}

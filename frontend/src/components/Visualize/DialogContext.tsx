@@ -13,8 +13,10 @@ export const DialogContext = createContext<{
     anchorElRef: { current: Element | null }
     message: string
   }) => any
+  onOpenImageAlignment: (nodeId: boolean) => any
 }>({
   onOpen: () => null,
   onOpenDialogFile: () => null,
   onMessageError: () => null,
+  onOpenImageAlignment: () => null
 })
