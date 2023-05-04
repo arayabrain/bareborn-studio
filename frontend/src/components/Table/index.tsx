@@ -190,7 +190,8 @@ const TBody = styled('tbody')(() => ({}))
 const Td = styled('td')(({ theme }) => ({
   padding: theme.spacing(2),
   borderBottom: '1px solid rgba(224, 224, 224, 1)',
-  width: 118,
+  maxWidth: 155,
+  wordBreak: 'break-word'
 }))
 
 const NoData = styled(Typography)({

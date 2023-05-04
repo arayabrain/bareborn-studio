@@ -333,6 +333,7 @@ const AccountManager = () => {
 
   const columns = useMemo(
     (): Column[] => [
+      { title: 'UID', name: 'uid' },
       { title: 'Lab', name: 'lab' },
       { title: 'Name', name: 'display_name' },
       { title: 'Role', name: 'role' },
