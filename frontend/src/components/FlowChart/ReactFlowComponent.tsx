@@ -169,7 +169,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
           <ImageAlignment
               open={openPopup}
               onClose={()=> setOpenPopup(!openPopup)}
-              urls={['/lib/test.nii']}
+              urls={['/lib/test.nii','/lib/test0.nii']}
           />
           {dialogNodeId && (
             <AlgorithmOutputDialog

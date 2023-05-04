@@ -1,4 +1,4 @@
-import {Box, Button, IconButton, Modal, styled} from '@mui/material'
+import {Box, IconButton, Modal, styled} from '@mui/material'
 import { FC, useEffect, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { Object } from 'pages/Database'
@@ -19,6 +19,7 @@ const ImageAlignment: FC<ImageViewProps> =
        onClose,
        urls,
      }) => {
+
     const viewerRef = useRef<any>()
     const [url, setUrl] = useState(urls[0])
     const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
@@ -26,7 +27,7 @@ const ImageAlignment: FC<ImageViewProps> =
     const [opacity, setOpacity] = useState(0)
     const [isLoadFile, setIsLoadFile] = useState(false)
     const volumes = useRef<any>()
-
+        console.log(url)
     useEffect(() => {
         if (open) {
             setTimeout(loadFile, 0)
@@ -44,13 +45,26 @@ const ImageAlignment: FC<ImageViewProps> =
     const onPreImage = () => {
         const index = urls.findIndex(item => item === url)
         if(index === 0) return
-        setUrl(urls[index+1])
+        setUrl(urls[index-1])
     }
 
     const onNextImage = () => {
         const index = urls.findIndex(item => item === url)
+        console.log(index)
         if(index === urls.length - 1) return
-        setUrl(urls[index-1])
+        console.log(urls[index+1])
+        setUrl(urls[index+1])
+    }
+
+    const onSetOrigin = (e: any) => {
+        e.preventDefault()
+        volumes.current.setVoxelCoords(voxelCoords.i, voxelCoords.j, voxelCoords.k)
+        viewerRef.current.redrawVolumes();
+    }
+
+    const onChangeVoxel = (e: any) => {
+        const { name } = e.target
+        setVoxelCoords({...voxelCoords, [name]: Number(e.target.value)})
     }
 
     const loadFileIndex = () => {
@@ -169,67 +183,55 @@ const ImageAlignment: FC<ImageViewProps> =
                                         <Flex>
                                             <Text>right {'{mm}'}</Text>
                                             <input
-                                                value={worldCoords.x.toPrecision(4)}
-                                                onChange={(e) => setWorldCoords({...worldCoords, x: Number(e.target.value)})}
+                                                name='i'
+                                                type={'number'}
+                                                value={voxelCoords.i}
+                                                onChange={(e) => onChangeVoxel(e)}
                                             />
                                         </Flex>
                                         <Flex>
                                             <Text>forward {'{mm}'}</Text>
                                             <input
-                                                value={worldCoords.y.toPrecision(4)}
-                                                onChange={(e) => setWorldCoords({...worldCoords, y: Number(e.target.value)})}
+                                                name='k'
+                                                type={'number'}
+                                                value={voxelCoords.k}
+                                                onChange={(e) => onChangeVoxel(e)}
                                             />
                                         </Flex>
                                         <Flex>
                                             <Text>up {'{mm}'}</Text>
                                             <input
-                                                value={worldCoords.z.toPrecision(4)}
-                                                onChange={(e) => setWorldCoords({...worldCoords, z: Number(e.target.value)})}
+                                                name="j"
+                                                type={'number'}
+                                                value={voxelCoords.j}
+                                                onChange={(e) => onChangeVoxel(e)}
                                             />
                                         </Flex>
                                         <Flex>
                                             <Text>pitch {'{rad}'}</Text>
-                                            <input
-                                                value={worldCoords.x.toPrecision(4)}
-                                                onChange={(e) => setWorldCoords({...worldCoords, z: Number(e.target.value)})}
-                                            />
+                                            <input />
                                         </Flex>
                                         <Flex>
-                                            <Text>pitch {'{rad}'}</Text>
-                                            <input
-                                                value={worldCoords.x.toPrecision(4)}
-                                                onChange={(e) => setWorldCoords({...worldCoords, z: Number(e.target.value)})}
-                                            />
+                                            <Text>roll {'{rad}'}</Text>
+                                            <input />
                                         </Flex>
                                         <Flex>
                                             <Text>yaw {'{rad}'}</Text>
-                                            <input
-                                                value={worldCoords.x.toPrecision(4)}
-                                                onChange={(e) => setWorldCoords({...worldCoords, z: Number(e.target.value)})}
-                                            />
+                                            <input />
                                         </Flex>
                                         <Flex>
                                             <Text>resize {'{x}'}</Text>
-                                            <input
-                                                value={voxelCoords.k.toPrecision(4)}
-                                                onChange={(e) => setVoxelCoords({...voxelCoords, k: Number(e.target.value)})}
-                                            />
+                                            <input />
                                         </Flex>
                                         <Flex>
                                             <Text>resize {'{y}'}</Text>
-                                            <input
-                                                value={voxelCoords.i.toPrecision(4)}
-                                                onChange={(e) => setVoxelCoords({...voxelCoords, i: Number(e.target.value)})}
-                                            />
+                                            <input />
                                         </Flex>
                                         <Flex>
                                             <Text>resize {'{z}'}</Text>
-                                            <input
-                                                value={voxelCoords.j.toPrecision(4)}
-                                                onChange={(e) => setVoxelCoords({...voxelCoords, j: Number(e.target.value)})}
-                                            />
+                                            <input />
                                         </Flex>
-                                        <ButtonSet>
+                                        <ButtonSet onClick={(e) => onSetOrigin(e)}>
                                             Set Origin
                                         </ButtonSet>
                                     </ContentSet>
