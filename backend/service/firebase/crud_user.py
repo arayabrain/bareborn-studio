@@ -15,7 +15,7 @@ async def list_user(next_page_token: str = None, limit: int = 10):
                 email=user.email,
                 display_name=user.display_name,
                 role=user.custom_claims.get('role') if user.custom_claims else None,
-                lab=user.custom_claims.get('lab') if user.custom_claims else None
+                lab=user.custom_claims.get('lab') if user.custom_claims else None,
             )
             for user in users
         ]
@@ -26,8 +26,11 @@ async def list_user(next_page_token: str = None, limit: int = 10):
 
         total = auth.list_users()
         import math
+
         total_page = math.ceil(len(total.users) / limit)
-        return ListUserPaging(data=data, next_page_token=next_page_token, total_page=total_page)
+        return ListUserPaging(
+            data=data, next_page_token=next_page_token, total_page=total_page
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -51,7 +54,13 @@ async def read_user(user_id: str):
         user = auth.get_user(user_id)
         role = user.custom_claims.get('role') if user.custom_claims else None
         lab = user.custom_claims.get('lab') if user.custom_claims else None
-        return User(uid=user.uid, email=user.email, display_name=user.display_name, role=role, lab=lab)
+        return User(
+            uid=user.uid,
+            email=user.email,
+            display_name=user.display_name,
+            role=role,
+            lab=lab,
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -68,7 +77,13 @@ async def update_user(user_id: str, data: UserUpdate):
         user = auth.update_user(user_id, **user_data)
         role = user.custom_claims.get('role') if user.custom_claims else None
         lab = user.custom_claims.get('lab') if user.custom_claims else None
-        return User(uid=user.uid, email=user.email, display_name=user.display_name, role=role, lab=lab)
+        return User(
+            uid=user.uid,
+            email=user.email,
+            display_name=user.display_name,
+            role=role,
+            lab=lab,
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

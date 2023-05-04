@@ -1,7 +1,9 @@
 from datetime import datetime
-from typing import Optional, Literal, List
 from enum import Enum
+from typing import List, Literal, Optional
+
 from pydantic import BaseModel, EmailStr, Field, validator
+
 
 class UserRole(str, Enum):
     ADMIN = 'ADMIN'
@@ -10,7 +12,7 @@ class UserRole(str, Enum):
 
 class UserAuth(BaseModel):
     email: EmailStr
-    password: str = Field(max_length=255)
+    password: str = Field(max_length=255, regex='^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,255}$')
 
 
     @validator('email')
@@ -21,16 +23,27 @@ class UserAuth(BaseModel):
 
 
 class UserCreate(UserAuth):
-    display_name: str = Field(max_length=100)
-    lab: str = Field(max_length=100)
+    display_name: str = Field(..., max_length=100)
+    lab: str = Field(..., max_length=100)
     role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
+
+    @validator('lab', 'display_name')
+    def check_empty_string(cls, value: str):
+        if not value.strip():
+            raise ValueError('Value cannot be empty')
+        return value.strip()
 
 
 class UserUpdate(BaseModel):
-    display_name: str = Field(max_length=100)
-    lab: str = Field(max_length=100)
+    display_name: str = Field(..., max_length=100)
+    lab: str = Field(..., max_length=100)
     role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
 
+    @validator('lab', 'display_name')
+    def check_empty_string(cls, value: str):
+        if not value.strip():
+            raise ValueError('Value cannot be empty')
+        return value.strip()
 
 class User(BaseModel):
     uid: str
