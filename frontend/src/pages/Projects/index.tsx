@@ -81,7 +81,7 @@ const Projects = () => {
       {
         title: '',
         name: 'action',
-        width: 185,
+        width: 400,
         render: (data) => {
           return (
             <BoxButton>

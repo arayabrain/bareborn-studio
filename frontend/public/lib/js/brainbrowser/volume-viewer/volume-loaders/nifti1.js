@@ -106,18 +106,16 @@
     var ystep = (transform[1][1] < 0) ? -ymag : ymag;
     var zstep = (transform[2][2] < 0) ? -zmag : zmag;
 
-    if(header.resize?.x) {
-      xstep = header.resize.x
+    if(header.xspace.step) {
+      xstep = header.xspace.step
     }
 
-    if(header.resize?.y) {
-      xstep = header.resize.y
+    if(header.yspace.step) {
+      xstep = header.yspace.step
     }
-    if(header.resize?.z) {
-      xstep = header.resize.z
+    if(header.zspace.step) {
+      xstep = header.zspace.step
     }
-
-    header.resize = { x: xstep, y: ystep,  z: zstep }
 
     for (var i = 0; i < 3; i++) {
       x_dir_cosines[i] = transform[i][0] / xstep;

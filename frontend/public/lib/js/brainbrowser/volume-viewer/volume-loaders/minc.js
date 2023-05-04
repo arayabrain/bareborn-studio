@@ -373,7 +373,9 @@ VolumeViewer.createVolume = function (header, native_data) {
       volume.setVoxelCoords(voxel.i, voxel.j, voxel.k)
     },
     setResize: function (resize) {
-      volume.header.resize = resize
+      volume.header.xspace.step = resize.x
+      volume.header.yspace.step = resize.y
+      volume.header.zspace.step = resize.z
     },
 
     // Voxel to world matrix applied here is:
