@@ -517,7 +517,7 @@ export const columns = (
     width: 100,
   },
   {
-    title: 'Dataset',
+    title: 'Datatype',
     name: type === 'tree' ? 'datatype' : 'datatypes_label',
     filter: true,
     width: 100,

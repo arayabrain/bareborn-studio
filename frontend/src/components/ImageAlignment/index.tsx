@@ -104,6 +104,7 @@ const ImageAlignment: FC<ImageViewProps> =
                 viewer.addEventListener('sliceupdate', function (event: any) {
                     // const panel = event.target
                     const { volume } = event
+                    console.log('volume', volume)
                     volumes.current = volume
                     if (brainbrowser.utils.isFunction(volume.getWorldCoords)) {
                         setWorldCoords(volume.getWorldCoords())

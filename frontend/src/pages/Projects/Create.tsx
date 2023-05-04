@@ -83,7 +83,7 @@ const ProjectFormComponent = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
-
+  const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
 
   const [initDataTable /*setInitDataTable */] =
@@ -113,6 +113,7 @@ const ProjectFormComponent = () => {
     if (type === 'within-factor') {
       within = [{ name: nameDefault, id: getNanoId(), data: [] }]
     }
+    setImageIDs([])
     setDataFactors([{ name: nameDefault, within, id: getNanoId(), data: [] }])
   }
 
@@ -207,6 +208,19 @@ const ProjectFormComponent = () => {
       return
     }
     let newData: ProjectAdd[] = []
+    const checkExistIdImage =
+      imageIDs.length &&
+      imageIDs.some((id) => {
+        if (!Array.isArray(rowDrag)) return rowDrag.id === id
+        return rowDrag.some((row) => row.id === id)
+      })
+    if (checkExistIdImage) {
+      return alert('Image existed')
+    }
+    const newIds = Array.isArray(rowDrag)
+      ? rowDrag.map((row) => row.id)
+      : [rowDrag.id]
+    setImageIDs([...imageIDs, ...newIds])
     if (!Array.isArray(rowDrag)) {
       newData = [
         {
