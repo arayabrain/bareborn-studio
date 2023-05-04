@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react'
+import React, { useContext } from 'react'
 import { Button, Typography } from '@mui/material'
 import ButtonGroup from '@mui/material/ButtonGroup'
 
@@ -7,7 +7,7 @@ import { LinearProgressWithLabel } from './LinerProgressWithLabel'
 import { FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
 import { useNavigate } from 'react-router-dom'
-import {DialogContext} from "../../Visualize/DialogContext";
+import { DialogContext } from '../DialogContext'
 
 export const FileSelect = React.memo<{
   multiSelect?: boolean
