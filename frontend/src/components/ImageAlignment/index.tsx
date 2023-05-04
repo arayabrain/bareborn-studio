@@ -1,4 +1,4 @@
-import {Box, Button, IconButton, Modal, styled} from '@mui/material'
+import {Box, IconButton, Modal, styled} from '@mui/material'
 import { FC, useEffect, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { Object } from 'pages/Database'

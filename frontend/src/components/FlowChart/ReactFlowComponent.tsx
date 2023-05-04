@@ -44,7 +44,7 @@ import {
 } from 'components/FlowChart/DialogContext'
 import { FileSelectDialog } from 'components/common/FileSelectDialog'
 import { FormHelperText, Popover } from '@mui/material'
-import ImageAlignment from "../ImageAlignment";
+import ImageAlignment from '../ImageAlignment'
 
 const initDialogFile = {
   filePath: '',
@@ -58,7 +58,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
   (props) => {
     const flowElements = useSelector(selectFlowElements)
     const dispatch = useDispatch()
-    const [openPopup, setOpenPopup] = useState(false)
+    const [openPopupAlignment, setOpenPopupAlignment] = useState(false)
     const [dialogNodeId, setDialogNodeId] = useState('')
     const [dialogFile, setDialogFile] =
       useState<OpenDialogValue>(initDialogFile)
@@ -145,10 +145,10 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
         <DialogContext.Provider
           value={{
             onOpen: setDialogNodeId,
-            onOpenDialogFile: setDialogFile as any,
-            onMessageError: setMessageError as any,
-            onOpenImageAlignment: setOpenPopup as any
-        }}
+            onOpenDialogFile: setDialogFile,
+            onMessageError: setMessageError,
+            onOpenImageAlignment: setOpenPopupAlignment
+          }}
         >
           <ReactFlowProvider>
             <div className="reactflow-wrapper" ref={wrapparRef}>
@@ -172,9 +172,9 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
             </div>
           </ReactFlowProvider>
           <ImageAlignment
-              open={openPopup}
-              onClose={()=> setOpenPopup(!openPopup)}
-              urls={['/lib/test.nii']}
+            open={openPopupAlignment}
+            onClose={() => setOpenPopupAlignment(false)}
+            urls={['/lib/test.nii']}
           />
           {dialogNodeId && (
             <AlgorithmOutputDialog

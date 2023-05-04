@@ -170,8 +170,4 @@ const TextError = styled(Typography)({
     bottom: 4,
 })
 
-const WrapperMes = styled(Box)(({})=>({
-
-}))
-
 export default ResetPassword
