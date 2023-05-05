@@ -205,8 +205,8 @@
     var scl_slope = dview.getFloat32(112, littleEndian);
     var scl_inter = dview.getFloat32(116, littleEndian);
 
-    var qform_code = dview.getUint16(252, littleEndian);
-    var sform_code = dview.getUint16(254, littleEndian);
+    // var qform_code = dview.getUint16(252, littleEndian);
+    // var sform_code = dview.getUint16(254, littleEndian);
 
     var nifti_xfm = [
       [1, 0, 0, 0],
@@ -229,25 +229,25 @@
     header.bytes_per_voxel = bitpix / 8;
     header.must_swap_data = !littleEndian && header.bytes_per_voxel > 1;
 
-    if (sform_code > 0) {
-      /* The "Sform", if present, defines an affine transform which is
-       * generally assumed to correspond to some standard coordinate
-       * space (e.g. Talairach).
-       */
-      nifti_xfm[0][0] = dview.getFloat32(280, littleEndian);
-      nifti_xfm[0][1] = dview.getFloat32(284, littleEndian);
-      nifti_xfm[0][2] = dview.getFloat32(288, littleEndian);
-      nifti_xfm[0][3] = dview.getFloat32(292, littleEndian);
-      nifti_xfm[1][0] = dview.getFloat32(296, littleEndian);
-      nifti_xfm[1][1] = dview.getFloat32(300, littleEndian);
-      nifti_xfm[1][2] = dview.getFloat32(304, littleEndian);
-      nifti_xfm[1][3] = dview.getFloat32(308, littleEndian);
-      nifti_xfm[2][0] = dview.getFloat32(312, littleEndian);
-      nifti_xfm[2][1] = dview.getFloat32(316, littleEndian);
-      nifti_xfm[2][2] = dview.getFloat32(320, littleEndian);
-      nifti_xfm[2][3] = dview.getFloat32(324, littleEndian);
-    }
-    else if (qform_code > 0) {
+    // if (sform_code > 0) {
+    //   /* The "Sform", if present, defines an affine transform which is
+    //    * generally assumed to correspond to some standard coordinate
+    //    * space (e.g. Talairach).
+    //    */
+    //   nifti_xfm[0][0] = dview.getFloat32(280, littleEndian);
+    //   nifti_xfm[0][1] = dview.getFloat32(284, littleEndian);
+    //   nifti_xfm[0][2] = dview.getFloat32(288, littleEndian);
+    //   nifti_xfm[0][3] = dview.getFloat32(292, littleEndian);
+    //   nifti_xfm[1][0] = dview.getFloat32(296, littleEndian);
+    //   nifti_xfm[1][1] = dview.getFloat32(300, littleEndian);
+    //   nifti_xfm[1][2] = dview.getFloat32(304, littleEndian);
+    //   nifti_xfm[1][3] = dview.getFloat32(308, littleEndian);
+    //   nifti_xfm[2][0] = dview.getFloat32(312, littleEndian);
+    //   nifti_xfm[2][1] = dview.getFloat32(316, littleEndian);
+    //   nifti_xfm[2][2] = dview.getFloat32(320, littleEndian);
+    //   nifti_xfm[2][3] = dview.getFloat32(324, littleEndian);
+    // }
+    // else if (qform_code > 0) {
       /* The "Qform", if present, defines a quaternion which specifies
        * a less general transformation, often to scanner space.
        */
@@ -262,12 +262,12 @@
       nifti_xfm = niftiQuaternToMat44(quatern_b, quatern_c, quatern_d,
                                       qoffset_x, qoffset_y, qoffset_z,
                                       xstep, ystep, zstep, qfac);
-    }
-    else {
-      nifti_xfm[0][0] = xstep;
-      nifti_xfm[1][1] = ystep;
-      nifti_xfm[2][2] = zstep;
-    }
+    // }
+    // else {
+    //   nifti_xfm[0][0] = xstep;
+    //   nifti_xfm[1][1] = ystep;
+    //   nifti_xfm[2][2] = zstep;
+    // }
 
     var i, j;
     var axis_index_from_file = [0, 1, 2];
@@ -333,53 +333,67 @@
                                 dx, dy, dz, qfac )
   {
     var m = [                   // 4x4 transform
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
+      [0.3623577544766736, 0, -0.9320390859672263, 0],
+      [0, 1, 0, 0],
+      [0.9320390859672263, 0, 0.3623577544766736, 0],
       [0, 0, 0, 1]
     ];
-    var b = qb;
-    var c = qc;
-    var d = qd;
-    var a, xd, yd, zd;
+    // var m = [                   // 4x4 transform
+    //   [0.8775825618903728, 0, -0.479425538604203, 0],
+    //   [0, 1, 0, 0],
+    //   [0.479425538604203, 0, 0.8775825618903728, 0],
+    //   [0, 0, 0, 1]
+    // ];
+    // var m = [                   // 4x4 transform
+    //   [1, 0, 0, 0],
+    //   [0, 0.8775825618903728, 0.479425538604203, 0],
+    //   [0, -0.479425538604203, 0.8775825618903728, 0],
+    //   [0, 0, 0, 1]
+    // ];
 
-    // compute a parameter from b,c,d
 
-    a = 1.0 - (b * b + c * c + d * d);
-    if ( a < 1.e-7 ) {           // special case
-      a = 1.0 / Math.sqrt(b * b + c * c + d * d);
-      b *= a;                    // normalize (b,c,d) vector
-      c *= a;
-      d *= a;
-      a = 0.0;                   // a = 0 ==> 180 degree rotation
-    } else {
-      a = Math.sqrt(a);          // angle = 2*arccos(a)
-    }
+    // var b = qb;
+    // var c = qc;
+    // var d = qd;
+    // var a, xd, yd, zd;
 
-    // load rotation matrix, including scaling factors for voxel sizes
+    // // compute a parameter from b,c,d
 
-    xd = (dx > 0.0) ? dx : 1.0;  // make sure are positive
-    yd = (dy > 0.0) ? dy : 1.0;
-    zd = (dz > 0.0) ? dz : 1.0;
+    // a = 1.0 - (b * b + c * c + d * d);
+    // if ( a < 1.e-7 ) {           // special case
+    //   a = 1.0 / Math.sqrt(b * b + c * c + d * d);
+    //   b *= a;                    // normalize (b,c,d) vector
+    //   c *= a;
+    //   d *= a;
+    //   a = 0.0;                   // a = 0 ==> 180 degree rotation
+    // } else {
+    //   a = Math.sqrt(a);          // angle = 2*arccos(a)
+    // }
 
-    if ( qfac < 0.0 )            // left handedness?
-      zd = -zd;
+    // // load rotation matrix, including scaling factors for voxel sizes
 
-    m[0][0] =       (a * a + b * b - c * c - d * d) * xd;
-    m[0][1] = 2.0 * (b * c - a * d                ) * yd;
-    m[0][2] = 2.0 * (b * d + a * c                ) * zd;
-    m[1][0] = 2.0 * (b * c + a * d                ) * xd;
-    m[1][1] =       (a * a + c * c - b * b - d * d) * yd;
-    m[1][2] = 2.0 * (c * d - a * b                ) * zd;
-    m[2][0] = 2.0 * (b * d - a * c                ) * xd;
-    m[2][1] = 2.0 * (c * d + a * b                ) * yd;
-    m[2][2] =       (a * a + d * d - c * c - b * b) * zd;
+    // xd = (dx > 0.0) ? dx : 1.0;  // make sure are positive
+    // yd = (dy > 0.0) ? dy : 1.0;
+    // zd = (dz > 0.0) ? dz : 1.0;
 
-    // load offsets
+    // if ( qfac < 0.0 )            // left handedness?
+    //   zd = -zd;
 
-    m[0][3] = qx;
-    m[1][3] = qy;
-    m[2][3] = qz;
+    // m[0][0] =       (a * a + b * b - c * c - d * d) * xd;
+    // m[0][1] = 2.0 * (b * c - a * d                ) * yd;
+    // m[0][2] = 2.0 * (b * d + a * c                ) * zd;
+    // m[1][0] = 2.0 * (b * c + a * d                ) * xd;
+    // m[1][1] =       (a * a + c * c - b * b - d * d) * yd;
+    // m[1][2] = 2.0 * (c * d - a * b                ) * zd;
+    // m[2][0] = 2.0 * (b * d - a * c                ) * xd;
+    // m[2][1] = 2.0 * (c * d + a * b                ) * yd;
+    // m[2][2] =       (a * a + d * d - c * c - b * b) * zd;
+
+    // // load offsets
+
+    // m[0][3] = qx;
+    // m[1][3] = qy;
+    // m[2][3] = qz;
 
     return m;
   }

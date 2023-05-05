@@ -165,7 +165,7 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
         <ImageViewWrapper>
           <div
             style={{
-              display: !opacity ? 'none' : 'flex',
+              // display: !opacity ? 'none' : 'flex',
               alignItems: 'stretch',
             }}
           >
