@@ -45,6 +45,7 @@ import {
 import { FileSelectDialog } from 'components/common/FileSelectDialog'
 import { FormHelperText, Popover } from '@mui/material'
 import ImageAlignment from '../ImageAlignment'
+import Project from "../Project";
 
 const initDialogFile = {
   filePath: '',
@@ -147,7 +148,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
             onOpen: setDialogNodeId,
             onOpenDialogFile: setDialogFile,
             onMessageError: setMessageError,
-            onOpenImageAlignment: setOpenPopupAlignment
+            onOpenImageAlignment: setOpenPopupAlignment,
           }}
         >
           <ReactFlowProvider>

@@ -16,7 +16,7 @@ type ImageViewProps = {
 const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   const viewerRef = useRef<any>()
   const [url, setUrl] = useState(urls[0])
-  // const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
+  const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
   const [voxelCoords, setVoxelCoords] = useState({ i: 0, j: 0, k: 0 })
   const [resize, setResize] = useState({ x: 0, y: 0, z: 0 })
   const [opacity, setOpacity] = useState(0)
@@ -111,9 +111,9 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
             z: volume.header.zspace.step,
           })
           volumes.current = volume
-          // if (brainbrowser.utils.isFunction(volume.getWorldCoords)) {
-          //     setWorldCoords(volume.getWorldCoords())
-          // }
+          if (brainbrowser.utils.isFunction(volume.getWorldCoords)) {
+              setWorldCoords(volume.getWorldCoords())
+          }
           if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
             setVoxelCoords(volume.getVoxelCoords())
           }
@@ -263,9 +263,9 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                   <SwitchImage>
                     <span>Select Image</span>
                     <SwitchContent>
-                      <ButtonPrevious onClick={onPreImage}>
+                      <ButtonPre onClick={onPreImage}>
                         {'<'}
-                      </ButtonPrevious>
+                      </ButtonPre>
                       <InputImage value={url} readOnly />
                       <ButtonNext onClick={onNextImage}>{'>'}</ButtonNext>
                     </SwitchContent>
@@ -294,22 +294,29 @@ const ButtonClose = styled(IconButton)({
   right: '10%',
   top: '10%',
   zIndex: 9999,
+  background: 'rgba(0, 0, 0, 0.6)',
+  '&:hover': {
+    background: 'rgba(0, 0, 0, 0.8)'
+  }
 })
 
-const ButtonNext = styled(ButtonClose)({
+const ButtonPre = styled('button')({
   width: 50,
   height: 50,
-  display: 'block',
   position: 'unset',
+  zIndex: 1,
+  borderRadius: '50%',
+  backgroundColor: 'unset',
+  border: 'none',
+  cursor: 'pointer',
+  fontSize: 20,
+  '&:hover': {
+    background: 'rgba(0, 0, 0, 0.1)'
+  }
+})
+
+const ButtonNext = styled(ButtonPre)({
   right: '10%',
-  zIndex: 1,
-})
-
-const ButtonPrevious = styled(ButtonClose)({
-  width: 50,
-  height: 50,
-  position: 'unset',
-  zIndex: 1,
 })
 
 const InputImage = styled('input')({

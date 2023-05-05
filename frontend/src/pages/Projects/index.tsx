@@ -154,6 +154,7 @@ const BoxButton = styled(Box)(({ theme }) => ({
 
 const ButtonAdd = styled(Button)(({ theme }) => ({
   minWidth: 80,
+  letterSpacing: 'unset',
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
   backgroundColor: '#283237 !important',
