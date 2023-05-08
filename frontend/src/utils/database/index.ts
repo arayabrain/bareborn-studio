@@ -24,7 +24,7 @@ export const onRowClick = (
     open: true,
     url: row.image_url,
     id: row.id,
-    session_id: row.session_id,
+    session_id: (row as ImagesDatabase).session_id,
     parent_id: (row as ImagesDatabase).parent_id,
     jsonData:
       (row as ImagesDatabase).attributes ||

@@ -166,18 +166,16 @@ export type RecordList = {
   lab_name: string
   user_name: string
   recording_time: string
-  subject_id: number
   subject_label: string
-  session_id: number
   session_label: string
-  datatypes_id: number
   datatypes_label: string
   image_id: number
   image_url: string
   image_attributes: {
-    size: string
+    size: number[]
     type: string
     protocol: string
+    voxel_size: number[]
   }
   created_time: string
   updated_time: string
@@ -371,18 +369,16 @@ const dataImages: DatabaseListData = {
       lab_name: 'lab name',
       user_name: 'string',
       recording_time: '2023-04-13',
-      subject_id: 0,
       subject_label: 'string',
-      session_id: 0,
       session_label: 'string',
-      datatypes_id: 0,
       datatypes_label: 'string',
       image_id: 0,
       image_url: '/lib/test.nii',
       image_attributes: {
-        size: '20MB',
+        size: [15.3, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Protocol',
+        voxel_size: [100,100,100]
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -392,18 +388,16 @@ const dataImages: DatabaseListData = {
       lab_name: 'z lab name',
       user_name: 'string',
       recording_time: '2023-04-13',
-      subject_id: 0,
       subject_label: 'string',
-      session_id: 0,
       session_label: 'string',
-      datatypes_id: 0,
       datatypes_label: 'string',
       image_id: 0,
       image_url: '/lib/test0.nii',
       image_attributes: {
-        size: '20MB',
+        size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Protocol',
+        voxel_size: [100,100,100]
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -413,18 +407,16 @@ const dataImages: DatabaseListData = {
       lab_name: 'x lab name',
       user_name: 'string',
       recording_time: '2023-04-13',
-      subject_id: 0,
       subject_label: 'string',
-      session_id: 0,
       session_label: 'string',
-      datatypes_id: 0,
       datatypes_label: 'string',
       image_id: 0,
       image_url: '/lib/test1.nii',
       image_attributes: {
-        size: '20MB',
+        size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Protocol',
+        voxel_size: [100,100,100]
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -434,18 +426,16 @@ const dataImages: DatabaseListData = {
       lab_name: 'c lab name',
       user_name: 'string',
       recording_time: '2023-04-13',
-      subject_id: 0,
       subject_label: 'string',
-      session_id: 0,
       session_label: 'string',
-      datatypes_id: 0,
       datatypes_label: 'string',
       image_id: 0,
       image_url: '/lib/test2.nii',
       image_attributes: {
-        size: '20MB',
+        size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Protocol',
+        voxel_size: [100,100,100]
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -455,18 +445,16 @@ const dataImages: DatabaseListData = {
       lab_name: '4 lab name',
       user_name: 'string',
       recording_time: '2023-04-13',
-      subject_id: 0,
       subject_label: 'string',
-      session_id: 0,
       session_label: 'string',
-      datatypes_id: 0,
       datatypes_label: 'string',
       image_id: 0,
       image_url: '/lib/test3.nii',
       image_attributes: {
-        size: '20MB',
+        size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Z Protocol',
+        voxel_size: [100,100,100]
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -476,18 +464,16 @@ const dataImages: DatabaseListData = {
       lab_name: 'string',
       user_name: 'string',
       recording_time: '2023-04-13',
-      subject_id: 0,
       subject_label: 'string',
-      session_id: 0,
       session_label: 'string',
-      datatypes_id: 0,
       datatypes_label: 'string',
       image_id: 0,
       image_url: '/lib/test4.nii',
       image_attributes: {
-        size: '20MB',
+        size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'X Protocol',
+        voxel_size: [100,100,100]
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',

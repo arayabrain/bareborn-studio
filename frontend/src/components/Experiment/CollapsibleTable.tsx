@@ -6,7 +6,7 @@ import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
-import Typography from '@mui/material/Typography'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import {MouseType} from './ExperimentTable'
 import { ExperimentStatusIcon } from './ExperimentStatusIcon'
@@ -23,16 +23,13 @@ export const CollapsibleTable = React.memo<{
       <TableCell sx={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
         <Collapse in={open} timeout="auto" unmountOnExit>
           <Box margin={1}>
-            <Typography variant="h6" gutterBottom component="div">
-              Details
-            </Typography>
             <Table size="small" aria-label="purchases">
-              <Head />
-                {data && data.map((item) => {
-                    return (
-                        <Body key={item?.unique_id} data={item}/>
-                    )
-                })}
+            <Head />
+            {data && data.map((item) => {
+              return (
+                <Body key={item?.unique_id} data={item}/>
+              )
+            })}
             </Table>
           </Box>
         </Collapse>
@@ -59,7 +56,7 @@ const Body = React.memo<{
 }>(({data}) => {
   return (
     <TableBody>
-        <TableRowOfFunction data={data} />
+      <TableRowOfFunction data={data} />
     </TableBody>
   )
 })
@@ -79,7 +76,7 @@ const TableRowOfFunction = ({ data } : {data: MouseType}) => {
             </TableCell>
             <TableCell>
                 <Button onClick={() => setPopup(true)}>
-                    open
+                    <OpenInNewIcon />
                 </Button>
             </TableCell>
         </TableRow>

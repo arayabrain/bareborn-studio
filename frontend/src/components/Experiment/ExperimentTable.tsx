@@ -237,7 +237,7 @@ const TableImple = React.memo(() => {
       <Box sx={{display: 'flex', gap : 2, alignItems: 'center'}}>
         <Typography>Status : </Typography>
         <Box>
-          <ExperimentStatusIcon status ={'success'}/>
+          <ExperimentStatusIcon status={'success'}/>
         </Box>
         <Box>
           <Typography>YYYY/MM/DD</Typography>

@@ -91,11 +91,16 @@ const renderCol = (
   if (key.includes('.')) {
     const keys = key.split('.')
     keys.forEach((k) => {
-      value = (value as unknown as Object)?.[k] as
-        | ImagesDatabase
-        | RecordDatabase
-        | RecordList
-        | string
+      if(k === 'voxel_size' || k === 'size') {
+        value = JSON.stringify((value as unknown as Object)?.[k])
+      }
+      else {
+        value = (value as unknown as Object)?.[k] as
+            | ImagesDatabase
+            | RecordDatabase
+            | RecordList
+            | string
+      }
     })
   } else value = (item as unknown as Object)[key] as string
   if (col.render) return col.render(item, value, index)
