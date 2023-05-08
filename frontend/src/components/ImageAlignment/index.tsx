@@ -16,7 +16,6 @@ type ImageViewProps = {
 const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   const viewerRef = useRef<any>()
   const [url, setUrl] = useState(urls[0])
-  const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
   const [voxelCoords, setVoxelCoords] = useState({ i: 0, j: 0, k: 0 })
   const [resize, setResize] = useState({ x: 0, y: 0, z: 0 })
   const [opacity, setOpacity] = useState(0)
@@ -103,7 +102,6 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
           setIsLoadFile(false)
         })
         viewer.addEventListener('sliceupdate', function (event: any) {
-          // const panel = event.target
           const { volume } = event
           setResize({
             x: volume.header.xspace.step,
@@ -111,9 +109,6 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
             z: volume.header.zspace.step,
           })
           volumes.current = volume
-          if (brainbrowser.utils.isFunction(volume.getWorldCoords)) {
-              setWorldCoords(volume.getWorldCoords())
-          }
           if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
             setVoxelCoords(volume.getVoxelCoords())
           }
@@ -165,7 +160,7 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
         <ImageViewWrapper>
           <div
             style={{
-              // display: !opacity ? 'none' : 'flex',
+              display: !opacity ? 'none' : 'flex',
               alignItems: 'stretch',
             }}
           >
@@ -263,9 +258,7 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                   <SwitchImage>
                     <span>Select Image</span>
                     <SwitchContent>
-                      <ButtonPre onClick={onPreImage}>
-                        {'<'}
-                      </ButtonPre>
+                      <ButtonPre onClick={onPreImage}>{'<'}</ButtonPre>
                       <InputImage value={url} readOnly />
                       <ButtonNext onClick={onNextImage}>{'>'}</ButtonNext>
                     </SwitchContent>
@@ -296,8 +289,8 @@ const ButtonClose = styled(IconButton)({
   zIndex: 9999,
   background: 'rgba(0, 0, 0, 0.6)',
   '&:hover': {
-    background: 'rgba(0, 0, 0, 0.8)'
-  }
+    background: 'rgba(0, 0, 0, 0.8)',
+  },
 })
 
 const ButtonPre = styled('button')({
@@ -311,8 +304,8 @@ const ButtonPre = styled('button')({
   cursor: 'pointer',
   fontSize: 20,
   '&:hover': {
-    background: 'rgba(0, 0, 0, 0.1)'
-  }
+    background: 'rgba(0, 0, 0, 0.1)',
+  },
 })
 
 const ButtonNext = styled(ButtonPre)({

@@ -4,12 +4,10 @@ import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
-import IconButton from '@mui/material/IconButton'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import TablePagination from '@mui/material/TablePagination'
 import Paper from '@mui/material/Paper'
@@ -27,26 +25,16 @@ import { CollapsibleTable } from './CollapsibleTable'
 import {
   selectExperimentsSatusIsUninitialized,
   selectExperimentsSatusIsFulfilled,
-  selectExperimentTimeStamp,
-  selectExperimentName,
-  selectExperimentStatus,
   selectExperimentsSatusIsError,
   selectExperimentsErrorMessage,
   selectExperimentList,
-  selectExperimentHasNWB,
 } from 'store/slice/Experiments/ExperimentsSelectors'
 import {
   deleteExperimentByList,
   getExperiments,
 } from 'store/slice/Experiments/ExperimentsActions'
 import { ExperimentStatusIcon } from './ExperimentStatusIcon'
-import {Experiment, EXPERIMENTS_STATUS} from 'store/slice/Experiments/ExperimentsType'
-import { DeleteButton } from './Button/DeleteButton'
-import {
-  NWBDownloadButton,
-  ConfigDownloadButton,
-} from './Button/DownloadButton'
-import { ImportButton } from './Button/ImportButton'
+import { EXPERIMENTS_STATUS} from 'store/slice/Experiments/ExperimentsType'
 import { useLocalStorage } from 'components/utils/LocalStorageUtil'
 import {useNavigate} from "react-router-dom";
 
@@ -185,26 +173,14 @@ const LOCAL_STORAGE_KEY_PER_PAGE = 'studio_experiment_table_per_page'
 
 const TableImple = React.memo(() => {
   const experimentList = useSelector(selectExperimentList)
-  const experimentListValues = Object.values(experimentList)
   const experimentListKeys = Object.keys(experimentList)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const onClickReload = () => {
     dispatch(getExperiments())
   }
-  const [order, setOrder] = React.useState<Order>('asc')
-  const [sortTarget, setSortTarget] =
-    React.useState<keyof Experiment>('timestamp')
-  const sortHandler =
-    (property: keyof Experiment) => (event: React.MouseEvent<unknown>) => {
-      const isAsc = sortTarget === property && order === 'asc'
-      setOrder(isAsc ? 'desc' : 'asc')
-      setSortTarget(property)
-    }
-
   const [checkedList, setCheckedList] = useState<string[]>([])
   const [open, setOpen] = React.useState(false)
-
   const recordsIsEmpty = experimentListKeys.length === 0
 
   const onClickDelete = () => {
@@ -412,27 +388,3 @@ const RowItem = React.memo<{
     </React.Fragment>
   )
 })
-
-type Order = 'asc' | 'desc'
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key,
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string },
-) => number {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy)
-}
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1
-  }
-  return 0
-}
