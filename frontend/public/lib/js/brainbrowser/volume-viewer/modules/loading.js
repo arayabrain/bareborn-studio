@@ -483,6 +483,7 @@ BrainBrowser.VolumeViewer.modules.loading = function(viewer) {
       canvas.width = default_panel_width;
       canvas.height = default_panel_height;
       canvas.classList.add("slice-display");
+      canvas.id = `slice_${axis_name}`
       canvas.style.backgroundColor = "#000000";
       container.appendChild(canvas);
       display.setPanel(
