@@ -1,8 +1,10 @@
+import json
+
 from fastapi import HTTPException
 from firebase_admin import auth
 
 from backend.models import User
-from backend.models.user import UserCreate, UserUpdate, ListUserPaging
+from backend.models.user import ListUserPaging, Role, UserCreate, UserUpdate
 
 
 async def list_user(offset: int = 0, limit: int = 10):
@@ -103,3 +105,12 @@ async def delete_user(user_id: str):
 
     auth.delete_user(user.uid)
     return user
+
+
+async def get_role_list():
+    try:
+        role_list = json.load(open('user_role.json'))
+        role_list = [Role(**role) for role in role_list]
+        return role_list
+    except:
+        raise Exception("Error reading 'user_role.json' file")

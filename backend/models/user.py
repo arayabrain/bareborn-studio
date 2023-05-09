@@ -1,13 +1,11 @@
 from datetime import datetime
-from typing import Optional, Literal, List
-from enum import Enum
+from typing import Optional, List, Union
 from pydantic import BaseModel, EmailStr, Field, validator
 
 
-class UserRole(str, Enum):
-    ADMIN = 'ADMIN'
-    RESEARCHER = 'RESEARCHER'
-    MANAGER = 'MANAGER'
+class Role(BaseModel):
+    code: int
+    name: str
 
 
 class UserAuth(BaseModel):
@@ -24,7 +22,7 @@ class UserAuth(BaseModel):
 class UserCreate(UserAuth):
     display_name: str = Field(max_length=100)
     lab: str = Field(max_length=100)
-    role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
+    role: int
 
     class Config:
         anystr_strip_whitespace = True
@@ -33,7 +31,7 @@ class UserCreate(UserAuth):
 class UserUpdate(BaseModel):
     display_name: str = Field(max_length=100)
     lab: str = Field(max_length=100)
-    role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
+    role: int
 
     class Config:
         anystr_strip_whitespace = True
@@ -44,7 +42,7 @@ class User(BaseModel):
     email: EmailStr
     display_name: Optional[str] = Field(max_length=100)
     created_time: Optional[datetime] = None
-    role: Optional[Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]]
+    role: int
     lab: Optional[str] = Field(max_length=100)
     last_login_time: Optional[datetime] = None
 
