@@ -76,7 +76,7 @@ export const PopupSearch = ({
 }
 
 export type Object = {
-  [key: string]: Object | string | number
+  [key: string]: Object | string | number | number[]
 }
 
 export type Image = {
@@ -96,15 +96,15 @@ export type Viewer = {
   open: boolean
   url: string
   jsonData?: Object
-  id?: number
+  id?: number | string
   session_id?: number
-  parent_id?: number
+  parent_id?: string
   image?: ImagesDatabase | RecordList
 }
 
 export type ImagesDatabase = {
   id: number
-  parent_id: number
+  parent_id: string
   image_url: string
   datatype_label?: string
   type?: string
@@ -118,15 +118,15 @@ export type ImagesDatabase = {
 }
 
 export type DatatypesDatabase = {
-  id: number
-  parent_id: number
+  id: string
+  parent_id: string
   label: string
   images: ImagesDatabase[]
 }
 
 export type SessionsDatabase = {
-  id: number
-  parent_id: number
+  id: string
+  parent_id: string
   session_index?: number
   label: string
   datatypes: DatatypesDatabase[]
@@ -134,8 +134,8 @@ export type SessionsDatabase = {
 }
 
 export type SubjectDatabase = {
-  id: number
-  parent_id: number
+  id: string
+  parent_id: string
   label: string
   sessions: SessionsDatabase[]
   subject_index?: number
@@ -206,45 +206,47 @@ export const defaultDatabase: DatabaseData = {
       recording_time: '2023-04-07',
       subjects: [
         {
-          id: 0,
-          parent_id: 0,
+          id: "0",
+          parent_id: "0",
           label: 'new subject',
           sessions: [
             {
-              id: 0,
-              parent_id: 0,
+              id: "0",
+              parent_id: "0",
               label: 'new session',
               datatypes: [
                 {
-                  id: 0,
-                  parent_id: 0,
+                  id: "0",
+                  parent_id: "0",
                   label: 'anat',
                   images: [
                     {
                       id: 0,
-                      parent_id: 0,
+                      parent_id: "0",
                       image_url: '/lib/test.nii',
                       attributes: {
-                        size: '20MB',
+                        size: [15.0, 15.0, 15.0],
                         type: 'TYPE_1',
                         protocol: 'Protocol',
+                        voxel_size: [100, 100, 100]
                       },
                     },
                   ],
                 },
                 {
-                  id: 1,
-                  parent_id: 0,
+                  id: "1",
+                  parent_id: "0",
                   label: 'func',
                   images: [
                     {
                       id: 1,
-                      parent_id: 0,
+                      parent_id: "0",
                       image_url: '/lib/test0.nii',
                       attributes: {
-                        size: '20MB',
+                        size: [15.0, 15.0, 15.0],
                         type: 'TYPE_1',
                         protocol: 'Protocol',
+                        voxel_size: [100, 100, 100]
                       },
                     },
                   ],
@@ -254,65 +256,69 @@ export const defaultDatabase: DatabaseData = {
           ],
         },
         {
-          id: 1,
-          parent_id: 0,
+          id: "1",
+          parent_id: "0",
           label: 'project subject',
           sessions: [
             {
-              id: 1,
-              parent_id: 1,
+              id: "1",
+              parent_id: "1",
               label: 'zsession',
               datatypes: [
                 {
-                  id: 2,
-                  parent_id: 1,
+                  id: "2",
+                  parent_id: "1",
                   label: 'anat',
                   images: [
                     {
                       id: 2,
-                      parent_id: 2,
+                      parent_id: "2",
                       image_url: '/lib/test1.nii',
                       attributes: {
-                        size: '20MB',
+                        size: [15.0, 15.0, 15.0],
                         type: 'TYPE_1',
                         protocol: 'Protocol',
+                        voxel_size: [100, 100, 100]
                       },
                     },
                   ],
                 },
                 {
-                  id: 3,
-                  parent_id: 1,
+                  id: "3",
+                  parent_id: "1",
                   label: 'zunc',
                   images: [
                     {
                       id: 3,
-                      parent_id: 3,
+                      parent_id: "3",
                       image_url: '/lib/test2.nii',
                       attributes: {
-                        size: '20MB',
+                        size: [15.0, 15.0, 15.0],
                         type: 'T2_RATE',
                         protocol: 'X Protocol',
+                        voxel_size: [100, 100, 100]
                       },
                     },
                     {
                       id: 4,
-                      parent_id: 3,
+                      parent_id: "3",
                       image_url: '/lib/test3.nii',
                       attributes: {
-                        size: '20MB',
+                        size: [15.0, 15.0, 15.0],
                         type: 'TYPE_1',
                         protocol: 'Protocol',
+                        voxel_size: [100, 100, 100]
                       },
                     },
                     {
                       id: 5,
-                      parent_id: 3,
+                      parent_id: "3",
                       image_url: '/lib/test4.nii',
                       attributes: {
-                        size: '20MB',
+                        size: [15.0, 15.0, 15.0],
                         type: 'T3_RATE',
                         protocol: 'Z Protocol',
+                        voxel_size: [100, 100, 100]
                       },
                     },
                   ],
@@ -332,20 +338,20 @@ export const defaultDatabase: DatabaseData = {
       recording_time: '2023-04-06',
       subjects: [
         {
-          id: 3,
-          parent_id: 1,
+          id: "3",
+          parent_id: "1",
           label: 'subject name',
           sessions: [],
         },
         {
-          id: 4,
-          parent_id: 1,
+          id: "4",
+          parent_id: "1",
           label: 'zubject name',
           sessions: [],
         },
         {
-          id: 5,
-          parent_id: 1,
+          id: "5",
+          parent_id: "1",
           label: 'lubject name',
           sessions: [],
         },
