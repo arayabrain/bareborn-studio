@@ -100,6 +100,7 @@ BrainBrowser.VolumeViewer.modules.rendering = function(viewer) {
   */
   viewer.redrawVolumes = function() {
     viewer.volumes.forEach(function(volume, vol_id) {
+      console.log('volume', volume)
       viewer.redrawVolume(vol_id);
     });
   };

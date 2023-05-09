@@ -132,9 +132,9 @@ VolumeViewer.createVolume = function (header, native_data) {
       cached_slices[axis] = cached_slices[axis] || []
       cached_slices[axis][time] = cached_slices[axis][time] || []
 
-      if (cached_slices[axis][time][slice_num] !== undefined) {
-        return cached_slices[axis][time][slice_num]
-      }
+      // if (cached_slices[axis][time][slice_num] !== undefined) {
+      //   return cached_slices[axis][time][slice_num]
+      // }
 
       var time_offset = header.time ? time * header.time.offset : 0
 

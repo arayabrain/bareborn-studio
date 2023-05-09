@@ -553,9 +553,7 @@
     var x, y, space
     var distance
     var dx, dy
-    // color = color || "#FF0000";
     color = '#03a203'
-
     context.save()
 
     context.strokeStyle = color
@@ -565,17 +563,33 @@
     x = cursor.x
     y = cursor.y
 
-    context.lineWidth = 2
+    context.lineWidth = panel.volume.header[panel.axis].hover ? 2.5 : 1
+
+    let radian = panel.volume.header[panel.axis].radian
+    if (typeof radian !== 'number') {
+      radian = Math.PI / 2
+    }
+    const radius = panel.image_center.x
+
+    var newX = panel.image_center.x + Math.cos(radian) * radius
+    var newY = panel.image_center.y - Math.sin(radian) * radius
+
+    // var xInverse = panel.image_center.x + Math.cos(radian + Math.PI) * radius
+    // var yInverse = panel.image_center.y - Math.sin(radian + Math.PI) * radius
 
     context.beginPath()
-    context.moveTo(x, 0)
-    context.lineTo(x, y - space)
-    context.moveTo(x, y + space)
-    context.lineTo(x, panel.image_center.y * 2)
-    context.moveTo(0, y)
-    context.lineTo(x - space, y)
-    context.moveTo(x + space, y);
-    context.lineTo(panel.image_center.x * 2, y);
+    context.moveTo(x, y - space)
+    context.lineTo(newX, newY)
+    // context.moveTo(x, y - space)
+    // context.lineTo(xInverse, yInverse)
+    // context.moveTo(x, y - space)
+    // context.lineTo(xInverse, yInverse)
+    // context.moveTo(x, y + space)
+    // context.lineTo(x, panel.image_center.y * 2)
+    // context.moveTo(0, y)
+    // context.lineTo(x - space, y)
+    // context.moveTo(x + space, y)
+    // context.lineTo(panel.image_center.x * 2, y)
     context.stroke()
 
     if (panel.anchor) {
@@ -611,7 +625,12 @@
       context.lineTo(cursor.x, cursor.y)
       context.stroke()
     }
-
+    if (panel.volume.header[panel.axis].hover) {
+      context.beginPath()
+      context.arc(newX, newY, 3, 0, 2 * Math.PI)
+      context.stroke()
+      context.fill()
+    }
     context.restore()
   }
 

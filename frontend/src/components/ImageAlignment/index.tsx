@@ -17,6 +17,11 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   const viewerRef = useRef<any>()
   const [url, setUrl] = useState(urls[0])
   const [voxelCoords, setVoxelCoords] = useState({ i: 0, j: 0, k: 0 })
+  const [radian, setRadian] = useState({
+    x: Math.PI / 2,
+    y: Math.PI / 2,
+    z: Math.PI / 2,
+  })
   const [resize, setResize] = useState({ x: 0, y: 0, z: 0 })
   const [opacity, setOpacity] = useState(0)
   const [isLoadFile, setIsLoadFile] = useState(false)
@@ -107,6 +112,11 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
             x: volume.header.xspace.step,
             y: volume.header.yspace.step,
             z: volume.header.zspace.step,
+          })
+          setRadian({
+            x: volume.header.xspace.radian,
+            y: volume.header.yspace.radian,
+            z: volume.header.zspace.radian,
           })
           volumes.current = volume
           if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
@@ -207,15 +217,15 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                     </Flex>
                     <Flex>
                       <Text>pitch {'{rad}'}</Text>
-                      <input />
+                      <input value={radian.x} />
                     </Flex>
                     <Flex>
                       <Text>roll {'{rad}'}</Text>
-                      <input />
+                      <input value={radian.z} />
                     </Flex>
                     <Flex>
                       <Text>yaw {'{rad}'}</Text>
-                      <input />
+                      <input value={radian.y} />
                     </Flex>
                     <Flex>
                       <Text>resize {'{x}'}</Text>
