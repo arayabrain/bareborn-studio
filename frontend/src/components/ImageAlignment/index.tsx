@@ -262,6 +262,7 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                       <InputImage value={url} readOnly />
                       <ButtonNext onClick={onNextImage}>{'>'}</ButtonNext>
                     </SwitchContent>
+                    <span>{`(${urls.findIndex((item: string) => item === url) + 1}/${urls.length})`}</span>
                   </SwitchImage>
                   <Flex sx={{ gap: 5 }}>
                     <ButtonCanCel onClick={onClose}>CANCEL</ButtonCanCel>

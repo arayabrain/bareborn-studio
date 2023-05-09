@@ -137,7 +137,7 @@ const data: Data = {
   ],
       "nodeDict": {},
       "edgeDict": {},
-      "createAt": "1683214197"
+      "createAt": "2023/04/07 04:28"
 }
 
 export const ExperimentTable: React.FC = () => {
@@ -182,6 +182,7 @@ const TableImple = React.memo(() => {
   const [checkedList, setCheckedList] = useState<string[]>([])
   const [open, setOpen] = React.useState(false)
   const recordsIsEmpty = experimentListKeys.length === 0
+  const createAt = data.createAt.split(' ')
 
   const onClickDelete = () => {
     setOpen(true)
@@ -240,8 +241,8 @@ const TableImple = React.memo(() => {
           <ExperimentStatusIcon status={'success'}/>
         </Box>
         <Box>
-          <Typography>YYYY/MM/DD</Typography>
-          <Typography>HH/MI</Typography>
+          <Typography>Timestamp: {createAt[0]}</Typography>
+          <Typography>{createAt[1]}</Typography>
         </Box>
       </Box>
       <Box
