@@ -3,15 +3,16 @@ from typing import Optional, Literal, List
 from enum import Enum
 from pydantic import BaseModel, EmailStr, Field, validator
 
+
 class UserRole(str, Enum):
     ADMIN = 'ADMIN'
     RESEARCHER = 'RESEARCHER'
     MANAGER = 'MANAGER'
 
+
 class UserAuth(BaseModel):
     email: EmailStr
     password: str = Field(max_length=255)
-
 
     @validator('email')
     def email_must_less_than_255(cls, value):
@@ -25,11 +26,17 @@ class UserCreate(UserAuth):
     lab: str = Field(max_length=100)
     role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
 
+    class Config:
+        anystr_strip_whitespace = True
+
 
 class UserUpdate(BaseModel):
     display_name: str = Field(max_length=100)
     lab: str = Field(max_length=100)
     role: Literal[UserRole.ADMIN, UserRole.RESEARCHER, UserRole.MANAGER]
+
+    class Config:
+        anystr_strip_whitespace = True
 
 
 class User(BaseModel):
@@ -53,5 +60,4 @@ class UserVerifyResetPasswordCode(BaseModel):
 
 class ListUserPaging(BaseModel):
     data: Optional[List[User]]
-    next_page_token: Optional[str]
     total_page: Optional[int]

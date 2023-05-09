@@ -5,29 +5,42 @@ from backend.models import User
 from backend.models.user import UserCreate, UserUpdate, ListUserPaging
 
 
-async def list_user(next_page_token: str = None, limit: int = 10):
+async def list_user(offset: int = 0, limit: int = 10):
     try:
-        result = auth.list_users(max_results=limit, page_token=next_page_token)
-        users = result.users
+        # get total user
+        total_user = []
+        page = auth.list_users()
+        while page:
+            [total_user.append(user) for user in page.users]
+            page = page.get_next_page()
+
+        total_user.sort(
+            key=lambda user: (
+                str(user.display_name)[0].isdigit(),
+                str(user.display_name).lower(),
+            )
+        )
+
+        # get user
+        users = total_user[
+            offset : offset + limit if offset + limit <= len(total_user) else None
+        ]
         data = [
             User(
                 uid=user.uid,
                 email=user.email,
                 display_name=user.display_name,
                 role=user.custom_claims.get('role') if user.custom_claims else None,
-                lab=user.custom_claims.get('lab') if user.custom_claims else None
+                lab=user.custom_claims.get('lab') if user.custom_claims else None,
             )
             for user in users
         ]
-        if not result.has_next_page:
-            next_page_token = None
-        else:
-            next_page_token = result.next_page_token
 
-        total = auth.list_users()
         import math
-        total_page = math.ceil(len(total.users) / limit)
-        return ListUserPaging(data=data, next_page_token=next_page_token, total_page=total_page)
+
+        total_page = math.ceil(len(total_user) / limit)
+
+        return ListUserPaging(data=data, total_page=total_page)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -51,7 +64,13 @@ async def read_user(user_id: str):
         user = auth.get_user(user_id)
         role = user.custom_claims.get('role') if user.custom_claims else None
         lab = user.custom_claims.get('lab') if user.custom_claims else None
-        return User(uid=user.uid, email=user.email, display_name=user.display_name, role=role, lab=lab)
+        return User(
+            uid=user.uid,
+            email=user.email,
+            display_name=user.display_name,
+            role=role,
+            lab=lab,
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -68,7 +87,13 @@ async def update_user(user_id: str, data: UserUpdate):
         user = auth.update_user(user_id, **user_data)
         role = user.custom_claims.get('role') if user.custom_claims else None
         lab = user.custom_claims.get('lab') if user.custom_claims else None
-        return User(uid=user.uid, email=user.email, display_name=user.display_name, role=role, lab=lab)
+        return User(
+            uid=user.uid,
+            email=user.email,
+            display_name=user.display_name,
+            role=role,
+            lab=lab,
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
