@@ -38,8 +38,9 @@ const Project: React.FC = () => {
             textColor="primary"
           >
             <Tab label="Workflow" {...a11yProps(0)} />
-            <Tab label="Visualize" {...a11yProps(1)} />
-            <Tab label="Record" {...a11yProps(2)} />
+            <Tab label="Results" {...a11yProps(1)} />
+            <Tab label="Visualize" {...a11yProps(2)} />
+
           </Tabs>
           <Tooltip title="GitHub repository">
             <IconButton
@@ -63,10 +64,10 @@ const Project: React.FC = () => {
       <TabPanel value={value} index={0}>
         <FlowChart {...runPipeline} />
       </TabPanel>
-      <TabPanel value={value} index={1}>
+      <TabPanel value={value} index={2}>
         <Visualize />
       </TabPanel>
-      <TabPanel value={value} index={2}>
+      <TabPanel value={value} index={1}>
         <Experiment />
       </TabPanel>
     </RootDiv>

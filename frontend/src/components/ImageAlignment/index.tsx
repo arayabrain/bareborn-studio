@@ -61,7 +61,7 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
 
   const onChangeVoxel = (e: any) => {
     const { name } = e.target
-    setVoxelCoords({ ...voxelCoords, [name]: Number(e.target.value) })
+    setVoxelCoords({ ...voxelCoords, [name]: e.target.value })
   }
 
   const onChangeResize = (e: any) => {
@@ -191,8 +191,8 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                     <Flex>
                       <Text>right {'{mm}'}</Text>
                       <input
-                        name="i"
                         type={'number'}
+                        name="i"
                         value={voxelCoords.i}
                         onChange={onChangeVoxel}
                       />
@@ -200,8 +200,8 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                     <Flex>
                       <Text>forward {'{mm}'}</Text>
                       <input
-                        name="k"
-                        type={'number'}
+                          type={'number'}
+                          name="k"
                         value={voxelCoords.k}
                         onChange={onChangeVoxel}
                       />
@@ -209,8 +209,8 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                     <Flex>
                       <Text>up {'{mm}'}</Text>
                       <input
-                        name="j"
                         type={'number'}
+                        name="j"
                         value={voxelCoords.j}
                         onChange={onChangeVoxel}
                       />
@@ -272,6 +272,7 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                       <InputImage value={url} readOnly />
                       <ButtonNext onClick={onNextImage}>{'>'}</ButtonNext>
                     </SwitchContent>
+                    <span>{`(${urls.findIndex((item: string) => item === url) + 1}/${urls.length})`}</span>
                   </SwitchImage>
                   <Flex sx={{ gap: 5 }}>
                     <ButtonCanCel onClick={onClose}>CANCEL</ButtonCanCel>
