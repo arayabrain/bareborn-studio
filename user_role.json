@@ -1,0 +1,14 @@
+[
+    {
+        "code": 1,
+        "name": "Admin"
+    },
+    {
+        "code": 10,
+        "name": "Data Manager"
+    },
+    {
+        "code": 20,
+        "name": "User"
+    }
+]
