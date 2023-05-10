@@ -757,6 +757,7 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
             const { left, top } = event.target.getBoundingClientRect()
             const xCursor = event.pageX - left
             const yCursor = event.pageY - top
+
             const isHover =
               (cursor.x <= xCursor + 2 && cursor.x >= xCursor - 2) ||
               (cursor.y <= yCursor + 2 && cursor.y >= yCursor - 2)
@@ -774,39 +775,44 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
                 if (yCursor === cursorPaner.y) {
                   radian = 0
                 } else if (yCursor < cursorPaner.y) {
-                  const r = Math.sqrt(
-                    Math.pow(xCursor - cursorPaner.x, 2) +
-                      Math.pow(cursorPaner.y - yCursor, 2),
-                  )
-                  radian = Math.asin((cursorPaner.y - yCursor) / r)
+                  const xSub = new Decimal(xCursor).sub(cursorPaner.x)
+                  const ySub = new Decimal(cursorPaner.y).sub(yCursor)
+                  const powX = Decimal.pow(xSub, 2)
+                  const powY = Decimal.pow(ySub, 2)
+                  const radius = Decimal.sqrt(powX.plus(powY))
+                  const sin = new Decimal(ySub).div(radius)
+                  radian = Decimal.asin(sin)
                 } else {
-                  const r = Math.sqrt(
-                    Math.pow(xCursor - cursorPaner.x, 2) +
-                      Math.pow(yCursor - cursorPaner.y, 2),
-                  )
-                  const addRadian = Math.asin((xCursor - cursorPaner.x) / r)
-                  radian = (3 * Math.PI) / 2 + addRadian
+                  const xSub = new Decimal(xCursor).sub(cursorPaner.x)
+                  const ySub = new Decimal(yCursor).sub(cursorPaner.y)
+                  const powX = Decimal.pow(xSub, 2)
+                  const powY = Decimal.pow(ySub, 2)
+                  const radius = Decimal.sqrt(powX.plus(powY))
+                  const addRadian = Decimal.asin(xSub.div(radius))
+                  radian = new Decimal(Math.PI).times(3).div(2).plus(addRadian)
                 }
               } else {
                 if (yCursor === cursorPaner.y) {
                   radian = Math.PI
                 } else if (yCursor < cursorPaner.y) {
-                  const r = Math.sqrt(
-                    Math.pow(cursorPaner.x - xCursor, 2) +
-                      Math.pow(cursorPaner.y - yCursor, 2),
-                  )
-                  const addRadian = Math.asin((cursorPaner.x - xCursor) / r)
-                  radian = Math.PI / 2 + addRadian
+                  const xSub = new Decimal(cursorPaner.x).sub(xCursor)
+                  const ySub = new Decimal(cursorPaner.y).sub(yCursor)
+                  const powX = Decimal.pow(xSub, 2)
+                  const powY = Decimal.pow(ySub, 2)
+                  const radius = Decimal.sqrt(powX.plus(powY))
+                  const addRadian = Decimal.asin(xSub.div(radius))
+                  radian = new Decimal(Math.PI).div(2).plus(addRadian)
                 } else {
-                  const r = Math.sqrt(
-                    Math.pow(cursorPaner.x - xCursor, 2) +
-                      Math.pow(yCursor - cursorPaner.y, 2),
-                  )
-                  const addRadian = Math.asin((yCursor - cursorPaner.y) / r)
-                  radian = Math.PI + addRadian
+                  const xSub = new Decimal(cursorPaner.x).sub(xCursor)
+                  const ySub = new Decimal(yCursor).sub(cursorPaner.y)
+                  const powX = Decimal.pow(xSub, 2)
+                  const powY = Decimal.pow(ySub, 2)
+                  const radius = Decimal.sqrt(powX.plus(powY))
+                  const addRadian = Decimal.asin(ySub.div(radius))
+                  radian = new Decimal(Math.PI).plus(addRadian)
                 }
               }
-              panel.volume.header[axis_name].radian = radian
+              panel.volume.header[axis_name].radian = Number(radian)
               panel.volume.header.update()
               updateSlices()
             } else if (

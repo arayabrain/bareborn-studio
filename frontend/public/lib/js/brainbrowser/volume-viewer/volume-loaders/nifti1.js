@@ -316,8 +316,6 @@
       header.zspace.radian = Math.PI / 2
     }
 
-    console.log('header.xspace.radian', header.xspace.radian)
-
     mx.makeRotationX(header.xspace.radian)
     my.makeRotationY(header.yspace.radian)
     mz.makeRotationZ(header.zspace.radian)

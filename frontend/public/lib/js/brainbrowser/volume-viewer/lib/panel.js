@@ -569,27 +569,34 @@
     if (typeof radian !== 'number') {
       radian = Math.PI / 2
     }
-    const radius = panel.image_center.x
+    const radius = Math.pow(
+      cursor.x > panel.image_center.x
+        ? panel.image_center.x * 2 - cursor.x
+        : cursor.x,
+      4,
+    )
 
-    var newX = panel.image_center.x + Math.cos(radian) * radius
-    var newY = panel.image_center.y - Math.sin(radian) * radius
+    var newX = cursor.x + Math.cos(radian) * radius
+    var newY = cursor.y - Math.sin(radian) * radius
 
-    // var xInverse = panel.image_center.x + Math.cos(radian + Math.PI) * radius
-    // var yInverse = panel.image_center.y - Math.sin(radian + Math.PI) * radius
+    var xInverse = cursor.x + Math.cos(radian + Math.PI) * (radius * 2)
+    var yInverse = cursor.y - Math.sin(radian + Math.PI) * (radius * 2)
+
+    var xInverseLeft = cursor.x + Math.cos(radian + Math.PI / 2) * (radius * 2)
+    var yInverseLeft = cursor.y - Math.sin(radian + Math.PI / 2) * (radius * 2)
+
+    var xInverseRight = cursor.x + Math.cos(radian - Math.PI / 2) * (radius * 2)
+    var yInverseRight = cursor.y - Math.sin(radian - Math.PI / 2) * (radius * 2)
 
     context.beginPath()
-    context.moveTo(x, y - space)
+    context.moveTo(x, y)
     context.lineTo(newX, newY)
-    // context.moveTo(x, y - space)
-    // context.lineTo(xInverse, yInverse)
-    // context.moveTo(x, y - space)
-    // context.lineTo(xInverse, yInverse)
-    // context.moveTo(x, y + space)
-    // context.lineTo(x, panel.image_center.y * 2)
-    // context.moveTo(0, y)
-    // context.lineTo(x - space, y)
-    // context.moveTo(x + space, y)
-    // context.lineTo(panel.image_center.x * 2, y)
+    context.moveTo(x, y)
+    context.lineTo(xInverse, yInverse)
+    context.moveTo(x, y)
+    context.lineTo(xInverseLeft, yInverseLeft)
+    context.moveTo(x, y)
+    context.lineTo(xInverseRight, yInverseRight)
     context.stroke()
 
     if (panel.anchor) {
@@ -625,6 +632,7 @@
       context.lineTo(cursor.x, cursor.y)
       context.stroke()
     }
+
     if (panel.volume.header[panel.axis].hover) {
       context.beginPath()
       context.arc(newX, newY, 3, 0, 2 * Math.PI)
