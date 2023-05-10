@@ -268,9 +268,11 @@ const AccountManager = () => {
       nextPageToken.push(data.next_page_token)
     }
     const newData = data.data.map((item: any) => {
-      if(item.role === 1) return {...item, role: 'Admin'}
-      if(item.role === 20) return {...item, role: 'User'}
-      if(item.role === 10) return {...item, role: 'Data Manager'}
+      let data
+      if(item.role === 1) data = {...item, role: 'Admin'}
+      else if(item.role === 20) data = {...item, role: 'User'}
+      else data = {...item, role: 'Data Manager'}
+      return data
     })
     setData(newData)
     setPaginate((pre) => ({
