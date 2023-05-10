@@ -13,7 +13,10 @@ type SelectErrorProps = {
   onBlur?: (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
   errorMessage: string
   name?: string
-  options: string[]
+  options: {
+    code: number
+    name: string
+  }[]
 }
 
 const SelectError: FC<SelectErrorProps> = ({
@@ -38,10 +41,10 @@ const SelectError: FC<SelectErrorProps> = ({
         onBlur={onBlur}
         error={!!errorMessage}
       >
-        {options.map((item: string) => {
+        {options.map((item: { code: number, name: string }, index) => {
           return (
-            <MenuItem key={item} value={item}>
-              {item}
+            <MenuItem key={item.code} value={item.code}>
+              {item.name}
             </MenuItem>
           )
         })}

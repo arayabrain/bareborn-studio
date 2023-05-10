@@ -267,7 +267,12 @@ const AccountManager = () => {
     if (page > paginate.page) {
       nextPageToken.push(data.next_page_token)
     }
-    setData(data.data)
+    const newData = data.data.map((item: any) => {
+      if(item.role === 1) return {...item, role: 'Admin'}
+      if(item.role === 20) return {...item, role: 'User'}
+      if(item.role === 10) return {...item, role: 'Data Manager'}
+    })
+    setData(newData)
     setPaginate((pre) => ({
       ...pre,
       total: data.total_page * paginate.per_page,
@@ -290,8 +295,12 @@ const AccountManager = () => {
   }
 
   const onForgotPassword = (data: DataProject) => {
+    let newData
+    if(data.role === 'Admin') newData = {...data, role: 1}
+    else if(data.role === 'Data Manager') newData = {...data, role: 10}
+    else newData = {...data, role: 20}
     //todo call api
-    setDataEdit(data)
+    setDataEdit(newData)
     setIsOpenModal(true)
   }
 

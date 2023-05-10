@@ -12,6 +12,7 @@ export type DataProject = {
   image_count: number
   created_time: string
   updated_time: string
+  role?: string | number
 }
 
 const Projects = () => {
