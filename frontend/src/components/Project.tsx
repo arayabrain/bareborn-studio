@@ -14,6 +14,7 @@ import Visualize from './Visualize/Visualize'
 import Experiment from './Experiment/Experiment'
 import { Box } from '@mui/material'
 import { useSearchParams } from 'react-router-dom'
+import VisualizeNew from "./VisualizeNew";
 // import studioLogo from './studio.png'
 
 const Project: React.FC = () => {
@@ -65,7 +66,8 @@ const Project: React.FC = () => {
         <FlowChart {...runPipeline} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <Visualize />
+        {/*<Visualize />*/}
+        <VisualizeNew />
       </TabPanel>
       <TabPanel value={value} index={1}>
         <Experiment />
