@@ -1,12 +1,13 @@
-import { Box, Stack, styled, Typography } from '@mui/material'
+import { Box, Stack, styled, Typography, Link } from '@mui/material'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import {resetPassword} from "../../api/auth";
 import Loading from "../../components/common/Loading";
+import {useNavigate} from "react-router-dom";
 
 const regexEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
 const ResetPassword = () => {
-
+    const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState<{ [key: string]: string }>({
         email: '',
@@ -17,9 +18,10 @@ const ResetPassword = () => {
 
     const onReset = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
-        setIsLoading(true)
+
         const errorCheck = validateSubmit()
         if (errors.email || errorCheck) return
+        setIsLoading(true)
         try {
             await resetPassword(values.email)
             setTimeout(()=>{
@@ -82,8 +84,9 @@ const ResetPassword = () => {
                         gap={2}
                         mt={3}
                         alignItems="center"
-                        justifyContent="flex-end"
+                        justifyContent="space-between"
                     >
+                        <ButtonSignIn onClick={() => navigate('/login')}>SIGN IN</ButtonSignIn>
                         <ButtonLogin type="submit">Reset Password</ButtonLogin>
                     </Stack>
                 </FormSignUp>
@@ -122,6 +125,13 @@ const Title = styled(Typography)({
     color: 'rgba(0, 0, 0, 0.65)',
 })
 
+const ButtonSignIn = styled(Link)({
+    fontSize: 12,
+    '&:hover': {
+        cursor: 'pointer'
+    }
+})
+
 const FormSignUp = styled('form')({})
 
 const LabelField = styled(Typography)({
@@ -152,6 +162,7 @@ const Input = styled('input', {
         },
     }
 })
+
 
 const ButtonLogin = styled('button')({
     backgroundColor: '#283237',

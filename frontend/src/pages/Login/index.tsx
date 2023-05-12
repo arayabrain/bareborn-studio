@@ -23,7 +23,7 @@ const Login = () => {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const errorCheck = validateSubmit()
-    if (errors.email || errors.password || errorCheck) return
+    if (errorCheck) return
     setIsLoading(true)
     try {
       const { access_token } = await login(values)
