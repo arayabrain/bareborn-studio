@@ -242,6 +242,9 @@
 
     function matrixTransform() {
       var nifti_xfm = niftiQuaternToMat44(header)
+      header.xspace.reload = true
+      header.yspace.reload = true
+      header.zspace.reload = true
       var i, j
       var axis_index_from_file = [0, 1, 2]
       var transform = [

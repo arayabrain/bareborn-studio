@@ -459,9 +459,10 @@
           old_pointer_position.y = panel.mouse.y
         }
 
-        if (!panel.updated) {
+        if (!panel.updated && !panel.volume.header[panel.axis].reload) {
           return
         }
+        panel.volume.header[panel.axis].reload = false
         const { matrix44 } = panel.volume.header
 
         panel.canvasRotation.style.transform = `matrix3d(${matrix44.join()})`
@@ -665,7 +666,12 @@
     var image = panel.slice_image
     var origin
     const context = panel.canvasRotation.getContext('2d')
-    context.clearRect(0, 0, panel.canvasRotation.width, panel.canvasRotation.height)
+    context.clearRect(
+      0,
+      0,
+      panel.canvasRotation.width,
+      panel.canvasRotation.height,
+    )
     if (image) {
       origin = {
         x: panel.image_center.x - panel.slice_image.width / 2,
