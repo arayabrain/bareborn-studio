@@ -60,6 +60,7 @@ type ProjectAdd = {
   image_url: string
   protocol: string
   id: string
+  image_id: number
   jsonData: Object
 }
 
@@ -143,10 +144,12 @@ const ProjectFormComponent = () => {
   }
 
   const onDeleteFactor = (row: DataFactor) => {
+    setImageIDs(pre => pre.filter(id => !row.data.find(rowData => rowData.image_id === id)))
     setDataFactors((pre) => pre.filter((e) => e.id !== row.id))
   }
 
   const onDeleteWithin = (factor: DataFactor, row: DataWithin) => {
+    setImageIDs(pre => pre.filter(id => !row.data.find(rowData => rowData.image_id === id)))
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -162,6 +165,8 @@ const ProjectFormComponent = () => {
     within: DataWithin,
     row: ProjectAdd,
   ) => {
+    console.log('row', row)
+    setImageIDs(pre => pre.filter(id => id !== row.image_id))
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -181,6 +186,7 @@ const ProjectFormComponent = () => {
   }
 
   const onDeleteDataFactor = (factor: DataFactor, row: ProjectAdd) => {
+    setImageIDs(pre => pre.filter(id => id !== row.image_id))
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -238,6 +244,7 @@ const ProjectFormComponent = () => {
           id: getNanoId(),
           project_name: rowDrag.datatype_label,
           image_count: 1,
+          image_id: rowDrag.id,
           project_type: rowDrag.attributes.type as string,
           protocol: rowDrag.attributes.protocol as string,
           image_url: rowDrag?.image_url,
@@ -249,6 +256,7 @@ const ProjectFormComponent = () => {
         id: getNanoId(),
         project_name: row.datatype_label,
         image_count: 1,
+        image_id: row.id,
         project_type: row.attributes.type as string,
         protocol: row.attributes.protocol as string,
         image_url: row?.image_url,
