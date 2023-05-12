@@ -55,7 +55,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
 
   useEffect(() => {
     if (loadedSuccess) {
-      setInitBrainbrowser()
+      setValueToBraibrowser(flowElement?.data?.params)
     }
     //eslint-disable-next-line
   }, [loadedSuccess, url])
@@ -84,65 +84,22 @@ const ImageAlignment: FC<ImageViewProps> = ({
     setUrl(urls[index + 1])
   }
 
-  const loadInitUrl = () => {
-    if (stateParams) {
+  const setValueToBraibrowser = (valueParams?: Params) => {
+    if (valueParams) {
       volumes.current.setResize({
-        x: Number(stateParams.x_resize),
-        y: Number(stateParams.y_resize),
-        z: Number(stateParams.z_resize),
+        x: Number(valueParams.x_resize),
+        y: Number(valueParams.y_resize),
+        z: Number(valueParams.z_resize),
       })
       volumes.current.setVoxelCoords(
-        Number(stateParams.y_pos),
-        Number(stateParams.z_pos),
-        Number(stateParams.x_pos),
+        Number(valueParams.y_pos),
+        Number(valueParams.z_pos),
+        Number(valueParams.x_pos),
       )
       volumes.current.setRadian(
-        Number(stateParams.y_rotate),
-        Number(stateParams.x_rotate),
-        Number(stateParams.z_rotate),
-      )
-    }
-    viewerRef.current.redrawVolumes()
-  }
-
-  const setInitBrainbrowser = () => {
-    const paramsStore = flowElement?.data?.params
-    if (paramsStore) {
-      volumes.current.setResize({
-        x: Number(paramsStore.x_resize),
-        y: Number(paramsStore.y_resize),
-        z: Number(paramsStore.z_resize),
-      })
-      volumes.current.setVoxelCoords(
-        Number(paramsStore.y_pos),
-        Number(paramsStore.z_pos),
-        Number(paramsStore.x_pos),
-      )
-      volumes.current.setRadian(
-        Number(paramsStore.y_rotate),
-        Number(paramsStore.x_rotate),
-        Number(paramsStore.z_rotate),
-      )
-    }
-    viewerRef.current.redrawVolumes()
-  }
-
-  const onSetOrigin = () => {
-    if (stateParamsEdit) {
-      volumes.current.setResize({
-        x: Number(stateParamsEdit.x_resize),
-        y: Number(stateParamsEdit.y_resize),
-        z: Number(stateParamsEdit.z_resize),
-      })
-      volumes.current.setVoxelCoords(
-        Number(stateParamsEdit.y_pos),
-        Number(stateParamsEdit.z_pos),
-        Number(stateParamsEdit.x_pos),
-      )
-      volumes.current.setRadian(
-        Number(stateParamsEdit.y_rotate),
-        Number(stateParamsEdit.x_rotate),
-        Number(stateParamsEdit.z_rotate),
+        Number(valueParams.y_rotate),
+        Number(valueParams.x_rotate),
+        Number(valueParams.z_rotate),
       )
     }
     viewerRef.current.redrawVolumes()
@@ -192,7 +149,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
           },
         },
       ],
-      complete: loadInitUrl,
+      complete: () => setValueToBraibrowser(stateParams),
     })
   }
 
@@ -392,7 +349,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         onChange={onChangeValue}
                       />
                     </Flex>
-                    <ButtonSet onClick={onSetOrigin}>Set Origin</ButtonSet>
+                    <ButtonSet onClick={() => setValueToBraibrowser(stateParamsEdit)}>Set Origin</ButtonSet>
                   </ContentSet>
                 </BoxSet>
                 <Flex
