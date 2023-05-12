@@ -17,13 +17,8 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
   const viewerRef = useRef<any>()
   const [url, setUrl] = useState(urls[0])
   const [voxelCoords, setVoxelCoords] = useState({ i: 0, j: 0, k: 0 })
-  const [radian, setRadian] = useState({
-    x: Math.PI / 2,
-    y: Math.PI / 2,
-    z: Math.PI / 2,
-  })
+  const [radian, setRadian] = useState({ x: 0, y: 0, z: 0 })
   const [resize, setResize] = useState({ x: 0, y: 0, z: 0 })
-  const [opacity, setOpacity] = useState(0)
   const [isLoadFile, setIsLoadFile] = useState(false)
   const volumes = useRef<any>()
   useEffect(() => {
@@ -31,7 +26,6 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
       setTimeout(loadFile, 0)
       return
     }
-    setOpacity(0)
     //eslint-disable-next-line
   }, [open])
 
@@ -56,12 +50,31 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
     e.preventDefault()
     volumes.current.setResize(resize)
     volumes.current.setVoxelCoords(voxelCoords.i, voxelCoords.j, voxelCoords.k)
+    volumes.current.setRadian(radian.x, radian.z, radian.y)
     viewerRef.current.redrawVolumes()
   }
 
   const onChangeVoxel = (e: any) => {
     const { name } = e.target
     setVoxelCoords({ ...voxelCoords, [name]: e.target.value })
+  }
+
+  const onChangeRadian = (e: any) => {
+    const { name, value } = e.target
+    setRadian({ ...radian, [name]: value })
+  }
+
+  const onBlurRadian = (e: any) => {
+    const { name, value } = e.target
+    let valueRadian = Number(value)
+    if (isNaN(valueRadian)) {
+      valueRadian = 0
+    } else if (valueRadian < 0) {
+      valueRadian = 0
+    } else if (valueRadian > 2 * Math.PI) {
+      valueRadian = 0
+    }
+    setRadian({ ...radian, [name]: valueRadian })
   }
 
   const onChangeResize = (e: any) => {
@@ -103,7 +116,6 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
       'brainbrowser',
       (viewer: any) => {
         viewer.addEventListener('volumeloaded', function () {
-          setOpacity(1)
           setIsLoadFile(false)
         })
         viewer.addEventListener('sliceupdate', function (event: any) {
@@ -168,12 +180,7 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
         }}
       >
         <ImageViewWrapper>
-          <div
-            style={{
-              display: !opacity ? 'none' : 'flex',
-              alignItems: 'stretch',
-            }}
-          >
+          <div style={{ alignItems: 'stretch' }}>
             <div id="brainbrowser-wrapper">
               <div
                 id="volume-viewer"
@@ -200,8 +207,8 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                     <Flex>
                       <Text>forward {'{mm}'}</Text>
                       <input
-                          type={'number'}
-                          name="k"
+                        type={'number'}
+                        name="k"
                         value={voxelCoords.k}
                         onChange={onChangeVoxel}
                       />
@@ -216,16 +223,31 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                       />
                     </Flex>
                     <Flex>
-                      <Text>pitch {'{rad}'}</Text>
-                      <input value={radian.x} />
+                      <Text>roll {'{rad}'}</Text>
+                      <input
+                        name="x"
+                        value={radian.x}
+                        onChange={onChangeRadian}
+                        onBlur={onBlurRadian}
+                      />
                     </Flex>
                     <Flex>
-                      <Text>roll {'{rad}'}</Text>
-                      <input value={radian.z} />
+                      <Text>pitch {'{rad}'}</Text>
+                      <input
+                        name="y"
+                        value={radian.y}
+                        onChange={onChangeRadian}
+                        onBlur={onBlurRadian}
+                      />
                     </Flex>
                     <Flex>
                       <Text>yaw {'{rad}'}</Text>
-                      <input value={radian.y} />
+                      <input
+                        name="z"
+                        value={radian.z}
+                        onChange={onChangeRadian}
+                        onBlur={onBlurRadian}
+                      />
                     </Flex>
                     <Flex>
                       <Text>resize {'{x}'}</Text>
@@ -272,7 +294,9 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                       <InputImage value={url} readOnly />
                       <ButtonNext onClick={onNextImage}>{'>'}</ButtonNext>
                     </SwitchContent>
-                    <span>{`(${urls.findIndex((item: string) => item === url) + 1}/${urls.length})`}</span>
+                    <span>{`(${
+                      urls.findIndex((item: string) => item === url) + 1
+                    }/${urls.length})`}</span>
                   </SwitchImage>
                   <Flex sx={{ gap: 5 }}>
                     <ButtonCanCel onClick={onClose}>CANCEL</ButtonCanCel>

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /*
  * BrainBrowser: Web-based Neurological Visualization Tools
  * (https://brainbrowser.cbrain.mcgill.ca)
@@ -512,22 +513,45 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
     display.propagateEventTo('*', volume)
 
     container.classList.add('volume-container')
+    container.style.display = 'flex'
 
     views.forEach(function (axis_name) {
-      var canvas = document.createElement('canvas')
+      const div = document.createElement('div')
+      div.style.position = 'relative'
+      div.style.background = '#000000'
+      div.style.width = `${default_panel_width}px`
+      div.style.height = `${default_panel_width}px`
+      div.style.overflow = 'hidden'
+
+      container.append(div)
+
+      const canvas = document.createElement('canvas')
       canvas.width = default_panel_width
       canvas.height = default_panel_height
       canvas.classList.add('slice-display')
       canvas.id = `slice_${axis_name}`
-      canvas.style.backgroundColor = '#000000'
-      container.appendChild(canvas)
+      canvas.style.position = 'absolute'
+      canvas.style.left = 0
+      canvas.style.top = 0
+
+      const canvasRotation = document.createElement('canvas')
+      canvasRotation.width = default_panel_width
+      canvasRotation.height = default_panel_height
+      canvasRotation.classList.add('slice-display')
+      canvasRotation.id = `rotation_${axis_name}`
+      canvasRotation.style.backgroundColor = '#000000'
+
+      div.appendChild(canvasRotation)
+      div.appendChild(canvas)
+
       display.setPanel(
         axis_name,
         VolumeViewer.createPanel({
           volume: volume,
           volume_id: vol_id,
           axis: axis_name,
-          canvas: canvas,
+          canvas,
+          canvasRotation,
           image_center: {
             x: canvas.width / 2,
             y: canvas.height / 2,
@@ -566,6 +590,91 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
         var panel = display.getPanel(axis_name)
         var canvas = panel.canvas
         var last_touch_distance = null
+
+        function checkHoverLine(radian) {
+          const radianHeader = panel.volume.header[axis_name].radian
+          let absRadian = Number(Decimal.abs(radian.minus(radianHeader)))
+          let isHover = absRadian >= 0 && absRadian <= 0.08
+          if (!isHover) {
+            absRadian = Number(
+              Decimal.abs(radian.minus(radianHeader + Math.PI / 2)),
+            )
+            isHover = absRadian >= 0 && absRadian <= 0.08
+          }
+          if (!isHover) {
+            absRadian = Number(
+              Decimal.abs(radian.minus(radianHeader + Math.PI)),
+            )
+            isHover = absRadian >= 0 && absRadian <= 0.08
+          }
+          if (!isHover) {
+            absRadian = Number(
+              Decimal.abs(radian.minus(radianHeader + (3 * Math.PI) / 2)),
+            )
+            isHover = absRadian >= 0 && absRadian <= 0.08
+          }
+          if (!isHover) {
+            absRadian = Number(
+              Decimal.abs(radian.minus(radianHeader - Math.PI / 2)),
+            )
+            isHover = absRadian >= 0 && absRadian <= 0.08
+          }
+          return isHover
+        }
+
+        function getRadian(event) {
+          var cursorPaner = panel.getCursorPosition()
+          const { left, top } = event.target.getBoundingClientRect()
+          const xCursor = event.pageX - left
+          const yCursor = event.pageY - top
+          let radian = Math.PI / 2
+          if (xCursor === cursorPaner.x) {
+            if (yCursor > cursorPaner.y) {
+              radian = (3 * Math.PI) / 2
+            }
+          } else if (xCursor > cursorPaner.x) {
+            if (yCursor === cursorPaner.y) {
+              radian = 0
+            } else if (yCursor < cursorPaner.y) {
+              const xSub = new Decimal(xCursor).sub(cursorPaner.x)
+              const ySub = new Decimal(cursorPaner.y).sub(yCursor)
+              const powX = Decimal.pow(xSub, 2)
+              const powY = Decimal.pow(ySub, 2)
+              const radius = Decimal.sqrt(powX.plus(powY))
+              const sin = new Decimal(ySub).div(radius)
+              radian = Decimal.asin(sin)
+            } else {
+              const xSub = new Decimal(xCursor).sub(cursorPaner.x)
+              const ySub = new Decimal(yCursor).sub(cursorPaner.y)
+              const powX = Decimal.pow(xSub, 2)
+              const powY = Decimal.pow(ySub, 2)
+              const radius = Decimal.sqrt(powX.plus(powY))
+              const addRadian = Decimal.asin(xSub.div(radius))
+              radian = new Decimal(Math.PI).times(3).div(2).plus(addRadian)
+            }
+          } else {
+            if (yCursor === cursorPaner.y) {
+              radian = Math.PI
+            } else if (yCursor < cursorPaner.y) {
+              const xSub = new Decimal(cursorPaner.x).sub(xCursor)
+              const ySub = new Decimal(cursorPaner.y).sub(yCursor)
+              const powX = Decimal.pow(xSub, 2)
+              const powY = Decimal.pow(ySub, 2)
+              const radius = Decimal.sqrt(powX.plus(powY))
+              const addRadian = Decimal.asin(xSub.div(radius))
+              radian = new Decimal(Math.PI).div(2).plus(addRadian)
+            } else {
+              const xSub = new Decimal(cursorPaner.x).sub(xCursor)
+              const ySub = new Decimal(yCursor).sub(cursorPaner.y)
+              const powX = Decimal.pow(xSub, 2)
+              const powY = Decimal.pow(ySub, 2)
+              const radius = Decimal.sqrt(powX.plus(powY))
+              const addRadian = Decimal.asin(ySub.div(radius))
+              radian = new Decimal(Math.PI).plus(addRadian)
+            }
+          }
+          return radian
+        }
 
         function updateSlices() {
           viewer.volumes.forEach(function (volume) {
@@ -710,27 +819,31 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
           document.removeEventListener('mouseup', mouseUpRotation, false)
         }
 
+        function isRotation() {
+          const { cursorDrag, hover, cursor } = panel.volume.header[panel.axis]
+          return (
+            hover &&
+            Math.abs(cursorDrag.y - cursor.y) < 4 &&
+            Math.abs(cursorDrag.x - cursor.x) < 4
+          )
+        }
+
         canvas.addEventListener(
           'mousedown',
           function (event) {
             event.preventDefault()
-            if (
-              panel.volume.header[axis_name].hover &&
-              panel.volume.header[axis_name].cursor.y > 26 &&
-              panel.volume.header[axis_name].cursor.y < 34
-            ) {
+            viewer.active_panel = panel
+            if (isRotation()) {
               panel.volume.header[axis_name].isRotation = true
               canvas.style.cursor = 'grabbing'
               document.addEventListener('mouseup', mouseUpRotation, false)
+              panel.updated = true
               return
             }
             current_target = event.target
-
             if (viewer.active_panel) {
               viewer.active_panel.updated = true
             }
-            viewer.active_panel = panel
-
             document.addEventListener('mousemove', mouseDrag, false)
             document.addEventListener('mouseup', mouseDragEnd, false)
 
@@ -741,11 +854,12 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
 
         canvas.addEventListener('mouseleave', function () {
           var volume = panel.volume
+          viewer.active_panel = undefined
           if (volume.header[axis_name].hover) {
             volume.header[axis_name].hover = false
             volume.header[axis_name].isRotation = false
-            panel.updated = true
           }
+          panel.updated = true
         })
 
         canvas.addEventListener(
@@ -753,73 +867,34 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
           function (event) {
             event.preventDefault()
             var volume = panel.volume
-            var cursor = panel.getCursorPosition()
             const { left, top } = event.target.getBoundingClientRect()
             const xCursor = event.pageX - left
             const yCursor = event.pageY - top
 
-            const isHover =
-              (cursor.x <= xCursor + 2 && cursor.x >= xCursor - 2) ||
-              (cursor.y <= yCursor + 2 && cursor.y >= yCursor - 2)
+            var cursorPaner = panel.getCursorPosition()
+
+            let isHover =
+              (cursorPaner.x <= xCursor + 2 && cursorPaner.x >= xCursor - 2) ||
+              (cursorPaner.y <= yCursor + 2 && cursorPaner.y >= yCursor - 2)
 
             volume.header[axis_name].cursor = { x: xCursor, y: yCursor }
 
+            // check hover
+            let radian
+            if (!isHover) {
+              //get radian
+              radian = getRadian(event)
+              isHover = checkHoverLine(new Decimal(radian))
+            }
+            //mouse move rotation
             if (volume.header[axis_name].isRotation) {
-              var cursorPaner = panel.getCursorPosition()
-              let radian = Math.PI / 2
-              if (xCursor === cursorPaner.x) {
-                if (yCursor > cursorPaner.y) {
-                  radian = (3 * Math.PI) / 2
-                }
-              } else if (xCursor > cursorPaner.x) {
-                if (yCursor === cursorPaner.y) {
-                  radian = 0
-                } else if (yCursor < cursorPaner.y) {
-                  const xSub = new Decimal(xCursor).sub(cursorPaner.x)
-                  const ySub = new Decimal(cursorPaner.y).sub(yCursor)
-                  const powX = Decimal.pow(xSub, 2)
-                  const powY = Decimal.pow(ySub, 2)
-                  const radius = Decimal.sqrt(powX.plus(powY))
-                  const sin = new Decimal(ySub).div(radius)
-                  radian = Decimal.asin(sin)
-                } else {
-                  const xSub = new Decimal(xCursor).sub(cursorPaner.x)
-                  const ySub = new Decimal(yCursor).sub(cursorPaner.y)
-                  const powX = Decimal.pow(xSub, 2)
-                  const powY = Decimal.pow(ySub, 2)
-                  const radius = Decimal.sqrt(powX.plus(powY))
-                  const addRadian = Decimal.asin(xSub.div(radius))
-                  radian = new Decimal(Math.PI).times(3).div(2).plus(addRadian)
-                }
-              } else {
-                if (yCursor === cursorPaner.y) {
-                  radian = Math.PI
-                } else if (yCursor < cursorPaner.y) {
-                  const xSub = new Decimal(cursorPaner.x).sub(xCursor)
-                  const ySub = new Decimal(cursorPaner.y).sub(yCursor)
-                  const powX = Decimal.pow(xSub, 2)
-                  const powY = Decimal.pow(ySub, 2)
-                  const radius = Decimal.sqrt(powX.plus(powY))
-                  const addRadian = Decimal.asin(xSub.div(radius))
-                  radian = new Decimal(Math.PI).div(2).plus(addRadian)
-                } else {
-                  const xSub = new Decimal(cursorPaner.x).sub(xCursor)
-                  const ySub = new Decimal(yCursor).sub(cursorPaner.y)
-                  const powX = Decimal.pow(xSub, 2)
-                  const powY = Decimal.pow(ySub, 2)
-                  const radius = Decimal.sqrt(powX.plus(powY))
-                  const addRadian = Decimal.asin(ySub.div(radius))
-                  radian = new Decimal(Math.PI).plus(addRadian)
-                }
+              if (!radian) {
+                radian = getRadian(event)
               }
               panel.volume.header[axis_name].radian = Number(radian)
               panel.volume.header.update()
               updateSlices()
-            } else if (
-              volume.header[axis_name].hover &&
-              volume.header[axis_name].cursor.y > 26 &&
-              volume.header[axis_name].cursor.y < 34
-            ) {
+            } else if (isRotation()) {
               canvas.style.cursor = 'grab'
             } else if (!panel.volume.header[axis_name].isRotation) {
               canvas.style.cursor = 'default'
@@ -827,7 +902,7 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
             const isOldHover = volume.header[axis_name].hover
             volume.header[axis_name].hover =
               isHover || volume.header[axis_name].isRotation
-            panel.updated = isHover !== isOldHover
+            panel.updated = isHover || isHover !== isOldHover
           },
           false,
         )
