@@ -1,7 +1,7 @@
 /* eslint-disable no-extend-native */
 /*
- * BrainBrowser: Web-based Neurological Visualization Tools
- * (https://brainbrowser.cbrain.mcgill.ca)
+ * window.BrainBrowser: Web-based Neurological Visualization Tools
+ * (https://window.BrainBrowser.cbrain.mcgill.ca)
  *
  * Copyright (C) 2011-2014
  * The Royal Institution for the Advancement of Learning
@@ -44,12 +44,12 @@
     },
   })
 
-  var VolumeViewer = BrainBrowser.VolumeViewer
+  var VolumeViewer = window.BrainBrowser.VolumeViewer
 
   VolumeViewer.volume_loaders.nifti1 = function (description, callback) {
     var error_message
     if (description.nii_url) {
-      BrainBrowser.loader.loadFromURL(
+      window.BrainBrowser.loader.loadFromURL(
         description.nii_url,
         function (nii_data) {
           parseNifti1Header(nii_data, function (header) {
@@ -59,7 +59,7 @@
         { result_type: 'arraybuffer' },
       )
     } else if (description.nii_file) {
-      BrainBrowser.loader.loadFromFile(
+      window.BrainBrowser.loader.loadFromFile(
         description.nii_file,
         function (nii_data) {
           parseNifti1Header(nii_data, function (header) {
@@ -77,7 +77,9 @@
         'invalid volume description.\n' +
         "Description must contain the property 'nii_url' or 'nii_file' or 'nii_source'."
 
-      BrainBrowser.events.triggerEvent('error', { message: error_message })
+      window.BrainBrowser.events.triggerEvent('error', {
+        message: error_message,
+      })
       throw new Error(error_message)
     }
   }
@@ -131,10 +133,10 @@
     }
 
     if (header.yspace.step) {
-      xstep = header.yspace.step
+      ystep = header.yspace.step
     }
     if (header.zspace.step) {
-      xstep = header.zspace.step
+      zstep = header.zspace.step
     }
 
     for (var i = 0; i < 3; i++) {
@@ -200,7 +202,9 @@
     }
 
     if (error_message !== undefined) {
-      BrainBrowser.events.triggerEvent('error', { message: error_message })
+      window.BrainBrowser.events.triggerEvent('error', {
+        message: error_message,
+      })
       throw new Error(error_message)
     }
 
@@ -244,7 +248,7 @@
         [0, 0, 0, 0],
         [0, 0, 0, 0],
         [0, 0, 0, 0],
-        [0, 0, 0, 1],
+        [0, 0, 0, 0],
       ]
 
       for (i = 0; i < 3; i++) {
@@ -291,7 +295,7 @@
     header.scl_slope = scl_slope
     header.scl_inter = scl_inter
     header.update = matrixTransform
-    if (BrainBrowser.utils.isFunction(callback)) {
+    if (window.BrainBrowser.utils.isFunction(callback)) {
       callback(header)
     }
   }
@@ -300,27 +304,28 @@
    * found in the standard NIfTI-1 library (nifti1_io.c).
    */
   function niftiQuaternToMat44(header) {
-    let mx = new THREE.Matrix4()
+    let mx = new window.THREE.Matrix4()
     mx.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     let my = mx.clone(mx)
     let mz = mx.clone(mx)
 
     if (typeof header.xspace.radian !== 'number') {
-      header.xspace.radian = Math.PI / 2
+      header.xspace.radian = 0
     }
 
     if (typeof header.yspace.radian !== 'number') {
-      header.yspace.radian = Math.PI / 2
+      header.yspace.radian = 0
     }
     if (typeof header.zspace.radian !== 'number') {
-      header.zspace.radian = Math.PI / 2
+      header.zspace.radian = 0
     }
 
     mx.makeRotationX(header.xspace.radian)
     my.makeRotationY(header.yspace.radian)
     mz.makeRotationZ(header.zspace.radian)
-
     const m = mx.multiply(my).multiply(mz)
+
+    header.matrix44 = m.elements
 
     return m.elements.chunk(4)
   }
@@ -334,7 +339,7 @@
     volume.intensity_min = volume.header.voxel_min
     volume.intensity_max = volume.header.voxel_max
     volume.saveOriginAndTransform(header)
-    if (BrainBrowser.utils.isFunction(callback)) {
+    if (window.BrainBrowser.utils.isFunction(callback)) {
       callback(volume)
     }
   }
@@ -393,7 +398,9 @@
       default:
         // We don't yet support 64-bit, complex, RGB, and float 128 types.
         var error_message = 'Unsupported data type: ' + header.datatype
-        BrainBrowser.events.triggerEvent('error', { message: error_message })
+        window.BrainBrowser.events.triggerEvent('error', {
+          message: error_message,
+        })
         throw new Error(error_message)
     }
 

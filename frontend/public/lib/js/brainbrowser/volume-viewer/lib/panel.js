@@ -1,6 +1,6 @@
 /*
- * BrainBrowser: Web-based Neurological Visualization Tools
- * (https://brainbrowser.cbrain.mcgill.ca)
+ * window.BrainBrowser: Web-based Neurological Visualization Tools
+ * (https://window.BrainBrowser.cbrain.mcgill.ca)
  *
  * Copyright (C) 2011
  * The Royal Institution for the Advancement of Learning
@@ -63,7 +63,7 @@
    * Factory function to produce the panel object used to control the
    * display of a slice.
    * ```js
-   * BrainBrowser.VolumeViewer.createPanel({
+   * window.BrainBrowser.VolumeViewer.createPanel({
    *   volume: volume,
    *   axis: "xspace",
    *   canvas: canvas,
@@ -162,7 +162,7 @@
    *    });
    * ```
    */
-  BrainBrowser.VolumeViewer.createPanel = function (options) {
+  window.BrainBrowser.VolumeViewer.createPanel = function (options) {
     options = options || {}
 
     var old_zoom_level = 0
@@ -214,13 +214,13 @@
         var old_width, old_height, ratio
 
         if (scale_image) {
-          old_width = panel.canvas.width
-          old_height = panel.canvas.width
+          old_width = panel.canvasRotation.width
+          old_height = panel.canvasRotation.width
           ratio = Math.min(width / old_width, height / old_height)
         }
 
-        panel.canvas.width = width
-        panel.canvas.height = height
+        panel.canvasRotation.width = width
+        panel.canvasRotation.height = height
 
         if (scale_image) {
           panel.zoom = panel.zoom * ratio
@@ -388,7 +388,7 @@
        */
       updateSlice: function (callback) {
         clearTimeout(update_timeout)
-        if (BrainBrowser.utils.isFunction(callback)) {
+        if (window.BrainBrowser.utils.isFunction(callback)) {
           update_callbacks.push(callback)
         }
 
@@ -462,6 +462,9 @@
         if (!panel.updated) {
           return
         }
+        const { matrix44 } = panel.volume.header
+
+        panel.canvasRotation.style.transform = `matrix3d(${matrix44.join()})`
 
         var canvas = panel.canvas
         var context = panel.context
@@ -482,38 +485,36 @@
 
         drawCursor(panel, cursor_color)
 
-        if (active) {
-          context.save()
-          context.strokeStyle = '#69b3e0'
-          context.lineWidth = frame_width
-          context.strokeRect(
-            half_frame_width,
-            half_frame_width,
-            canvas.width - frame_width,
-            canvas.height - frame_width,
-          )
-          context.restore()
-        }
+        context.save()
+        context.strokeStyle = '#69b3e0'
+        context.lineWidth = active ? frame_width : 1
+        context.strokeRect(
+          half_frame_width,
+          half_frame_width,
+          canvas.width - frame_width,
+          canvas.height - frame_width,
+        )
+        context.restore()
 
         panel.updated = false
       },
     }
 
     Object.keys(options).forEach(function (k) {
-      if (!BrainBrowser.utils.isFunction(panel[k])) {
+      if (!window.BrainBrowser.utils.isFunction(panel[k])) {
         panel[k] = options[k]
       }
     })
 
-    BrainBrowser.events.addEventModel(panel)
+    window.BrainBrowser.events.addEventModel(panel)
 
     if (
       panel.canvas &&
-      BrainBrowser.utils.isFunction(panel.canvas.getContext)
+      window.BrainBrowser.utils.isFunction(panel.canvas.getContext)
     ) {
       panel.context = panel.canvas.getContext('2d')
-      panel.mouse = BrainBrowser.utils.captureMouse(panel.canvas)
-      panel.touches = BrainBrowser.utils.captureTouch(panel.canvas)
+      panel.mouse = window.BrainBrowser.utils.captureMouse(panel.canvas)
+      panel.touches = window.BrainBrowser.utils.captureTouch(panel.canvas)
     }
 
     if (panel.volume) {
@@ -634,10 +635,27 @@
     }
 
     if (panel.volume.header[panel.axis].hover) {
-      context.beginPath()
-      context.arc(newX, newY, 3, 0, 2 * Math.PI)
-      context.stroke()
-      context.fill()
+      if (!panel.volume.header[panel.axis].cursorDrag) {
+        panel.volume.header[panel.axis].cursorDrag = {
+          x: cursor.x,
+          y: cursor.y - 15,
+        }
+      }
+      const radiusCircle =
+        cursor.y > panel.image_center.y
+          ? panel.image_center.y * 2 - cursor.y - 15
+          : cursor.y - 15
+
+      if (radiusCircle > 30) {
+        const xCircle = cursor.x + Math.cos(radian) * radiusCircle
+        const yCircle = cursor.y - Math.sin(radian) * radiusCircle
+        panel.volume.header[panel.axis].cursorDrag = { x: xCircle, y: yCircle }
+
+        context.beginPath()
+        context.arc(xCircle, yCircle, 3, 0, 2 * Math.PI)
+        context.stroke()
+        context.fill()
+      }
     }
     context.restore()
   }
@@ -646,13 +664,14 @@
   function drawSlice(panel) {
     var image = panel.slice_image
     var origin
-
+    const context = panel.canvasRotation.getContext('2d')
+    context.clearRect(0, 0, panel.canvasRotation.width, panel.canvasRotation.height)
     if (image) {
       origin = {
         x: panel.image_center.x - panel.slice_image.width / 2,
         y: panel.image_center.y - panel.slice_image.height / 2,
       }
-      panel.context.putImageData(image, origin.x, origin.y)
+      context.putImageData(image, origin.x, origin.y)
     }
   }
 

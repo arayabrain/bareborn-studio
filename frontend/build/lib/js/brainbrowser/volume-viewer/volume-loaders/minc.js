@@ -132,9 +132,9 @@ VolumeViewer.createVolume = function (header, native_data) {
       cached_slices[axis] = cached_slices[axis] || []
       cached_slices[axis][time] = cached_slices[axis][time] || []
 
-      if (cached_slices[axis][time][slice_num] !== undefined) {
-        return cached_slices[axis][time][slice_num]
-      }
+      // if (cached_slices[axis][time][slice_num] !== undefined) {
+      //   return cached_slices[axis][time][slice_num]
+      // }
 
       var time_offset = header.time ? time * header.time.offset : 0
 
@@ -371,6 +371,38 @@ VolumeViewer.createVolume = function (header, native_data) {
       var voxel = volume.worldToVoxel(x, y, z)
 
       volume.setVoxelCoords(voxel.i, voxel.j, voxel.k)
+    },
+    setResize: function (resize) {
+      volume.header.xspace.step = resize.x
+      volume.header.yspace.step = resize.y
+      volume.header.zspace.step = resize.z
+    },
+    setRadian: function (pitch, roll, yaw) {
+      if (typeof pitch === 'number') {
+        if (pitch < 0) {
+          pitch = 0
+        } else if (pitch > Math.PI * 2) {
+          pitch = Math.PI * 2
+        }
+        volume.header.xspace.radian = pitch
+      }
+      if (typeof roll === 'number') {
+        if (roll < 0) {
+          roll = 0
+        } else if (roll > Math.PI * 2) {
+          roll = Math.PI * 2
+        }
+        volume.header.zspace.radian = roll
+      }
+      if (typeof yaw === 'number') {
+        if (yaw < 0) {
+          yaw = 0
+        } else if (yaw > Math.PI * 2) {
+          yaw = Math.PI * 2
+        }
+        volume.header.yspace.radian = yaw
+      }
+      volume.header.update()
     },
 
     // Voxel to world matrix applied here is:
