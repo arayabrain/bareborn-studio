@@ -84,6 +84,27 @@ const ImageAlignment: FC<ImageViewProps> = ({
     setUrl(urls[index + 1])
   }
 
+  const loadInitUrl = () => {
+    if (stateParams) {
+      volumes.current.setResize({
+        x: Number(stateParams.x_resize),
+        y: Number(stateParams.y_resize),
+        z: Number(stateParams.z_resize),
+      })
+      volumes.current.setVoxelCoords(
+        Number(stateParams.y_pos),
+        Number(stateParams.z_pos),
+        Number(stateParams.x_pos),
+      )
+      volumes.current.setRadian(
+        Number(stateParams.y_rotate),
+        Number(stateParams.x_rotate),
+        Number(stateParams.z_rotate),
+      )
+    }
+    viewerRef.current.redrawVolumes()
+  }
+
   const setInitBrainbrowser = () => {
     const paramsStore = flowElement?.data?.params
     if (paramsStore) {
@@ -123,7 +144,6 @@ const ImageAlignment: FC<ImageViewProps> = ({
         Number(stateParamsEdit.x_rotate),
         Number(stateParamsEdit.z_rotate),
       )
-      setStateParams(stateParamsEdit)
     }
     viewerRef.current.redrawVolumes()
   }
@@ -170,9 +190,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
               viewer_insert_className: 'overlay-viewer-display',
             },
           },
-          complete: function () {},
         },
       ],
+      complete: loadInitUrl,
     })
   }
 
