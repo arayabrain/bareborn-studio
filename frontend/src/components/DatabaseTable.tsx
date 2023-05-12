@@ -48,6 +48,7 @@ type TableComponentProps = {
   ) => void
   draggable?: boolean
   onDrag?: (row?: ImagesDatabase[]) => void
+  onBeginDrag?: () => void
   onDragEnd?: (row?: ImagesDatabase) => void
   defaultExpand?: boolean
 }
@@ -91,15 +92,14 @@ const renderCol = (
   if (key.includes('.')) {
     const keys = key.split('.')
     keys.forEach((k) => {
-      if(k === 'voxel_size' || k === 'size') {
+      if (k === 'voxel_size' || k === 'size') {
         value = JSON.stringify((value as unknown as Object)?.[k])
-      }
-      else {
+      } else {
         value = (value as unknown as Object)?.[k] as
-            | ImagesDatabase
-            | RecordDatabase
-            | RecordList
-            | string
+          | ImagesDatabase
+          | RecordDatabase
+          | RecordList
+          | string
       }
     })
   } else value = (item as unknown as Object)[key] as string
@@ -342,6 +342,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
     rowClick,
     onDrag,
     onDragEnd,
+    onBeginDrag: onBeginDragProps,
     ...p
   } = props
   const { data = [], columns = [] } = props
@@ -487,6 +488,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
       pageX: event.pageX,
       pageY: event.pageY,
     }
+    onBeginDragProps?.()
     setMouseMoveRect({ pageX: 0, pageY: 0 })
     onDrag?.(drags)
   }

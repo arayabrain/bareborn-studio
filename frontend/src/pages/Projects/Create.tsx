@@ -85,6 +85,7 @@ const ProjectFormComponent = () => {
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
   const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
+  const isPendingDrag = useRef(false)
 
   const [initDataTable /*setInitDataTable */] =
     useState<DatabaseData>(defaultDatabase)
@@ -194,11 +195,21 @@ const ProjectFormComponent = () => {
     setRowDrag(row)
   }
 
+  const onBeginDrag = () => {
+    isPendingDrag.current = true
+    const mouseup = () => {
+      isPendingDrag.current = false
+      window.removeEventListener('mouseup', mouseup)
+    }
+    window.addEventListener('mouseup', mouseup)
+  }
+
   const onDragEnd = () => {
     setRowDrag(undefined)
   }
 
   const onMouseOver = (factor: DataFactor, within?: DataWithin) => {
+    if (isPendingDrag.current) return
     onDropData(factor, within)
     setRowDrag(undefined)
   }
@@ -539,6 +550,7 @@ const ProjectFormComponent = () => {
             orderBy={orderBy}
             rowClick={rowClick}
             defaultExpand
+            onBeginDrag={onBeginDrag}
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
             draggable
@@ -554,11 +566,17 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={() => navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)}>
+        <ButtonFilter
+          onClick={() =>
+            navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
+          }
+        >
           {idEdit ? 'Ok' : 'Add'}
         </ButtonFilter>
         <ButtonFilter
-          onClick={() => navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)}
+          onClick={() =>
+            navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
+          }
         >
           Cancel
         </ButtonFilter>
