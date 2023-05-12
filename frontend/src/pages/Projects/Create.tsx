@@ -44,7 +44,7 @@ const columns = [
     width: 100,
   },
   {
-    title: 'Dataset',
+    title: 'Datatype',
     name: 'datatype',
     filter: true,
     width: 100,
@@ -554,11 +554,11 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={() => navigate('/projects')}>
+        <ButtonFilter onClick={() => navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)}>
           {idEdit ? 'Ok' : 'Add'}
         </ButtonFilter>
         <ButtonFilter
-          onClick={() => navigate(!routeGoback ? '/projects' : routeGoback)}
+          onClick={() => navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)}
         >
           Cancel
         </ButtonFilter>

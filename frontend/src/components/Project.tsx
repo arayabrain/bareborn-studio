@@ -10,21 +10,20 @@ import MenuBookIcon from '@mui/icons-material/MenuBook'
 
 import { useRunPipeline } from 'store/slice/Pipeline/PipelineHook'
 import FlowChart from './FlowChart/FlowChart'
-import Visualize from './Visualize/Visualize'
 import Experiment from './Experiment/Experiment'
 import { Box } from '@mui/material'
 import { useSearchParams } from 'react-router-dom'
-// import studioLogo from './studio.png'
+import VisualizeNew from "./VisualizeNew";
 
 const Project: React.FC = () => {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setParams] = useSearchParams()
   const [value, setValue] = React.useState(Number(searchParams.get('tab') || 0))
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    searchParams.set('tab', String(newValue))
+    setParams(searchParams)
     setValue(newValue)
   }
-
   const runPipeline = useRunPipeline() // タブ切り替えによって結果取得処理が止まってしまうのを回避するため、タブの親レイヤーで呼び出している
-
   return (
     <RootDiv>
       <StyledAppBar color="inherit">
@@ -40,7 +39,6 @@ const Project: React.FC = () => {
             <Tab label="Workflow" {...a11yProps(0)} />
             <Tab label="Results" {...a11yProps(1)} />
             <Tab label="Visualize" {...a11yProps(2)} />
-
           </Tabs>
           <Tooltip title="GitHub repository">
             <IconButton
@@ -65,7 +63,8 @@ const Project: React.FC = () => {
         <FlowChart {...runPipeline} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <Visualize />
+        {/*<Visualize />*/}
+        <VisualizeNew />
       </TabPanel>
       <TabPanel value={value} index={1}>
         <Experiment />
