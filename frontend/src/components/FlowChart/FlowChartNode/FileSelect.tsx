@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Button, Typography } from '@mui/material'
 import ButtonGroup from '@mui/material/ButtonGroup'
 
@@ -6,7 +6,8 @@ import { FILE_TREE_TYPE } from 'api/files/Files'
 import { LinearProgressWithLabel } from './LinerProgressWithLabel'
 import { FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
-import { useNavigate } from 'react-router-dom'
+import {useNavigate, useSearchParams} from 'react-router-dom'
+import { DialogContext } from '../DialogContext'
 
 export const FileSelect = React.memo<{
   multiSelect?: boolean
@@ -63,7 +64,9 @@ type FileSelectImpleProps = {
 export const FileSelectImple = React.memo<FileSelectImpleProps>(
   ({ filePath }) => {
     const navigate = useNavigate()
-
+    const [searchParams] = useSearchParams()
+    const { onOpenImageAlignment } = useContext(DialogContext)
+    const id = searchParams.get('id')
     const getNameSelectec = () => {
       if (Array.isArray(filePath)) {
         return `${filePath.length} images selected.`
@@ -78,7 +81,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
             style={{ width: '80%' }}
             variant="outlined"
             onClick={() =>
-              navigate('/projects/new-project?id=1&back=/projects/workflow')
+              navigate(`/projects/new-project?id=${id}&back=/projects/workflow?tab=0&id=${id}`)
             }
           >
             EDIT IMAGESET
@@ -90,7 +93,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
           </Typography>
         </div>
         <ButtonGroup size="small" style={{ width: '90%', margin: '8px 0' }}>
-          <Button style={{ width: '80%' }} variant="outlined">
+          <Button onClick={() => onOpenImageAlignment(true)} style={{ width: '80%' }} variant="outlined">
             ALIGNMENT
           </Button>
         </ButtonGroup>

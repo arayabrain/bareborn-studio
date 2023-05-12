@@ -17,14 +17,13 @@ type ChangeDragProps = {
   max?: number
   min?: number
   onChangeMin?: (v: number) => any
-  onChangeMax?: (v: number) => any
   showInputMax?: boolean
   showInputMin?: boolean
 }
 
 const ChangeDrag: FC<ChangeDragProps> = (props) => {
   const { title, value, onChange, className, max = 2, min = 0 } = props
-  const { onChangeMin, onChangeMax, showInputMax } = props
+  const { onChangeMin, showInputMax } = props
   const [width, setWidth] = useState(0)
   const mouseDown = useRef(0)
 
@@ -60,14 +59,14 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
     let scale = (mouseMove / width) * (max - min) + min
     if (scale > max) scale = max
     if (scale < min) scale = min
-    onChange(Number(scale.toFixed(2)))
+    onChange(scale)
   }
 
   const onTouchMove = (event: TouchEvent<HTMLDivElement>) => {
     if (!mouseDown.current) return
     const mouseInit = refDrag.current.getBoundingClientRect().x
     const mouseMove = event.touches[0].pageX - mouseInit
-    let scale = (mouseMove / width) * (max - min) + min
+    let scale = (mouseMove / width) * (max - min)
     if (scale > max) scale = max
     if (scale < min) scale = min
     onChange(Number(scale.toFixed(2)))
@@ -91,14 +90,14 @@ const ChangeDrag: FC<ChangeDragProps> = (props) => {
       <TitleScale>{title}</TitleScale>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <Input
-          value={value}
+          value={Number(value.toPrecision(2))}
           onChange={(e) => onChangeMin?.(Number(e.target.value))}
         />
         {showInputMax ? (
           <Input
             style={{ textAlign: 'right' }}
-            value={max}
-            onChange={(e) => onChangeMax?.(Number(e.target.value))}
+            value={Number(max.toPrecision(2))}
+            readOnly
           />
         ) : null}
       </div>

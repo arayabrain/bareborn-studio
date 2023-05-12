@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends
 
-from backend.deps import get_current_admin_user, get_current_user
-from backend.models.user import UserCreate, UserUpdate
+from backend.deps import get_current_admin_user
+from backend.models.user import Role, UserCreate, UserUpdate
 from backend.service import firebase
 
 router = APIRouter()
 
 
 @router.get("", dependencies=[Depends(get_current_admin_user)])
-async def get_list(next_page_token: str = None, limit: int = 10):
-    return await firebase.list_user(next_page_token, limit)
+async def get_list(offset: int = 0, limit: int = 10):
+    return await firebase.list_user(offset, limit)
 
 
 @router.post("", dependencies=[Depends(get_current_admin_user)])

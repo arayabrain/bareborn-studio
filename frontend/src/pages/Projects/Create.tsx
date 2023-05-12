@@ -44,7 +44,7 @@ const columns = [
     width: 100,
   },
   {
-    title: 'Dataset',
+    title: 'Datatype',
     name: 'datatype',
     filter: true,
     width: 100,
@@ -60,6 +60,7 @@ type ProjectAdd = {
   image_url: string
   protocol: string
   id: string
+  image_id: number
   jsonData: Object
 }
 
@@ -83,8 +84,9 @@ const ProjectFormComponent = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
-
+  const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
+  const isPendingDrag = useRef(false)
 
   const [initDataTable /*setInitDataTable */] =
     useState<DatabaseData>(defaultDatabase)
@@ -113,6 +115,7 @@ const ProjectFormComponent = () => {
     if (type === 'within-factor') {
       within = [{ name: nameDefault, id: getNanoId(), data: [] }]
     }
+    setImageIDs([])
     setDataFactors([{ name: nameDefault, within, id: getNanoId(), data: [] }])
   }
 
@@ -141,10 +144,12 @@ const ProjectFormComponent = () => {
   }
 
   const onDeleteFactor = (row: DataFactor) => {
+    setImageIDs(pre => pre.filter(id => !row.data.find(rowData => rowData.image_id === id)))
     setDataFactors((pre) => pre.filter((e) => e.id !== row.id))
   }
 
   const onDeleteWithin = (factor: DataFactor, row: DataWithin) => {
+    setImageIDs(pre => pre.filter(id => !row.data.find(rowData => rowData.image_id === id)))
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -160,6 +165,8 @@ const ProjectFormComponent = () => {
     within: DataWithin,
     row: ProjectAdd,
   ) => {
+    console.log('row', row)
+    setImageIDs(pre => pre.filter(id => id !== row.image_id))
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -179,6 +186,7 @@ const ProjectFormComponent = () => {
   }
 
   const onDeleteDataFactor = (factor: DataFactor, row: ProjectAdd) => {
+    setImageIDs(pre => pre.filter(id => id !== row.image_id))
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -193,11 +201,21 @@ const ProjectFormComponent = () => {
     setRowDrag(row)
   }
 
+  const onBeginDrag = () => {
+    isPendingDrag.current = true
+    const mouseup = () => {
+      isPendingDrag.current = false
+      window.removeEventListener('mouseup', mouseup)
+    }
+    window.addEventListener('mouseup', mouseup)
+  }
+
   const onDragEnd = () => {
     setRowDrag(undefined)
   }
 
   const onMouseOver = (factor: DataFactor, within?: DataWithin) => {
+    if (isPendingDrag.current) return
     onDropData(factor, within)
     setRowDrag(undefined)
   }
@@ -207,12 +225,26 @@ const ProjectFormComponent = () => {
       return
     }
     let newData: ProjectAdd[] = []
+    const checkExistIdImage =
+      imageIDs.length &&
+      imageIDs.some((id) => {
+        if (!Array.isArray(rowDrag)) return rowDrag.id === id
+        return rowDrag.some((row) => row.id === id)
+      })
+    if (checkExistIdImage) {
+      return alert('Image existed')
+    }
+    const newIds = Array.isArray(rowDrag)
+      ? rowDrag.map((row) => row.id)
+      : [rowDrag.id]
+    setImageIDs([...imageIDs, ...newIds])
     if (!Array.isArray(rowDrag)) {
       newData = [
         {
           id: getNanoId(),
           project_name: rowDrag.datatype_label,
           image_count: 1,
+          image_id: rowDrag.id,
           project_type: rowDrag.attributes.type as string,
           protocol: rowDrag.attributes.protocol as string,
           image_url: rowDrag?.image_url,
@@ -224,6 +256,7 @@ const ProjectFormComponent = () => {
         id: getNanoId(),
         project_name: row.datatype_label,
         image_count: 1,
+        image_id: row.id,
         project_type: row.attributes.type as string,
         protocol: row.attributes.protocol as string,
         image_url: row?.image_url,
@@ -525,6 +558,7 @@ const ProjectFormComponent = () => {
             orderBy={orderBy}
             rowClick={rowClick}
             defaultExpand
+            onBeginDrag={onBeginDrag}
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
             draggable
@@ -540,11 +574,17 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={() => navigate('/projects')}>
+        <ButtonFilter
+          onClick={() =>
+            navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
+          }
+        >
           {idEdit ? 'Ok' : 'Add'}
         </ButtonFilter>
         <ButtonFilter
-          onClick={() => navigate(!routeGoback ? '/projects' : routeGoback)}
+          onClick={() =>
+            navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
+          }
         >
           Cancel
         </ButtonFilter>

@@ -17,6 +17,7 @@ import { createUser, deleteUser, editUser, listUser } from 'api/auth'
 import { useUser } from 'providers'
 import { DataProject } from 'pages/Projects'
 import { isAdmin, optionsRole } from 'utils/auth'
+import Loading from '../../components/common/Loading'
 
 type ModalComponentProps = {
   onSubmitEdit: (
@@ -61,7 +62,11 @@ const ModalComponent: FC<ModalComponentProps> = ({
     return ''
   }
 
-  const validatePassword = (value: string, isConfirm: boolean = false, values?: { [key: string]: string }): string => {
+  const validatePassword = (
+    value: string,
+    isConfirm: boolean = false,
+    values?: { [key: string]: string },
+  ): string => {
     if (!value && !dataEdit?.uid) return 'This field is required'
     const errorLength = validateLength('password', 255, value)
     if (errorLength) {
@@ -83,7 +88,8 @@ const ModalComponent: FC<ModalComponentProps> = ({
   }
 
   const validateLength = (name: string, length: number, value?: string) => {
-    if(value && value.length > length) return `The text may not be longer than ${length} characters`
+    if (value && value.length > length)
+      return `The text may not be longer than ${length} characters`
     if (formData[name]?.length && value && value.length > length) {
       return `The text may not be longer than ${length} characters`
     }
@@ -96,7 +102,10 @@ const ModalComponent: FC<ModalComponentProps> = ({
     const errorLab = validateField('lab', 100, formData.lab)
     const errorRole = validateField('role', 50, formData.role)
     const errorPassword = validatePassword(formData.password)
-    const errorConfirmPassword = validatePassword(formData.confirmPassword, true)
+    const errorConfirmPassword = validatePassword(
+      formData.confirmPassword,
+      true,
+    )
     return {
       email: errorEmail,
       password: errorPassword,
@@ -114,12 +123,19 @@ const ModalComponent: FC<ModalComponentProps> = ({
     const { value, name } = e.target
     const newDatas = { ...formData, [name]: value }
     setFormData(newDatas)
-    let error: string = name === 'email' ? validateEmail(value) : validateField(name, length, value)
+    let error: string =
+      name === 'email'
+        ? validateEmail(value)
+        : validateField(name, length, value)
     let errorConfirm = errors.confirmPassword
-    if(name.toLowerCase().includes('password')) {
-      error = validatePassword(value, name === "confirmPassword", newDatas)
-      if(name !== 'confirmPassword' && formData.confirmPassword) {
-        errorConfirm = validatePassword(newDatas.confirmPassword, true, newDatas)
+    if (name.toLowerCase().includes('password')) {
+      error = validatePassword(value, name === 'confirmPassword', newDatas)
+      if (name !== 'confirmPassword' && formData.confirmPassword) {
+        errorConfirm = validatePassword(
+          newDatas.confirmPassword,
+          true,
+          newDatas,
+        )
       }
     }
     setErrors({ ...errors, confirmPassword: errorConfirm, [name]: error })
@@ -136,19 +152,21 @@ const ModalComponent: FC<ModalComponentProps> = ({
     }
     try {
       await onSubmitEdit(dataEdit?.uid, formData)
-      setTimeout(()=>{
+      setTimeout(() => {
         if (!dataEdit?.uid) {
           alert('Your account has been created successfully!')
-        }
-        else {
+        } else {
           alert('Your account has been successfully updated!')
         }
-      },1)
+      }, 1)
       setIsOpenModal(false)
     } catch {
       if (!dataEdit?.uid) {
+        setTimeout(() => {
           alert('This email already exists!')
+        }, 300)
       }
+    } finally {
       setIsDisabled(false)
     }
   }
@@ -190,32 +208,31 @@ const ModalComponent: FC<ModalComponentProps> = ({
             name="email"
             value={formData?.email || ''}
             onChange={(e) => onChangeData(e, 255)}
-            onBlur={(e) =>  onChangeData(e, 255)}
+            onBlur={(e) => onChangeData(e, 255)}
             errorMessage={errors.email}
           />
-          {
-            !dataEdit?.uid ?
-                <>
-                  <LabelModal>Password: </LabelModal>
-                  <InputError
-                      name="password"
-                      value={formData?.password || ''}
-                      onChange={(e) => onChangeData(e, 255)}
-                      onBlur={(e) => onChangeData(e, 255)}
-                      type={'password'}
-                      errorMessage={errors.password}
-                  />
-                  <LabelModal>Confirm Password: </LabelModal>
-                  <InputError
-                      name="confirmPassword"
-                      value={formData?.confirmPassword || ''}
-                      onChange={(e) => onChangeData(e, 255)}
-                      onBlur={(e) => onChangeData(e, 255)}
-                      type={'password'}
-                      errorMessage={errors.confirmPassword}
-                  />
-                </> : null
-          }
+          {!dataEdit?.uid ? (
+            <>
+              <LabelModal>Password: </LabelModal>
+              <InputError
+                name="password"
+                value={formData?.password || ''}
+                onChange={(e) => onChangeData(e, 255)}
+                onBlur={(e) => onChangeData(e, 255)}
+                type={'password'}
+                errorMessage={errors.password}
+              />
+              <LabelModal>Confirm Password: </LabelModal>
+              <InputError
+                name="confirmPassword"
+                value={formData?.confirmPassword || ''}
+                onChange={(e) => onChangeData(e, 255)}
+                onBlur={(e) => onChangeData(e, 255)}
+                type={'password'}
+                errorMessage={errors.confirmPassword}
+              />
+            </>
+          ) : null}
         </BoxData>
         <ButtonModal>
           <Button disabled={isDisabled} onClick={(e) => onSubmit(e)}>
@@ -224,6 +241,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
           <Button onClick={() => onCancel()}>Cancel</Button>
         </ButtonModal>
       </ModalBox>
+      {isDisabled ? <Loading /> : null}
     </Modal>
   )
 }
@@ -233,6 +251,7 @@ const AccountManager = () => {
   const [dataEdit, setDataEdit] = useState({})
   const [idDel, setIdDel] = useState<string | undefined>()
   const [data, setData] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [paginate, setPaginate] = useState({
     total: 0,
     per_page: 10,
@@ -258,7 +277,12 @@ const AccountManager = () => {
     if (page > paginate.page) {
       nextPageToken.push(data.next_page_token)
     }
-    setData(data.data)
+    const newData = data.data.map((item: any) => {
+      if (item.role === 1) return { ...item, role: 'Admin' }
+      if (item.role === 10) return { ...item, role: 'Data Manager' }
+      return { ...item, role: 'User' }
+    })
+    setData(newData)
     setPaginate((pre) => ({
       ...pre,
       total: data.total_page * paginate.per_page,
@@ -281,22 +305,32 @@ const AccountManager = () => {
   }
 
   const onForgotPassword = (data: DataProject) => {
+    let newData
+    if (data.role === 'Admin') newData = { ...data, role: 1 }
+    else if (data.role === 'Data Manager') newData = { ...data, role: 10 }
+    else newData = { ...data, role: 20 }
     //todo call api
-    setDataEdit(data)
+    setDataEdit(newData)
     setIsOpenModal(true)
   }
 
-  const onDelete = () => {
+  const onDelete = async () => {
     if (idDel === undefined) return
-    deleteUser(idDel).then(() => {
-      setTimeout(()=> {
+    setIsLoading(true)
+    try {
+      await deleteUser(idDel)
+      setIsLoading(false)
+      setTimeout(() => {
         alert('Your account has been successfully deleted!')
-      },100)
+      }, 100)
       handleCloseDelete()
       setIdDel(undefined)
       setOpenDelete(false)
       getList()
-    })
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const onSubmitEdit = async (
@@ -315,6 +349,7 @@ const AccountManager = () => {
 
   const columns = useMemo(
     (): Column[] => [
+      { title: 'UID', name: 'uid' },
       { title: 'Lab', name: 'lab' },
       { title: 'Name', name: 'display_name' },
       { title: 'Role', name: 'role' },
@@ -333,7 +368,10 @@ const AccountManager = () => {
               >
                 <EditIcon sx={{ color: 'black' }} />
               </ALink>
-              <ALink sx={{ ml: 1.25 }} onClick={() => onConfirmDelete(data?.uid)}>
+              <ALink
+                sx={{ ml: 1.25 }}
+                onClick={() => onConfirmDelete(data?.uid)}
+              >
                 <DeleteIcon sx={{ color: 'red' }} />
               </ALink>
             </>
@@ -355,6 +393,7 @@ const AccountManager = () => {
         titleSubmit="Delete Account"
         onClose={handleCloseDelete}
         open={openDelete}
+        isLoading={isLoading}
         onSubmit={onDelete}
       />
       <BoxButton>

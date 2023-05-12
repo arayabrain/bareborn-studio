@@ -4,53 +4,141 @@ import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
-import IconButton from '@mui/material/IconButton'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import TablePagination from '@mui/material/TablePagination'
 import Paper from '@mui/material/Paper'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import ReplayIcon from '@mui/icons-material/Replay'
 import DeleteIcon from '@mui/icons-material/Delete'
-import Checkbox from '@mui/material/Checkbox'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogTitle from '@mui/material/DialogTitle'
-import TableSortLabel from '@mui/material/TableSortLabel'
 import Typography from '@mui/material/Typography'
 
 import { CollapsibleTable } from './CollapsibleTable'
 import {
   selectExperimentsSatusIsUninitialized,
   selectExperimentsSatusIsFulfilled,
-  selectExperimentTimeStamp,
-  selectExperimentName,
-  selectExperimentStatus,
   selectExperimentsSatusIsError,
   selectExperimentsErrorMessage,
   selectExperimentList,
-  selectExperimentHasNWB,
 } from 'store/slice/Experiments/ExperimentsSelectors'
 import {
   deleteExperimentByList,
   getExperiments,
 } from 'store/slice/Experiments/ExperimentsActions'
 import { ExperimentStatusIcon } from './ExperimentStatusIcon'
-import { Experiment } from 'store/slice/Experiments/ExperimentsType'
-import { DeleteButton } from './Button/DeleteButton'
-import {
-  NWBDownloadButton,
-  ConfigDownloadButton,
-} from './Button/DownloadButton'
-import { ImportButton } from './Button/ImportButton'
+import { EXPERIMENTS_STATUS} from 'store/slice/Experiments/ExperimentsType'
 import { useLocalStorage } from 'components/utils/LocalStorageUtil'
+import {useNavigate} from "react-router-dom";
+
+export type MouseType = {
+    unique_id: string
+    name: string
+    success: EXPERIMENTS_STATUS
+    outputs: string[]
+}
 
 export const ExperimentUidContext = React.createContext<string>('')
+
+type Data = {
+    pagenation: object
+    records: {
+        id: number
+        name: string
+        data?: MouseType[]
+    }[]
+    nodeDict: object
+    edgeDict: object
+    createAt: string
+}
+
+const data: Data = {
+  "pagenation": {
+    "page": 0,
+    "limit": 0,
+    "total": 0,
+    "total_pages": 0
+  },
+  "records": [{
+      "id": 0,
+      "name": "MOUSE",
+      "data": [{
+          "unique_id": "caiman_cnmf_fq0042h2uj",
+          "name": "caiman_cnmf",
+          "success": "error",
+          "outputs": [
+              "/lib/test.nii",
+              "/lib/test0.nii",
+              "/lib/test1.nii"
+          ]},
+          {
+          "unique_id": "caiman_mc_2rg3nrb410",
+          "name": "caiman_mc",
+          "success": "error",
+          "outputs": [
+              "/lib/test.nii",
+              "/lib/test0.nii",
+              "/lib/test1.nii"
+          ]},
+          {
+          "unique_id": "input_0",
+          "name": "mouse2p_2_donotouse.tiff",
+          "success": "success",
+          "outputs": [
+              "/lib/test.nii",
+              "/lib/test0.nii",
+              "/lib/test1.nii"
+          ]}
+        ]
+      },
+      {
+          "id": 1,
+          "name": "MOUSE1",
+          "data": [{
+              "unique_id": "caiman_cnmf_fq0042h2uj",
+              "name": "caiman_cnmf",
+              "success": "error",
+              "outputs": [
+                  "/lib/test.nii",
+                  "/lib/test0.nii",
+                  "/lib/test1.nii"
+              ]},
+              {
+                  "unique_id": "caiman_mc_2rg3nrb410",
+                  "name": "caiman_mc",
+                  "success": "error",
+                  "outputs": [
+                      "/lib/test.nii",
+                      "/lib/test0.nii",
+                      "/lib/test1.nii"
+                  ]},
+              {
+                  "unique_id": "input_0",
+                  "name": "mouse2p_2_donotouse.tiff",
+                  "success": "success",
+                  "outputs": [
+                      "/lib/test.nii",
+                      "/lib/test0.nii",
+                      "/lib/test1.nii"
+                  ]}
+          ]
+      },
+      {
+          "id": 2,
+          "name": "MOUSE3"
+      }
+  ],
+      "nodeDict": {},
+      "edgeDict": {},
+      "createAt": "2023/04/07 04:28"
+}
 
 export const ExperimentTable: React.FC = () => {
   const isUninitialized = useSelector(selectExperimentsSatusIsUninitialized)
@@ -85,42 +173,16 @@ const LOCAL_STORAGE_KEY_PER_PAGE = 'studio_experiment_table_per_page'
 
 const TableImple = React.memo(() => {
   const experimentList = useSelector(selectExperimentList)
-  const experimentListValues = Object.values(experimentList)
   const experimentListKeys = Object.keys(experimentList)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const onClickReload = () => {
     dispatch(getExperiments())
   }
-  const [order, setOrder] = React.useState<Order>('asc')
-  const [sortTarget, setSortTarget] =
-    React.useState<keyof Experiment>('timestamp')
-  const sortHandler =
-    (property: keyof Experiment) => (event: React.MouseEvent<unknown>) => {
-      const isAsc = sortTarget === property && order === 'asc'
-      setOrder(isAsc ? 'desc' : 'asc')
-      setSortTarget(property)
-    }
-
   const [checkedList, setCheckedList] = useState<string[]>([])
   const [open, setOpen] = React.useState(false)
-
-  const onCheckBoxClick = (uid: string) => {
-    if (checkedList.includes(uid)) {
-      setCheckedList(checkedList.filter((v) => v !== uid))
-    } else {
-      setCheckedList([...checkedList, uid])
-    }
-  }
-
-  const onChangeAllCheck = (checked: boolean) => {
-    if (checked) {
-      setCheckedList(experimentListValues.map((experiment) => experiment.uid))
-    } else {
-      setCheckedList([])
-    }
-  }
-
   const recordsIsEmpty = experimentListKeys.length === 0
+  const createAt = data.createAt.split(' ')
 
   const onClickDelete = () => {
     setOpen(true)
@@ -132,6 +194,10 @@ const TableImple = React.memo(() => {
     dispatch(deleteExperimentByList(checkedList))
     setCheckedList([])
     setOpen(false)
+  }
+
+  const onClickBack = () => {
+    navigate('/projects')
   }
 
   const [page, setPage] = React.useState(0)
@@ -164,6 +230,21 @@ const TableImple = React.memo(() => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Button onClick={onClickBack}
+        sx={{width: 'fit-content', textTransform: 'unset', fontSize: 20}}
+      >
+        <KeyboardBackspaceIcon /> Projects
+      </Button>
+      <Box sx={{display: 'flex', gap : 2, alignItems: 'center'}}>
+        <Typography>Status : </Typography>
+        <Box>
+          <ExperimentStatusIcon status={'success'}/>
+        </Box>
+        <Box>
+          <Typography>Timestamp: {createAt[0]}</Typography>
+          <Typography>{createAt[1]}</Typography>
+        </Box>
+      </Box>
       <Box
         sx={{
           display: 'flex',
@@ -171,11 +252,6 @@ const TableImple = React.memo(() => {
           alignItems: 'center',
         }}
       >
-        {!recordsIsEmpty && (
-          <Typography sx={{ flexGrow: 1, m: 1 }}>
-            {checkedList.length} selected
-          </Typography>
-        )}
         <Button
           sx={{
             margin: (theme) => theme.spacing(0, 1, 1, 0),
@@ -210,169 +286,87 @@ const TableImple = React.memo(() => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Paper
-        elevation={0}
-        variant="outlined"
-        sx={{
-          flexGlow: 1,
-          height: '100%',
-        }}
-      >
-        <TableContainer component={Paper} elevation={0}>
-          <Table aria-label="collapsible table">
-            <HeadItem
-              order={order}
-              sortHandler={sortHandler}
-              allCheckIndeterminate={
-                checkedList.length !== 0 &&
-                checkedList.length !== Object.keys(experimentList).length
-              }
-              allChecked={
-                checkedList.length === Object.keys(experimentList).length
-              }
-              onChangeAllCheck={onChangeAllCheck}
-              checkboxVisible={!recordsIsEmpty}
-            />
-            <TableBody>
-              {experimentListValues
-                .sort(getComparator(order, sortTarget))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((expData) => (
-                  <ExperimentUidContext.Provider
-                    value={expData.uid}
-                    key={expData.uid}
-                  >
-                    <RowItem
-                      onCheckBoxClick={onCheckBoxClick}
-                      checked={checkedList.includes(expData.uid)}
-                    />
-                  </ExperimentUidContext.Provider>
-                ))}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 53 * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={10} />
-                </TableRow>
-              )}
-              {recordsIsEmpty && (
-                <TableRow>
-                  <TableCell colSpan={10}>
-                    <Typography
-                      sx={{
-                        color: (theme) => theme.palette.text.secondary,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: '300px',
-                        textAlign: 'center',
-                      }}
-                      variant="h6"
-                    >
-                      No Rows...
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={experimentListKeys.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+         <Paper
+           elevation={0}
+           variant="outlined"
+           sx={{
+               flexGlow: 1,
+               height: '100%',
+           }}
+         >
+           {
+             data.records.map((item) => {
+               const { name, id } = item
+                return (
+                <TableContainer key={id} component={Paper} elevation={0}>
+                  <Table aria-label="collapsible table">
+                    <TableBody>
+                      <ExperimentUidContext.Provider
+                        value={String(id)}
+                        key={id}
+                      >
+                        <RowItem
+                          data={item.data}
+                          name={name}
+                        />
+                      </ExperimentUidContext.Provider>
+                       {emptyRows > 0 && (
+                         <TableRow
+                           style={{
+                             height: 53 * emptyRows,
+                           }}
+                          >
+                            <TableCell colSpan={10} />
+                          </TableRow>
+                      )}
+                      {recordsIsEmpty && (
+                          <TableRow>
+                            <TableCell colSpan={10}>
+                              <Typography
+                                  sx={{
+                                    color: (theme) => theme.palette.text.secondary,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: '300px',
+                                    textAlign: 'center',
+                                  }}
+                                  variant="h6"
+                              >
+                                No Rows...
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                )
+             })
+           }
+           <TablePagination
+               rowsPerPageOptions={[5, 10, 25]}
+               component="div"
+               count={experimentListKeys.length}
+               rowsPerPage={rowsPerPage}
+               page={page}
+               onPageChange={handleChangePage}
+               onRowsPerPageChange={handleChangeRowsPerPage}
+           />
+         </Paper>
     </Box>
   )
 })
 
-const HeadItem = React.memo<{
-  order: Order
-  sortHandler: any
-  allChecked: boolean
-  onChangeAllCheck: (checked: boolean) => void
-  allCheckIndeterminate: boolean
-  checkboxVisible: boolean
-}>(
-  ({
-    order,
-    sortHandler,
-    allChecked,
-    onChangeAllCheck,
-    allCheckIndeterminate,
-    checkboxVisible,
-  }) => {
-    return (
-      <TableHead>
-        <TableRow>
-          <TableCell padding="checkbox">
-            <Checkbox
-              sx={{ visibility: checkboxVisible ? 'visible' : 'hidden' }}
-              checked={allChecked}
-              indeterminate={allCheckIndeterminate}
-              onChange={(e) => onChangeAllCheck(e.target.checked)}
-            />
-          </TableCell>
-          <TableCell />
-          <TableCell>
-            <TableSortLabel
-              active
-              direction={order}
-              onClick={sortHandler('timestamp')}
-            >
-              Timestamp
-            </TableSortLabel>
-          </TableCell>
-          <TableCell>
-            <TableSortLabel
-              active
-              direction={order}
-              onClick={sortHandler('uid')}
-            >
-              ID
-            </TableSortLabel>
-          </TableCell>
-          <TableCell>
-            <TableSortLabel
-              active
-              direction={order}
-              onClick={sortHandler('name')}
-            >
-              Name
-            </TableSortLabel>
-          </TableCell>
-          <TableCell>Success</TableCell>
-          <TableCell>Reproduce</TableCell>
-          <TableCell>SnakeFile</TableCell>
-          <TableCell>NWB</TableCell>
-          <TableCell>Delete</TableCell>
-        </TableRow>
-      </TableHead>
-    )
-  },
-)
-
 const RowItem = React.memo<{
-  onCheckBoxClick: (uid: string) => void
-  checked: boolean
-}>(({ onCheckBoxClick, checked }) => {
-  const uid = React.useContext(ExperimentUidContext)
-  const timestamp = useSelector(selectExperimentTimeStamp(uid))
-  const status = useSelector(selectExperimentStatus(uid))
-  const name = useSelector(selectExperimentName(uid))
-  const hasNWB = useSelector(selectExperimentHasNWB(uid))
+  name: string
+  data?: MouseType[]
+}>(({ name, data }) => {
   const [open, setOpen] = React.useState(false)
-
   return (
     <React.Fragment>
       <TableRow
+        onClick={() => data && setOpen((prevOpen) => !prevOpen)}
         sx={{
           '& > *': {
             borderBottom: 'unset',
@@ -382,64 +376,16 @@ const RowItem = React.memo<{
           },
         }}
       >
-        <TableCell padding="checkbox">
-          <Checkbox onChange={() => onCheckBoxClick(uid)} checked={checked} />
-        </TableCell>
-        <TableCell>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen((prevOpen) => !prevOpen)}
-          >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        </TableCell>
-        <TableCell component="th" scope="row">
-          {timestamp}
-        </TableCell>
-        <TableCell>{uid}</TableCell>
-        <TableCell>{name}</TableCell>
-        <TableCell>
-          <ExperimentStatusIcon status={status} />
-        </TableCell>
-        <TableCell>
-          <ImportButton />
-        </TableCell>
-        <TableCell>
-          <ConfigDownloadButton />
-        </TableCell>
-        <TableCell>
-          <NWBDownloadButton name={uid} hasNWB={hasNWB} />
-        </TableCell>
-        <TableCell>
-          <DeleteButton />
+        <TableCell
+          sx={{padding: '20px',
+               display: 'flex',
+               alignItems: 'center'
+          }}
+        >
+          {name} {data && (!open ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />)}
         </TableCell>
       </TableRow>
-      <CollapsibleTable open={open} />
+      <CollapsibleTable data={data} open={open} />
     </React.Fragment>
   )
 })
-
-type Order = 'asc' | 'desc'
-
-function getComparator<Key extends keyof any>(
-  order: Order,
-  orderBy: Key,
-): (
-  a: { [key in Key]: number | string },
-  b: { [key in Key]: number | string },
-) => number {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy)
-}
-
-function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1
-  }
-  return 0
-}

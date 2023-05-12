@@ -4,11 +4,13 @@ import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { saveToken } from 'utils/auth'
+import Loading from "../../components/common/Loading";
 
 const Login = () => {
   const { setUser } = useUser()
   const navigate = useNavigate()
 
+  const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<{ [key: string]: string }>({
     email: '',
     password: '',
@@ -21,13 +23,17 @@ const Login = () => {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const errorCheck = validateSubmit()
-    if (errors.email || errors.password || errorCheck) return
+    if (errorCheck) return
+    setIsLoading(true)
     try {
       const { access_token } = await login(values)
       saveToken(access_token)
       getUser()
     } catch (e) {
       setErrors({ email: 'Email or password is wrong', password: '' })
+    }
+    finally {
+      setIsLoading(false)
     }
   }
 
@@ -107,6 +113,9 @@ const Login = () => {
           </Stack>
         </FormSignUp>
       </LoginContent>
+      {
+        isLoading && <Loading />
+      }
     </LoginWrapper>
   )
 }

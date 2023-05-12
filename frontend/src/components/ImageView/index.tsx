@@ -75,12 +75,6 @@ const ImageView: FC<ImageViewProps> = ({
     viewerRef.current.redrawVolumes()
   }
 
-  const onChangeMaxThresh = (num: number) => {
-    if (!volumes.current) return
-    volumes.current.intensity_max = num
-    viewerRef.current.redrawVolumes()
-  }
-
   const onChangeMinThresh = (num: number) => {
     if (!volumes.current) return
     volumes.current.intensity_min = num
@@ -220,10 +214,9 @@ const ImageView: FC<ImageViewProps> = ({
                   <span style={{ marginLeft: 20 }}>K: {voxelCoords.k}</span>
                   <p>Value: {values}</p>
                   <ChangeDrag
-                    onChangeMax={onChangeMaxThresh}
                     onChangeMin={onChangeMinThresh}
                     max={maxThres}
-                    min={thresholds < 0 ? thresholds : 0}
+                    min={-maxThres}
                     title={'Threshold'}
                     value={thresholds}
                     showInputMax
@@ -300,6 +293,7 @@ const ButtonClose = styled(IconButton)({
   top: '10%',
   right: '10%',
   zIndex: 9999,
+  background: 'rgba(255,255,255,0.4)',
 })
 
 const ButtonNext = styled(ButtonClose)({

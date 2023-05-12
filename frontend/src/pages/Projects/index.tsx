@@ -12,6 +12,7 @@ export type DataProject = {
   image_count: number
   created_time: string
   updated_time: string
+  role?: string | number
 }
 
 const Projects = () => {
@@ -21,16 +22,16 @@ const Projects = () => {
     {
       id: '1',
       name: 'prj name 1',
-      created_time: '2023-03-10 09:19:38',
-      updated_time: '2023-03-10 09:19:38',
+      created_time: '2023-03-10 09:19',
+      updated_time: '2023-03-10 09:19',
       image_count: 3,
       project_type: 0,
     },
     {
       id: '2',
       name: 'prj name 2',
-      created_time: '2023-03-10 09:19:38',
-      updated_time: '2023-03-10 09:19:38',
+      created_time: '2023-03-10 09:19',
+      updated_time: '2023-03-10 09:19',
       image_count: 3,
       project_type: 1,
     },
@@ -43,13 +44,13 @@ const Projects = () => {
 
   const onWorkflow = useCallback((id: number | string) => {
     console.log('Workflow: ', id)
-    navigate('/projects/workflow')
+    navigate(`/projects/workflow?tab=0&id=${id}`)
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onResults = useCallback((id: number | string) => {
     console.log('Results: ', id)
-    navigate('/projects/workflow?tab=2')
+    navigate(`/projects/workflow?tab=1&id=${id}`)
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -81,7 +82,7 @@ const Projects = () => {
       {
         title: '',
         name: 'action',
-        width: 185,
+        width: 400,
         render: (data) => {
           return (
             <BoxButton>
@@ -154,6 +155,7 @@ const BoxButton = styled(Box)(({ theme }) => ({
 
 const ButtonAdd = styled(Button)(({ theme }) => ({
   minWidth: 80,
+  letterSpacing: 'unset',
   paddingLeft: theme.spacing(2),
   paddingRight: theme.spacing(2),
   backgroundColor: '#283237 !important',

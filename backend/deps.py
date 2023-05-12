@@ -1,6 +1,5 @@
-from backend.models.user import UserRole
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi import Depends, HTTPException, status, Response, Depends
+from fastapi import Depends, HTTPException, Response, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from firebase_admin import auth
 
 from backend.service.firebase.crud_user import read_user
@@ -24,15 +23,14 @@ async def get_current_user(
             headers={'WWW-Authenticate': 'Bearer error="invalid_token"'},
         )
     res.headers['WWW-Authenticate'] = 'Bearer realm="auth_required"'
-    user =  await read_user(user_id=user['uid'])
+    user = await read_user(user_id=user['uid'])
     return user.dict()
 
 
-def get_current_admin_user(current_user = Depends(get_current_user)):
-    if current_user.get('role') == UserRole.ADMIN:
+def get_current_admin_user(current_user=Depends(get_current_user)):
+    if current_user.get('role') == 1:
         return current_user
     else:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail='Insufficient privileges'
+            status_code=status.HTTP_403_FORBIDDEN, detail='Insufficient privileges'
         )

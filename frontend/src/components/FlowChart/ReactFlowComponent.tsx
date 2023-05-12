@@ -44,6 +44,7 @@ import {
 } from 'components/FlowChart/DialogContext'
 import { FileSelectDialog } from 'components/common/FileSelectDialog'
 import { FormHelperText, Popover } from '@mui/material'
+import ImageAlignment from '../ImageAlignment'
 
 const initDialogFile = {
   filePath: '',
@@ -57,6 +58,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
   (props) => {
     const flowElements = useSelector(selectFlowElements)
     const dispatch = useDispatch()
+    const [openPopupAlignment, setOpenPopupAlignment] = useState(false)
     const [dialogNodeId, setDialogNodeId] = useState('')
     const [dialogFile, setDialogFile] =
       useState<OpenDialogValue>(initDialogFile)
@@ -145,6 +147,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
             onOpen: setDialogNodeId,
             onOpenDialogFile: setDialogFile,
             onMessageError: setMessageError,
+            onOpenImageAlignment: setOpenPopupAlignment,
           }}
         >
           <ReactFlowProvider>
@@ -168,6 +171,11 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
               </ReactFlow>
             </div>
           </ReactFlowProvider>
+          <ImageAlignment
+            open={openPopupAlignment}
+            onClose={() => setOpenPopupAlignment(false)}
+            urls={['/lib/test.nii','/lib/test0.nii']}
+          />
           {dialogNodeId && (
             <AlgorithmOutputDialog
               nodeId={dialogNodeId}
