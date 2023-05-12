@@ -519,8 +519,8 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
       const div = document.createElement('div')
       div.style.position = 'relative'
       div.style.background = '#000000'
-      div.style.width = default_panel_width
-      div.style.height = default_panel_height
+      div.style.width = `${default_panel_width}px`
+      div.style.height = `${default_panel_width}px`
       div.style.overflow = 'hidden'
 
       container.append(div)
