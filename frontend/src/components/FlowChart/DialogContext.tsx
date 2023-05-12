@@ -18,7 +18,7 @@ export const DialogContext = createContext<{
   onOpen: (nodeId: string) => void
   onOpenDialogFile: (value: OpenDialogValue) => void
   onMessageError: (value: ErrorDialogValue) => void
-  onOpenImageAlignment: (v: boolean) => void
+  onOpenImageAlignment: (v: boolean, params?: { [key: string]: string | undefined }) => void
 }>({
   onOpen: () => null,
   onOpenDialogFile: () => null,

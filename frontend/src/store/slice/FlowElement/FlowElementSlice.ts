@@ -12,6 +12,7 @@ import {
   NODE_TYPE_SET,
   NodeData,
   ElementCoord,
+  Params,
 } from './FlowElementType'
 import {
   INITIAL_ALGO_STYLE,
@@ -27,6 +28,18 @@ import { addAlgorithmNode, addInputNode } from './FlowElementActions'
 import { getLabelByPath } from './FlowElementUtils'
 import { uploadFile } from '../FileUploader/FileUploaderActions'
 
+const initParams = {
+  x_pos: 0,
+  y_pos: 0,
+  z_pos: 0,
+  x_rotate: 0,
+  y_rotate: 0,
+  z_rotate: 0,
+  x_resize: 0,
+  y_resize: 0,
+  z_resize: 0,
+}
+
 const initialElements: Elements<NodeData> = [
   {
     id: INITIAL_IMAGE_ELEMENT_ID,
@@ -34,6 +47,7 @@ const initialElements: Elements<NodeData> = [
     data: {
       type: NODE_TYPE_SET.INPUT,
       label: INITIAL_IMAGE_ELEMENT_NAME,
+      params: initParams,
     },
     style: INITIAL_DATA_STYLE,
     position: { x: 50, y: 150 },
@@ -95,6 +109,25 @@ export const flowElementSlice = createSlice({
       const targetItem = state.flowElements[elementIdx]
       if (isNode(targetItem)) {
         targetItem.position = coord
+      }
+    },
+    editFlowElementParamsAlignmentById: (
+      state,
+      action: PayloadAction<{
+        nodeId: string
+        params: Params
+      }>,
+    ) => {
+      let { nodeId, params } = action.payload
+      const elementIdx = state.flowElements.findIndex(
+        (ele) => ele.id === nodeId,
+      )
+      const targetItem = state.flowElements[elementIdx]
+      if (isNode(targetItem)) {
+        if (!targetItem.data) {
+          return
+        }
+        targetItem.data.params = params
       }
     },
   },
@@ -175,6 +208,7 @@ export const flowElementSlice = createSlice({
               data: {
                 label: node.data?.label ?? '',
                 type: node.data?.type ?? 'input',
+                params: initParams,
               },
             }
           } else {
@@ -183,6 +217,7 @@ export const flowElementSlice = createSlice({
               data: {
                 label: node.data?.label ?? '',
                 type: node.data?.type ?? 'algorithm',
+                params: initParams,
               },
             }
           }
@@ -214,6 +249,7 @@ export const {
   deleteFlowElements,
   deleteFlowElementsById,
   editFlowElementPositionById,
+  editFlowElementParamsAlignmentById,
 } = flowElementSlice.actions
 
 export default flowElementSlice.reducer

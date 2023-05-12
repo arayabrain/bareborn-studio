@@ -6,7 +6,7 @@ import { FILE_TREE_TYPE } from 'api/files/Files'
 import { LinearProgressWithLabel } from './LinerProgressWithLabel'
 import { FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
-import {useNavigate, useSearchParams} from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { DialogContext } from '../DialogContext'
 
 export const FileSelect = React.memo<{
@@ -35,6 +35,7 @@ export const FileSelect = React.memo<{
         </div>
       )}
       <FileSelectImple
+        nodeId={nodeId}
         multiSelect={multiSelect}
         filePath={filePath}
         onSelectFile={onChangeFilePath}
@@ -59,10 +60,11 @@ type FileSelectImpleProps = {
   fileTreeType?: FILE_TREE_TYPE
   selectButtonLabel?: string
   uploadButtonLabel?: string
+  nodeId?: string
 }
 
 export const FileSelectImple = React.memo<FileSelectImpleProps>(
-  ({ filePath }) => {
+  ({ filePath, nodeId }) => {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const { onOpenImageAlignment } = useContext(DialogContext)
@@ -81,7 +83,9 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
             style={{ width: '80%' }}
             variant="outlined"
             onClick={() =>
-              navigate(`/projects/new-project?id=${id}&back=/projects/workflow?tab=0&id=${id}`)
+              navigate(
+                `/projects/new-project?id=${id}&back=/projects/workflow?tab=0&id=${id}`,
+              )
             }
           >
             EDIT IMAGESET
@@ -93,7 +97,11 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
           </Typography>
         </div>
         <ButtonGroup size="small" style={{ width: '90%', margin: '8px 0' }}>
-          <Button onClick={() => onOpenImageAlignment(true)} style={{ width: '80%' }} variant="outlined">
+          <Button
+            onClick={() => onOpenImageAlignment(true, { nodeId })}
+            style={{ width: '80%' }}
+            variant="outlined"
+          >
             ALIGNMENT
           </Button>
         </ButtonGroup>

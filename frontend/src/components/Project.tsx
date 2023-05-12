@@ -63,7 +63,6 @@ const Project: React.FC = () => {
         <FlowChart {...runPipeline} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        {/*<Visualize />*/}
         <VisualizeNew />
       </TabPanel>
       <TabPanel value={value} index={1}>
