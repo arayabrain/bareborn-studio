@@ -36,6 +36,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
   const [stateParams, setStateParams] = useState<Params | undefined>(
     flowElement?.data?.params,
   )
+  const [stateParamsEdit, setStateParamsEdit] = useState<Params | undefined>(
+    flowElement?.data?.params,
+  )
 
   useEffect(() => {
     if (open) {
@@ -55,7 +58,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
       setInitBrainbrowser()
     }
     //eslint-disable-next-line
-  }, [loadedSuccess])
+  }, [loadedSuccess, url])
 
   const onOk = () => {
     if (params?.nodeId && stateParams) {
@@ -93,7 +96,6 @@ const ImageAlignment: FC<ImageViewProps> = ({
         Number(paramsStore.y_pos),
         Number(paramsStore.z_pos),
         Number(paramsStore.x_pos),
-        
       )
       volumes.current.setRadian(
         Number(paramsStore.y_rotate),
@@ -105,30 +107,31 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const onSetOrigin = () => {
-    if (stateParams) {
+    if (stateParamsEdit) {
       volumes.current.setResize({
-        x: Number(stateParams.x_resize),
-        y: Number(stateParams.y_resize),
-        z: Number(stateParams.z_resize),
+        x: Number(stateParamsEdit.x_resize),
+        y: Number(stateParamsEdit.y_resize),
+        z: Number(stateParamsEdit.z_resize),
       })
       volumes.current.setVoxelCoords(
-        Number(stateParams.y_pos),
-        Number(stateParams.z_pos),
-        Number(stateParams.x_pos),
+        Number(stateParamsEdit.y_pos),
+        Number(stateParamsEdit.z_pos),
+        Number(stateParamsEdit.x_pos),
       )
       volumes.current.setRadian(
-        Number(stateParams.y_rotate),
-        Number(stateParams.x_rotate),
-        Number(stateParams.z_rotate),
+        Number(stateParamsEdit.y_rotate),
+        Number(stateParamsEdit.x_rotate),
+        Number(stateParamsEdit.z_rotate),
       )
+      setStateParams(stateParamsEdit)
     }
     viewerRef.current.redrawVolumes()
   }
 
   const onChangeValue = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    if (params?.nodeId && stateParams) {
-      setStateParams({ ...stateParams, [name]: value })
+    if (params?.nodeId && stateParamsEdit) {
+      setStateParamsEdit({ ...stateParamsEdit, [name]: value })
     }
   }
 
@@ -150,6 +153,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
   const loadFileIndex = () => {
     if (!url || isLoadFile || !viewerRef.current) return
     setIsLoadFile(true)
+    setLoadedSuccess(false)
     viewerRef.current.clearVolumes()
     viewerRef.current.loadVolumes({
       volumes: [
@@ -181,7 +185,29 @@ const ImageAlignment: FC<ImageViewProps> = ({
     viewerRef.current = brainbrowser.VolumeViewer.start(
       'brainbrowser',
       (viewer: any) => {
-        viewer.addEventListener('volumeloaded', function () {
+        viewer.addEventListener('volumeloaded', function (event: any) {
+          if (!stateParamsEdit) {
+            const { volume } = event
+            const paramsNode: Params = {
+              x_pos: 0,
+              y_pos: 0,
+              z_pos: 0,
+              x_rotate: volume.header.xspace.radian,
+              y_rotate: volume.header.yspace.radian,
+              z_rotate: volume.header.zspace.radian,
+              x_resize: volume.header.xspace.step,
+              y_resize: volume.header.yspace.step,
+              z_resize: volume.header.zspace.step,
+            }
+            volumes.current = volume
+            if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
+              const voxel = volume.getVoxelCoords()
+              paramsNode.x_pos = voxel.k
+              paramsNode.y_pos = voxel.i
+              paramsNode.z_pos = voxel.j
+            }
+            setStateParamsEdit(paramsNode)
+          }
           setIsLoadFile(false)
           setLoadedSuccess(true)
         })
@@ -206,6 +232,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
             paramsNode.z_pos = voxel.j
           }
           setStateParams(paramsNode)
+          setStateParamsEdit(paramsNode)
         })
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
@@ -272,7 +299,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="x_pos"
-                        value={stateParams?.x_pos}
+                        value={stateParamsEdit?.x_pos || 0}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -281,7 +308,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="y_pos"
-                        value={stateParams?.y_pos}
+                        value={stateParamsEdit?.y_pos || 0}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -290,7 +317,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="z_pos"
-                        value={stateParams?.z_pos}
+                        value={stateParamsEdit?.z_pos || 0}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -298,7 +325,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>roll {'{rad}'}</Text>
                       <input
                         name="x_rotate"
-                        value={stateParams?.x_rotate}
+                        value={stateParamsEdit?.x_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -307,7 +334,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>pitch {'{rad}'}</Text>
                       <input
                         name="y_rotate"
-                        value={stateParams?.y_rotate}
+                        value={stateParamsEdit?.y_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -316,7 +343,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>yaw {'{rad}'}</Text>
                       <input
                         name="z_rotate"
-                        value={stateParams?.z_rotate}
+                        value={stateParamsEdit?.z_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -325,14 +352,14 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>resize {'{x}'}</Text>
                       <input
                         name="x_resize"
-                        value={stateParams?.x_resize}
+                        value={stateParamsEdit?.x_resize || 0}
                         onChange={onChangeValue}
                       />
                     </Flex>
                     <Flex>
                       <Text>resize {'{y}'}</Text>
                       <input
-                        value={stateParams?.y_resize}
+                        value={stateParamsEdit?.y_resize || 0}
                         name="y_resize"
                         onChange={onChangeValue}
                       />
@@ -340,7 +367,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                     <Flex>
                       <Text>resize {'{z}'}</Text>
                       <input
-                        value={stateParams?.z_resize}
+                        value={stateParamsEdit?.z_resize || 0}
                         name="z_resize"
                         onChange={onChangeValue}
                       />

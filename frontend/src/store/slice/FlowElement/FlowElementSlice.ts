@@ -47,7 +47,6 @@ const initialElements: Elements<NodeData> = [
     data: {
       type: NODE_TYPE_SET.INPUT,
       label: INITIAL_IMAGE_ELEMENT_NAME,
-      params: initParams,
     },
     style: INITIAL_DATA_STYLE,
     position: { x: 50, y: 150 },
@@ -208,7 +207,6 @@ export const flowElementSlice = createSlice({
               data: {
                 label: node.data?.label ?? '',
                 type: node.data?.type ?? 'input',
-                params: initParams,
               },
             }
           } else {
@@ -217,7 +215,6 @@ export const flowElementSlice = createSlice({
               data: {
                 label: node.data?.label ?? '',
                 type: node.data?.type ?? 'algorithm',
-                params: initParams,
               },
             }
           }
