@@ -12,6 +12,7 @@ import {
   NODE_TYPE_SET,
   NodeData,
   ElementCoord,
+  Params,
 } from './FlowElementType'
 import {
   INITIAL_ALGO_STYLE,
@@ -26,6 +27,18 @@ import { isInputNodePostData } from 'api/run/RunUtils'
 import { addAlgorithmNode, addInputNode } from './FlowElementActions'
 import { getLabelByPath } from './FlowElementUtils'
 import { uploadFile } from '../FileUploader/FileUploaderActions'
+
+const initParams = {
+  x_pos: 0,
+  y_pos: 0,
+  z_pos: 0,
+  x_rotate: 0,
+  y_rotate: 0,
+  z_rotate: 0,
+  x_resize: 0,
+  y_resize: 0,
+  z_resize: 0,
+}
 
 const initialElements: Elements<NodeData> = [
   {
@@ -95,6 +108,25 @@ export const flowElementSlice = createSlice({
       const targetItem = state.flowElements[elementIdx]
       if (isNode(targetItem)) {
         targetItem.position = coord
+      }
+    },
+    editFlowElementParamsAlignmentById: (
+      state,
+      action: PayloadAction<{
+        nodeId: string
+        params: Params
+      }>,
+    ) => {
+      let { nodeId, params } = action.payload
+      const elementIdx = state.flowElements.findIndex(
+        (ele) => ele.id === nodeId,
+      )
+      const targetItem = state.flowElements[elementIdx]
+      if (isNode(targetItem)) {
+        if (!targetItem.data) {
+          return
+        }
+        targetItem.data.params = params
       }
     },
   },
@@ -214,6 +246,7 @@ export const {
   deleteFlowElements,
   deleteFlowElementsById,
   editFlowElementPositionById,
+  editFlowElementParamsAlignmentById,
 } = flowElementSlice.actions
 
 export default flowElementSlice.reducer

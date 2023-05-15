@@ -1,7 +1,11 @@
 import { Box, IconButton, Modal, styled } from '@mui/material'
-import { FC, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { Object } from 'pages/Database'
+import { selectNodeById } from 'store/slice/FlowElement/FlowElementSelectors'
+import { useSelector, useDispatch } from 'react-redux'
+import { editFlowElementParamsAlignmentById } from 'store/slice/FlowElement/FlowElementSlice'
+import { Params } from 'store/slice/FlowElement/FlowElementType'
 
 type ImageViewProps = {
   open: boolean
@@ -11,16 +15,31 @@ type ImageViewProps = {
   urls: string[]
   jsonData?: Object
   disabled?: { left: boolean; right: boolean }
+  params?: { [key: string]: string | undefined }
 }
 
-const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
+const ImageAlignment: FC<ImageViewProps> = ({
+  open,
+  onClose,
+  urls,
+  params = {},
+}) => {
   const viewerRef = useRef<any>()
   const [url, setUrl] = useState(urls[0])
-  const [voxelCoords, setVoxelCoords] = useState({ i: 0, j: 0, k: 0 })
-  const [radian, setRadian] = useState({ x: 0, y: 0, z: 0 })
-  const [resize, setResize] = useState({ x: 0, y: 0, z: 0 })
   const [isLoadFile, setIsLoadFile] = useState(false)
+  const [loadedSuccess, setLoadedSuccess] = useState(false)
   const volumes = useRef<any>()
+  const dispatch = useDispatch()
+
+  const flowElement = useSelector(selectNodeById(params?.nodeId as string))
+
+  const [stateParams, setStateParams] = useState<Params | undefined>(
+    flowElement?.data?.params,
+  )
+  const [stateParamsEdit, setStateParamsEdit] = useState<Params | undefined>(
+    flowElement?.data?.params,
+  )
+
   useEffect(() => {
     if (open) {
       setTimeout(loadFile, 0)
@@ -34,6 +53,25 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
     //eslint-disable-next-line
   }, [url])
 
+  useEffect(() => {
+    if (loadedSuccess) {
+      setValueToBraibrowser(flowElement?.data?.params)
+    }
+    //eslint-disable-next-line
+  }, [loadedSuccess, url])
+
+  const onOk = () => {
+    if (params?.nodeId && stateParams) {
+      dispatch(
+        editFlowElementParamsAlignmentById({
+          nodeId: params.nodeId,
+          params: stateParams,
+        }),
+      )
+    }
+    onClose?.()
+  }
+
   const onPreImage = () => {
     const index = urls.findIndex((item) => item === url)
     if (index === 0) return
@@ -46,22 +84,32 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
     setUrl(urls[index + 1])
   }
 
-  const onSetOrigin = (e: any) => {
-    e.preventDefault()
-    volumes.current.setResize(resize)
-    volumes.current.setVoxelCoords(voxelCoords.i, voxelCoords.j, voxelCoords.k)
-    volumes.current.setRadian(radian.x, radian.z, radian.y)
+  const setValueToBraibrowser = (valueParams?: Params) => {
+    if (valueParams) {
+      volumes.current.setResize({
+        x: Number(valueParams.x_resize),
+        y: Number(valueParams.y_resize),
+        z: Number(valueParams.z_resize),
+      })
+      volumes.current.setVoxelCoords(
+        Number(valueParams.y_pos),
+        Number(valueParams.z_pos),
+        Number(valueParams.x_pos),
+      )
+      volumes.current.setRadian(
+        Number(valueParams.y_rotate),
+        Number(valueParams.x_rotate),
+        Number(valueParams.z_rotate),
+      )
+    }
     viewerRef.current.redrawVolumes()
   }
 
-  const onChangeVoxel = (e: any) => {
-    const { name } = e.target
-    setVoxelCoords({ ...voxelCoords, [name]: e.target.value })
-  }
-
-  const onChangeRadian = (e: any) => {
+  const onChangeValue = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setRadian({ ...radian, [name]: value })
+    if (params?.nodeId && stateParamsEdit) {
+      setStateParamsEdit({ ...stateParamsEdit, [name]: value })
+    }
   }
 
   const onBlurRadian = (e: any) => {
@@ -74,17 +122,15 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
     } else if (valueRadian > 2 * Math.PI) {
       valueRadian = 0
     }
-    setRadian({ ...radian, [name]: valueRadian })
-  }
-
-  const onChangeResize = (e: any) => {
-    const { name } = e.target
-    setResize({ ...resize, [name]: e.target.value })
+    if (params?.nodeId && stateParams) {
+      setStateParams({ ...stateParams, [name]: value })
+    }
   }
 
   const loadFileIndex = () => {
     if (!url || isLoadFile || !viewerRef.current) return
     setIsLoadFile(true)
+    setLoadedSuccess(false)
     viewerRef.current.clearVolumes()
     viewerRef.current.loadVolumes({
       volumes: [
@@ -101,39 +147,69 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
               viewer_insert_className: 'overlay-viewer-display',
             },
           },
-          complete: function () {},
         },
       ],
+      complete: () => setValueToBraibrowser(stateParams),
     })
   }
 
   const loadFile = () => {
     if (!url || isLoadFile) return
     setIsLoadFile(true)
+    setLoadedSuccess(false)
     const brainbrowser = (window as any).BrainBrowser
     const color_map_config = brainbrowser.config.get('color_maps')[2]
     viewerRef.current = brainbrowser.VolumeViewer.start(
       'brainbrowser',
       (viewer: any) => {
-        viewer.addEventListener('volumeloaded', function () {
+        viewer.addEventListener('volumeloaded', function (event: any) {
+          if (!stateParamsEdit) {
+            const { volume } = event
+            const paramsNode: Params = {
+              x_pos: 0,
+              y_pos: 0,
+              z_pos: 0,
+              x_rotate: volume.header.xspace.radian,
+              y_rotate: volume.header.yspace.radian,
+              z_rotate: volume.header.zspace.radian,
+              x_resize: volume.header.xspace.step,
+              y_resize: volume.header.yspace.step,
+              z_resize: volume.header.zspace.step,
+            }
+            volumes.current = volume
+            if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
+              const voxel = volume.getVoxelCoords()
+              paramsNode.x_pos = voxel.k
+              paramsNode.y_pos = voxel.i
+              paramsNode.z_pos = voxel.j
+            }
+            setStateParamsEdit(paramsNode)
+          }
           setIsLoadFile(false)
+          setLoadedSuccess(true)
         })
         viewer.addEventListener('sliceupdate', function (event: any) {
           const { volume } = event
-          setResize({
-            x: volume.header.xspace.step,
-            y: volume.header.yspace.step,
-            z: volume.header.zspace.step,
-          })
-          setRadian({
-            x: volume.header.xspace.radian,
-            y: volume.header.yspace.radian,
-            z: volume.header.zspace.radian,
-          })
+          const paramsNode: Params = {
+            x_pos: 0,
+            y_pos: 0,
+            z_pos: 0,
+            x_rotate: volume.header.xspace.radian,
+            y_rotate: volume.header.yspace.radian,
+            z_rotate: volume.header.zspace.radian,
+            x_resize: volume.header.xspace.step,
+            y_resize: volume.header.yspace.step,
+            z_resize: volume.header.zspace.step,
+          }
           volumes.current = volume
           if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
-            setVoxelCoords(volume.getVoxelCoords())
+            const voxel = volume.getVoxelCoords()
+            paramsNode.x_pos = voxel.k
+            paramsNode.y_pos = voxel.i
+            paramsNode.z_pos = voxel.j
           }
+          setStateParams(paramsNode)
+          setStateParamsEdit(paramsNode)
         })
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
@@ -199,83 +275,81 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                       <Text>right {'{mm}'}</Text>
                       <input
                         type={'number'}
-                        name="i"
-                        value={voxelCoords.i}
-                        onChange={onChangeVoxel}
+                        name="x_pos"
+                        value={stateParamsEdit?.x_pos || 0}
+                        onChange={onChangeValue}
                       />
                     </Flex>
                     <Flex>
                       <Text>forward {'{mm}'}</Text>
                       <input
                         type={'number'}
-                        name="k"
-                        value={voxelCoords.k}
-                        onChange={onChangeVoxel}
+                        name="y_pos"
+                        value={stateParamsEdit?.y_pos || 0}
+                        onChange={onChangeValue}
                       />
                     </Flex>
                     <Flex>
                       <Text>up {'{mm}'}</Text>
                       <input
                         type={'number'}
-                        name="j"
-                        value={voxelCoords.j}
-                        onChange={onChangeVoxel}
+                        name="z_pos"
+                        value={stateParamsEdit?.z_pos || 0}
+                        onChange={onChangeValue}
                       />
                     </Flex>
                     <Flex>
                       <Text>roll {'{rad}'}</Text>
                       <input
-                        name="x"
-                        value={radian.x}
-                        onChange={onChangeRadian}
+                        name="x_rotate"
+                        value={stateParamsEdit?.x_rotate || 0}
+                        onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
                     </Flex>
                     <Flex>
                       <Text>pitch {'{rad}'}</Text>
                       <input
-                        name="y"
-                        value={radian.y}
-                        onChange={onChangeRadian}
+                        name="y_rotate"
+                        value={stateParamsEdit?.y_rotate || 0}
+                        onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
                     </Flex>
                     <Flex>
                       <Text>yaw {'{rad}'}</Text>
                       <input
-                        name="z"
-                        value={radian.z}
-                        onChange={onChangeRadian}
+                        name="z_rotate"
+                        value={stateParamsEdit?.z_rotate || 0}
+                        onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
                     </Flex>
                     <Flex>
                       <Text>resize {'{x}'}</Text>
                       <input
-                        name="x"
-                        value={resize.x}
-                        onChange={onChangeResize}
+                        name="x_resize"
+                        value={stateParamsEdit?.x_resize || 0}
+                        onChange={onChangeValue}
                       />
                     </Flex>
                     <Flex>
                       <Text>resize {'{y}'}</Text>
                       <input
-                        value={resize.y}
-                        name="y"
-                        onChange={onChangeResize}
+                        value={stateParamsEdit?.y_resize || 0}
+                        name="y_resize"
+                        onChange={onChangeValue}
                       />
                     </Flex>
                     <Flex>
                       <Text>resize {'{z}'}</Text>
                       <input
-                        value={resize.z}
-                        name="z"
-                        onChange={onChangeResize}
+                        value={stateParamsEdit?.z_resize || 0}
+                        name="z_resize"
+                        onChange={onChangeValue}
                       />
                     </Flex>
-                    <ButtonSet onClick={(e) => onSetOrigin(e)}>
-                      Set Origin
-                    </ButtonSet>
+                    <ButtonSet onClick={() => setValueToBraibrowser(stateParamsEdit)}>Set Origin</ButtonSet>
                   </ContentSet>
                 </BoxSet>
                 <Flex
@@ -300,7 +374,7 @@ const ImageAlignment: FC<ImageViewProps> = ({ open, onClose, urls }) => {
                   </SwitchImage>
                   <Flex sx={{ gap: 5 }}>
                     <ButtonCanCel onClick={onClose}>CANCEL</ButtonCanCel>
-                    <ButtonOk onClick={onClose}>OK</ButtonOk>
+                    <ButtonOk onClick={onOk}>OK</ButtonOk>
                   </Flex>
                 </Flex>
               </Flex>

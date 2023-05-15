@@ -58,7 +58,13 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
   (props) => {
     const flowElements = useSelector(selectFlowElements)
     const dispatch = useDispatch()
-    const [openPopupAlignment, setOpenPopupAlignment] = useState(false)
+    const [openPopupAlignment, setOpenPopupAlignment] = useState<{
+      open: boolean
+      params?: { [key: string]: string | undefined }
+    }>({
+      open: false,
+      params: {},
+    })
     const [dialogNodeId, setDialogNodeId] = useState('')
     const [dialogFile, setDialogFile] =
       useState<OpenDialogValue>(initDialogFile)
@@ -147,7 +153,9 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
             onOpen: setDialogNodeId,
             onOpenDialogFile: setDialogFile,
             onMessageError: setMessageError,
-            onOpenImageAlignment: setOpenPopupAlignment,
+            onOpenImageAlignment: (flag, params) => {
+              setOpenPopupAlignment({ open: flag, params })
+            },
           }}
         >
           <ReactFlowProvider>
@@ -172,9 +180,10 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
             </div>
           </ReactFlowProvider>
           <ImageAlignment
-            open={openPopupAlignment}
-            onClose={() => setOpenPopupAlignment(false)}
-            urls={['/lib/test.nii','/lib/test0.nii']}
+            open={openPopupAlignment.open}
+            onClose={() => setOpenPopupAlignment({ open: false })}
+            urls={['/lib/test.nii', '/lib/test0.nii']}
+            params={openPopupAlignment.params}
           />
           {dialogNodeId && (
             <AlgorithmOutputDialog

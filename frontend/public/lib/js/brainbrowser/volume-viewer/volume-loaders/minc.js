@@ -1,6 +1,6 @@
 /*
- * BrainBrowser: Web-based Neurological Visualization Tools
- * (https://brainbrowser.cbrain.mcgill.ca)
+ * window.BrainBrowser: Web-based Neurological Visualization Tools
+ * (https://window.BrainBrowser.cbrain.mcgill.ca)
  *
  * Copyright (C) 2011
  * The Royal Institution for the Advancement of Learning
@@ -24,13 +24,13 @@
  * Author: Nicolas Kassis
  * Author: Tarek Sherif <tsherif@gmail.com> (http://tareksherif.ca/)
  */
-var VolumeViewer = BrainBrowser.VolumeViewer
+var VolumeViewer = window.BrainBrowser.VolumeViewer
 
 VolumeViewer.volume_loaders.minc = function (description, callback) {
   var error_message
 
   if (!description.header_file && description.raw_data_file) {
-    BrainBrowser.loader.loadFromFile(
+    window.BrainBrowser.loader.loadFromFile(
       description.raw_data_file,
       function (raw_data) {
         var tmp = VolumeViewer.utils.hdf5Loader(raw_data)
@@ -41,7 +41,7 @@ VolumeViewer.volume_loaders.minc = function (description, callback) {
       { result_type: 'arraybuffer' },
     )
   } else if (!description.header_url && description.raw_data_url) {
-    BrainBrowser.loader.loadFromURL(
+    window.BrainBrowser.loader.loadFromURL(
       description.raw_data_url,
       function (raw_data) {
         var tmp = VolumeViewer.utils.hdf5Loader(raw_data)
@@ -52,11 +52,11 @@ VolumeViewer.volume_loaders.minc = function (description, callback) {
       { result_type: 'arraybuffer' },
     )
   } else if (description.header_url && description.raw_data_url) {
-    BrainBrowser.loader.loadFromURL(
+    window.BrainBrowser.loader.loadFromURL(
       description.header_url,
       function (header_text) {
         parseHeader(header_text, function (header) {
-          BrainBrowser.loader.loadFromURL(
+          window.BrainBrowser.loader.loadFromURL(
             description.raw_data_url,
             function (raw_data) {
               createMincVolume(header, raw_data, callback)
@@ -67,11 +67,11 @@ VolumeViewer.volume_loaders.minc = function (description, callback) {
       },
     )
   } else if (description.header_file && description.raw_data_file) {
-    BrainBrowser.loader.loadFromFile(
+    window.BrainBrowser.loader.loadFromFile(
       description.header_file,
       function (header_text) {
         parseHeader(header_text, function (header) {
-          BrainBrowser.loader.loadFromFile(
+          window.BrainBrowser.loader.loadFromFile(
             description.raw_data_file,
             function (raw_data) {
               createMincVolume(header, raw_data, callback)
@@ -91,7 +91,7 @@ VolumeViewer.volume_loaders.minc = function (description, callback) {
       "Description must contain property pair 'header_url' and 'raw_data_url', \n" +
       "'header_file' and 'raw_data_file' \nor 'header_source' and 'raw_data_source'."
 
-    BrainBrowser.events.triggerEvent('error', { message: error_message })
+    window.BrainBrowser.events.triggerEvent('error', { message: error_message })
     throw new Error(error_message)
   }
 }
@@ -384,7 +384,7 @@ VolumeViewer.createVolume = function (header, native_data) {
         } else if (pitch > Math.PI * 2) {
           pitch = Math.PI * 2
         }
-        volume.header.xspace.radian = pitch
+        volume.header.yspace.radian = pitch
       }
       if (typeof roll === 'number') {
         if (roll < 0) {
@@ -392,7 +392,7 @@ VolumeViewer.createVolume = function (header, native_data) {
         } else if (roll > Math.PI * 2) {
           roll = Math.PI * 2
         }
-        volume.header.zspace.radian = roll
+        volume.header.xspace.radian = roll
       }
       if (typeof yaw === 'number') {
         if (yaw < 0) {
@@ -400,7 +400,7 @@ VolumeViewer.createVolume = function (header, native_data) {
         } else if (yaw > Math.PI * 2) {
           yaw = Math.PI * 2
         }
-        volume.header.yspace.radian = yaw
+        volume.header.zspace.radian = yaw
       }
       volume.header.update()
     },
@@ -529,7 +529,7 @@ function createMincData(header, raw_data) {
       break
     default:
       var error_message = 'Unsupported data type: ' + header.datatype
-      BrainBrowser.events.triggerEvent('error', { message: error_message })
+      window.BrainBrowser.events.triggerEvent('error', { message: error_message })
       throw new Error(error_message)
   }
 
@@ -547,7 +547,7 @@ function createMincVolume(header, raw_data, callback) {
   volume.saveOriginAndTransform(header)
   volume.intensity_min = header.voxel_min
   volume.intensity_max = header.voxel_max
-  if (BrainBrowser.utils.isFunction(callback)) {
+  if (window.BrainBrowser.utils.isFunction(callback)) {
     callback(volume)
   }
 }
@@ -592,7 +592,7 @@ function parseHeader(header_text, callback) {
       'Response was: \n' +
       header_text
 
-    BrainBrowser.events.triggerEvent('error', { message: error_message })
+    window.BrainBrowser.events.triggerEvent('error', { message: error_message })
     throw new Error(error_message)
   }
 
@@ -644,7 +644,7 @@ function parseHeader(header_text, callback) {
       header.zspace.space_length
   }
 
-  if (BrainBrowser.utils.isFunction(callback)) {
+  if (window.BrainBrowser.utils.isFunction(callback)) {
     callback(header)
   }
 }
