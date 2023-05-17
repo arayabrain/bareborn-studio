@@ -218,6 +218,7 @@ export const inputNodeSlice = createSlice({
           })
         return newState
       })
+      .addCase(fetchExperiment.rejected, (_state, _action) => initialState)
       .addCase(uploadFile.fulfilled, (state, action) => {
         const { nodeId } = action.meta.arg
         if (nodeId != null) {
