@@ -28,7 +28,7 @@ export const ToolBar = React.memo<UseRunPipelineReturnType>((props) => {
         Projects
       </Button>
       <SnakemakeButton />
-      <NWBSettingButton />
+      {/*<NWBSettingButton />*/}
       <RunButtons {...props} />
     </Box>
   )

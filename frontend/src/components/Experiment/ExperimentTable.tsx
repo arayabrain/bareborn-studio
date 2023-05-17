@@ -57,6 +57,8 @@ type Data = {
     nodeDict: object
     edgeDict: object
     createAt: string
+    startTime: string
+    finishTime: string
 }
 
 const data: Data = {
@@ -137,7 +139,9 @@ const data: Data = {
   ],
       "nodeDict": {},
       "edgeDict": {},
-      "createAt": "2023/04/07 04:28"
+      "createAt": "2023/04/07 04:28",
+      "startTime":"2023/05/16 04:28",
+      "finishTime":"2023/05/16 04:28"
 }
 
 export const ExperimentTable: React.FC = () => {
@@ -183,6 +187,8 @@ const TableImple = React.memo(() => {
   const [open, setOpen] = React.useState(false)
   const recordsIsEmpty = experimentListKeys.length === 0
   const createAt = data.createAt.split(' ')
+  const startTime = data.startTime.split(' ')
+  const finishTime = data.finishTime.split(' ')
 
   const onClickDelete = () => {
     setOpen(true)
@@ -243,6 +249,16 @@ const TableImple = React.memo(() => {
         <Box>
           <Typography>Timestamp: {createAt[0]}</Typography>
           <Typography>{createAt[1]}</Typography>
+        </Box>
+        <Box sx={{display: 'flex', gap: 5, marginLeft: 20}}>
+          <Box>
+              <Typography>Start time: {startTime[0]}</Typography>
+              <Typography>{startTime[1]}</Typography>
+          </Box>
+          <Box>
+            <Typography>Finish time: {finishTime[0]}</Typography>
+            <Typography>{finishTime[1]}</Typography>
+          </Box>
         </Box>
       </Box>
       <Box

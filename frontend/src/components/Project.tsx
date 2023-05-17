@@ -37,13 +37,14 @@ const Project: React.FC = () => {
             textColor="primary"
           >
             <Tab label="Workflow" {...a11yProps(0)} />
-            <Tab label="Results" {...a11yProps(1)} />
+            <Tab label="Result" {...a11yProps(1)} />
             <Tab label="Visualize" {...a11yProps(2)} />
           </Tabs>
           <Tooltip title="GitHub repository">
             <IconButton
               sx={{ mr: 1 }}
-              href="https://github.com/oist/studio"
+              // href="https://github.com/oist/studio"
+              href={'#'}
               target="_blank"
             >
               <GitHubIcon />
@@ -51,8 +52,9 @@ const Project: React.FC = () => {
           </Tooltip>
           <Tooltip title="Documentation">
             <IconButton
-              href="https://studio.readthedocs.io/en/latest/"
+              // href="https://studio.readthedocs.io/en/latest/"
               target="_blank"
+              href={'#'}
             >
               <MenuBookIcon />
             </IconButton>

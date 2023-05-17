@@ -49,7 +49,7 @@ const Projects = () => {
   }, [])
 
   const onResults = useCallback((id: number | string) => {
-    console.log('Results: ', id)
+    console.log('Result: ', id)
     navigate(`/projects/workflow?tab=1&id=${id}`)
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
