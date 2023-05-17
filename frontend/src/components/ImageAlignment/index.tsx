@@ -16,6 +16,7 @@ type ImageViewProps = {
   jsonData?: Object
   disabled?: { left: boolean; right: boolean }
   params?: { nodeId: string; alignments: Params[] }
+  readOnly?: boolean
 }
 
 const ImageAlignment: FC<ImageViewProps> = ({
@@ -23,6 +24,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
   onClose,
   urls,
   params = { nodeId: '', alignments: [] },
+  readOnly= false
 }) => {
   const viewerRef = useRef<any>()
   const [url, setUrl] = useState(urls[0])
@@ -281,6 +283,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="x_pos"
                         value={paramAligment?.x_pos || 0}
                         onChange={onChangeValue}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <Flex>
@@ -290,6 +293,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="y_pos"
                         value={paramAligment?.y_pos || 0}
                         onChange={onChangeValue}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <Flex>
@@ -299,6 +303,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="z_pos"
                         value={paramAligment?.z_pos || 0}
                         onChange={onChangeValue}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <Flex>
@@ -308,6 +313,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={paramAligment?.x_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <Flex>
@@ -317,6 +323,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={paramAligment?.y_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <Flex>
@@ -326,6 +333,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={paramAligment?.z_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <Flex>
@@ -334,6 +342,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="x_resize"
                         value={paramAligment?.x_resize || 0}
                         onChange={onChangeValue}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <Flex>
@@ -342,6 +351,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={paramAligment?.y_resize || 0}
                         name="y_resize"
                         onChange={onChangeValue}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <Flex>
@@ -350,6 +360,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={paramAligment?.z_resize || 0}
                         name="z_resize"
                         onChange={onChangeValue}
+                        readOnly={readOnly}
                       />
                     </Flex>
                     <ButtonSet

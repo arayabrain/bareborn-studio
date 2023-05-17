@@ -84,6 +84,7 @@ const TableRowOfFunction = ({ data } : {data: MouseType}) => {
             open={popup}
             urls={outputs}
             onClose={() => setPopup(false)}
+            readOnly={true}
         />
     </>
   )
