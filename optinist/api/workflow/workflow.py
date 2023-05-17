@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict, List, Union
+
 from pydantic import BaseModel
 
 from optinist.api.snakemake.smk import ForceRun
@@ -7,6 +8,7 @@ from optinist.api.snakemake.smk import ForceRun
 
 @dataclass
 class NodeType:
+    ALIGNMENT: str = "AlignmentNode"
     IMAGE: str = "ImageFileNode"
     CSV: str = "CsvFileNode"
     FLUO: str = "FluoFileNode"
