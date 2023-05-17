@@ -31,8 +31,8 @@ import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { Object } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
-// import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
-// import { useDispatch } from 'react-redux'
+import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
+import { useDispatch } from 'react-redux'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
@@ -88,9 +88,9 @@ const ProjectFormComponent = () => {
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
   const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
-  // const nodeId = searchParams.get('nodeId')
+  const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
-  // const dispatch = useDispatch()
+  const dispatch = useDispatch()
 
   const [initDataTable /*setInitDataTable */] =
     useState<DatabaseData>(defaultDatabase)
@@ -422,14 +422,23 @@ const ProjectFormComponent = () => {
     if (imagePre) rowClick(imagePre as ImagesDatabase)
   }
 
-  const onOk = () => {
+  const onCancle = () => {
     navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
   }
 
-  // const onChangeFilePath = (path: string[]) => {
-  //   if (!nodeId) return
-  //   dispatch(setInputNodeFilePath({ nodeId, filePath: path }))
-  // }
+  const onOk = () => {
+    if (nodeId) {
+      const urls = dataFactors
+        .map((el) => {
+          if (el.data.length) return el.data
+          return el.within.map((w) => w.data).flat()
+        })
+        .flat()
+        .map((image) => image.image_url)
+      dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+    }
+    onCancle()
+  }
 
   return (
     <ProjectsWrapper>
@@ -518,7 +527,11 @@ const ProjectFormComponent = () => {
                         })}
                         <BoxDrag
                           style={{
-                            borderBottom: rowDrag ? '1px dashed red' : '',
+                            borderBottom:
+                              (Array.isArray(rowDrag) && rowDrag.length) ||
+                              (!Array.isArray(rowDrag) && !!rowDrag)
+                                ? '1px dashed red'
+                                : '',
                           }}
                           onDrop={() => onDropData(factor, within)}
                           onMouseOver={() => onMouseOver(factor, within)}
@@ -594,14 +607,8 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter
-          onClick={() =>
-            navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
-          }
-        >
-          {idEdit ? 'Ok' : 'Add'}
-        </ButtonFilter>
-        <ButtonFilter onClick={onOk}>Cancel</ButtonFilter>
+        <ButtonFilter onClick={onOk}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
+        <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
     </ProjectsWrapper>
   )
@@ -642,6 +649,7 @@ const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
   marginBottom: theme.spacing(3),
+  userSelect: 'none',
 }))
 
 const BoxOptions = styled(RadioGroup)(({ theme }) => ({

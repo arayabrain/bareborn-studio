@@ -212,7 +212,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
     viewerRef.current = brainbrowser.VolumeViewer.start(
       'brainbrowser',
       (viewer: any) => {
-        viewer.addEventListener('volumeloaded', (e: any) => volumeLoaded(e, true))
+        viewer.addEventListener('volumeloaded', (e: any) =>
+          volumeLoaded(e, true),
+        )
         viewer.addEventListener('sliceupdate', volumeLoaded)
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
@@ -279,7 +281,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="x_pos"
-                        value={paramAligment?.x_pos || 0}
+                        value={paramAligment?.x_pos || ''}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -288,7 +290,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="y_pos"
-                        value={paramAligment?.y_pos || 0}
+                        value={paramAligment?.y_pos || ''}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -297,7 +299,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="z_pos"
-                        value={paramAligment?.z_pos || 0}
+                        value={paramAligment?.z_pos || ''}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -305,7 +307,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>roll {'{rad}'}</Text>
                       <input
                         name="x_rotate"
-                        value={paramAligment?.x_rotate || 0}
+                        value={paramAligment?.x_rotate || ''}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -314,7 +316,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>pitch {'{rad}'}</Text>
                       <input
                         name="y_rotate"
-                        value={paramAligment?.y_rotate || 0}
+                        value={paramAligment?.y_rotate || ''}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -323,7 +325,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>yaw {'{rad}'}</Text>
                       <input
                         name="z_rotate"
-                        value={paramAligment?.z_rotate || 0}
+                        value={paramAligment?.z_rotate || ''}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -332,14 +334,14 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>resize {'{x}'}</Text>
                       <input
                         name="x_resize"
-                        value={paramAligment?.x_resize || 0}
+                        value={paramAligment?.x_resize || ''}
                         onChange={onChangeValue}
                       />
                     </Flex>
                     <Flex>
                       <Text>resize {'{y}'}</Text>
                       <input
-                        value={paramAligment?.y_resize || 0}
+                        value={paramAligment?.y_resize || ''}
                         name="y_resize"
                         onChange={onChangeValue}
                       />
@@ -347,7 +349,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                     <Flex>
                       <Text>resize {'{z}'}</Text>
                       <input
-                        value={paramAligment?.z_resize || 0}
+                        value={paramAligment?.z_resize || ''}
                         name="z_resize"
                         onChange={onChangeValue}
                       />
