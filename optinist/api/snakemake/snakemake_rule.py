@@ -77,7 +77,10 @@ class SmkRule:
 
         params = get_typecheck_params(self._node.data.param, self._node.data.label)
         algo_output = get_pickle_file(
-            self._unique_id, self._node.id, self._node.data.label
+            self._project_id,
+            self._unique_id,
+            self._node.id,
+            self._node.data.label
         )
 
         return (
