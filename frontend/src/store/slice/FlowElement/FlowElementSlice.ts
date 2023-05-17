@@ -114,12 +114,10 @@ export const flowElementSlice = createSlice({
         if (!targetItem.data) {
           return
         }
-        console.log('params', params)
         let newParams = params
         if (typeof params === 'function') {
           newParams = params(targetItem.data.params as Params[])
         }
-        console.log('newParams', newParams)
         targetItem.data.params = newParams as Params[]
       }
     },

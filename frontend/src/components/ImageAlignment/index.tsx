@@ -37,10 +37,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
 
   const [stateParams, setStateParams] = useState<Params[]>(params.alignments)
 
-  const paramAligment = useMemo(
-    () => stateParams.find((param) => param.image_id === url),
-    [url, stateParams],
-  )
+  const paramAligment = useMemo(() => {
+    return stateParams.find((param) => param.image_id === url)
+  }, [url, stateParams])
 
   useEffect(() => {
     if (open) {
@@ -205,6 +204,11 @@ const ImageAlignment: FC<ImageViewProps> = ({
     setLoadedSuccess(true)
   }
 
+  const gerenateValueNumber = (value?: number) => {
+    if (typeof value === 'undefined') return ''
+    return value
+  }
+
   const loadFile = () => {
     if (!url || isLoadFile) return
     setIsLoadFile(true)
@@ -283,7 +287,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="x_pos"
-                        value={paramAligment?.x_pos}
+                        value={gerenateValueNumber(paramAligment?.x_pos)}
                         onChange={onChangeValue}
                         readOnly={readOnly}
                       />
@@ -293,7 +297,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="y_pos"
-                        value={paramAligment?.y_pos}
+                        value={gerenateValueNumber(paramAligment?.y_pos)}
                         onChange={onChangeValue}
                         readOnly={readOnly}
                       />
@@ -303,7 +307,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="z_pos"
-                        value={paramAligment?.z_pos}
+                        value={gerenateValueNumber(paramAligment?.z_pos)}
                         onChange={onChangeValue}
                         readOnly={readOnly}
                       />
@@ -312,7 +316,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>roll {'{rad}'}</Text>
                       <input
                         name="x_rotate"
-                        value={paramAligment?.x_rotate}
+                        value={gerenateValueNumber(paramAligment?.x_rotate)}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                         readOnly={readOnly}
@@ -322,7 +326,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>pitch {'{rad}'}</Text>
                       <input
                         name="y_rotate"
-                        value={paramAligment?.y_rotate}
+                        value={gerenateValueNumber(paramAligment?.y_rotate)}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                         readOnly={readOnly}
@@ -332,7 +336,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>yaw {'{rad}'}</Text>
                       <input
                         name="z_rotate"
-                        value={paramAligment?.z_rotate}
+                        value={gerenateValueNumber(paramAligment?.z_rotate)}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                         readOnly={readOnly}
@@ -342,7 +346,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>resize {'{x}'}</Text>
                       <input
                         name="x_resize"
-                        value={paramAligment?.x_resize}
+                        value={gerenateValueNumber(paramAligment?.x_resize)}
                         onChange={onChangeValue}
                         readOnly={readOnly}
                       />
@@ -350,7 +354,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                     <Flex>
                       <Text>resize {'{y}'}</Text>
                       <input
-                        value={paramAligment?.y_resize}
+                        value={gerenateValueNumber(paramAligment?.y_resize)}
                         name="y_resize"
                         onChange={onChangeValue}
                         readOnly={readOnly}
@@ -359,7 +363,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                     <Flex>
                       <Text>resize {'{z}'}</Text>
                       <input
-                        value={paramAligment?.z_resize}
+                        value={gerenateValueNumber(paramAligment?.z_resize)}
                         name="z_resize"
                         onChange={onChangeValue}
                         readOnly={readOnly}
