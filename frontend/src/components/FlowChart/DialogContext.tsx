@@ -1,5 +1,6 @@
 import { FILE_TREE_TYPE } from 'api/files/Files'
 import { createContext } from 'react'
+import { Params } from 'store/slice/FlowElement/FlowElementType'
 
 export declare type OpenDialogValue = {
   filePath: string | string[]
@@ -18,7 +19,10 @@ export const DialogContext = createContext<{
   onOpen: (nodeId: string) => void
   onOpenDialogFile: (value: OpenDialogValue) => void
   onMessageError: (value: ErrorDialogValue) => void
-  onOpenImageAlignment: (v: boolean, params?: { [key: string]: string | undefined }) => void
+  onOpenImageAlignment: (
+    v: boolean,
+    params?: { nodeId: string; alignments: Params[] },
+  ) => void
 }>({
   onOpen: () => null,
   onOpenDialogFile: () => null,

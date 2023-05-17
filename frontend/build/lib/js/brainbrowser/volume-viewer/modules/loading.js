@@ -823,7 +823,7 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
           const { cursorDrag, hover, cursor } = panel.volume.header[panel.axis]
           return (
             hover &&
-            Math.abs(cursorDrag.y - cursor.y) < 4 &&
+            Math.abs(cursorDrag?.y - cursor?.y) < 4 &&
             Math.abs(cursorDrag.x - cursor.x) < 4
           )
         }

@@ -1,11 +1,11 @@
 import { Box, IconButton, Modal, styled } from '@mui/material'
-import { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, FC, useEffect, useMemo, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { Object } from 'pages/Database'
-import { selectNodeById } from 'store/slice/FlowElement/FlowElementSelectors'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { editFlowElementParamsAlignmentById } from 'store/slice/FlowElement/FlowElementSlice'
 import { Params } from 'store/slice/FlowElement/FlowElementType'
+// import { setSaveFileName } from 'store/slice/VisualizeItem/VisualizeItemSlice'
 
 type ImageViewProps = {
   open: boolean
@@ -15,14 +15,14 @@ type ImageViewProps = {
   urls: string[]
   jsonData?: Object
   disabled?: { left: boolean; right: boolean }
-  params?: { [key: string]: string | undefined }
+  params?: { nodeId: string; alignments: Params[] }
 }
 
 const ImageAlignment: FC<ImageViewProps> = ({
   open,
   onClose,
   urls,
-  params = {},
+  params = { nodeId: '', alignments: [] },
 }) => {
   const viewerRef = useRef<any>()
   const [url, setUrl] = useState(urls[0])
@@ -31,13 +31,13 @@ const ImageAlignment: FC<ImageViewProps> = ({
   const volumes = useRef<any>()
   const dispatch = useDispatch()
 
-  const flowElement = useSelector(selectNodeById(params?.nodeId as string))
+  const urlRef = useRef(url)
 
-  const [stateParams, setStateParams] = useState<Params | undefined>(
-    flowElement?.data?.params,
-  )
-  const [stateParamsEdit, setStateParamsEdit] = useState<Params | undefined>(
-    flowElement?.data?.params,
+  const [stateParams, setStateParams] = useState<Params[]>(params.alignments)
+
+  const paramAligment = useMemo(
+    () => stateParams.find((param) => param.image_id === url),
+    [url, stateParams],
   )
 
   useEffect(() => {
@@ -45,17 +45,25 @@ const ImageAlignment: FC<ImageViewProps> = ({
       setTimeout(loadFile, 0)
       return
     }
+    setStateParams(params.alignments)
+    setUrl(urls[0])
+    setIsLoadFile(false)
+    setLoadedSuccess(false)
     //eslint-disable-next-line
   }, [open])
 
   useEffect(() => {
+    urlRef.current = url
     loadFileIndex()
     //eslint-disable-next-line
   }, [url])
 
   useEffect(() => {
     if (loadedSuccess) {
-      setValueToBraibrowser(flowElement?.data?.params)
+      const paramInit = params.alignments?.find(
+        (param) => param.image_id === url,
+      )
+      setValueToBraibrowser(paramInit)
     }
     //eslint-disable-next-line
   }, [loadedSuccess, url])
@@ -91,24 +99,27 @@ const ImageAlignment: FC<ImageViewProps> = ({
         y: Number(valueParams.y_resize),
         z: Number(valueParams.z_resize),
       })
-      volumes.current.setVoxelCoords(
-        Number(valueParams.y_pos),
-        Number(valueParams.z_pos),
-        Number(valueParams.x_pos),
-      )
       volumes.current.setRadian(
         Number(valueParams.y_rotate),
         Number(valueParams.x_rotate),
         Number(valueParams.z_rotate),
       )
+      volumes.current.setVoxelCoords(
+        Number(valueParams.y_pos),
+        Number(valueParams.z_pos),
+        Number(valueParams.x_pos),
+      )
+      viewerRef.current.redrawVolumes()
     }
-    viewerRef.current.redrawVolumes()
   }
 
   const onChangeValue = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    if (params?.nodeId && stateParamsEdit) {
-      setStateParamsEdit({ ...stateParamsEdit, [name]: value })
+    if (params?.nodeId && stateParams) {
+      const newParams = stateParams.map((align) =>
+        align.image_id === url ? { ...align, [name]: value } : align,
+      )
+      setStateParams(newParams)
     }
   }
 
@@ -123,7 +134,10 @@ const ImageAlignment: FC<ImageViewProps> = ({
       valueRadian = 0
     }
     if (params?.nodeId && stateParams) {
-      setStateParams({ ...stateParams, [name]: value })
+      const newParams = stateParams.map((align) =>
+        align.image_id === url ? { ...align, [name]: valueRadian } : align,
+      )
+      setStateParams(newParams)
     }
   }
 
@@ -149,8 +163,44 @@ const ImageAlignment: FC<ImageViewProps> = ({
           },
         },
       ],
-      complete: () => setValueToBraibrowser(stateParams),
+      complete: () => setValueToBraibrowser(paramAligment),
     })
+  }
+
+  const volumeLoaded = (event: any, isLoaded?: boolean) => {
+    const brainbrowser = (window as any).BrainBrowser
+    const { volume } = event
+    volumes.current = volume
+    const paramsNode: Params = {
+      image_id: urlRef.current,
+      x_pos: 0,
+      y_pos: 0,
+      z_pos: 0,
+      x_rotate: volume.header.xspace.radian,
+      y_rotate: volume.header.yspace.radian,
+      z_rotate: volume.header.zspace.radian,
+      x_resize: volume.header.xspace.step,
+      y_resize: volume.header.yspace.step,
+      z_resize: volume.header.zspace.step,
+    }
+    if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
+      const voxel = volume.getVoxelCoords()
+      paramsNode.x_pos = voxel.k
+      paramsNode.y_pos = voxel.i
+      paramsNode.z_pos = voxel.j
+    }
+    const newParams = (pre: Params[]) => {
+      if (pre.find((align) => align.image_id === urlRef.current)) {
+        return pre.map((align) => {
+          if (align.image_id === urlRef.current) return paramsNode
+          return align
+        })
+      }
+      return [...pre, paramsNode]
+    }
+    setStateParams(newParams)
+    setIsLoadFile(false)
+    setLoadedSuccess(true)
   }
 
   const loadFile = () => {
@@ -162,55 +212,8 @@ const ImageAlignment: FC<ImageViewProps> = ({
     viewerRef.current = brainbrowser.VolumeViewer.start(
       'brainbrowser',
       (viewer: any) => {
-        viewer.addEventListener('volumeloaded', function (event: any) {
-          if (!stateParamsEdit) {
-            const { volume } = event
-            const paramsNode: Params = {
-              x_pos: 0,
-              y_pos: 0,
-              z_pos: 0,
-              x_rotate: volume.header.xspace.radian,
-              y_rotate: volume.header.yspace.radian,
-              z_rotate: volume.header.zspace.radian,
-              x_resize: volume.header.xspace.step,
-              y_resize: volume.header.yspace.step,
-              z_resize: volume.header.zspace.step,
-            }
-            volumes.current = volume
-            if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
-              const voxel = volume.getVoxelCoords()
-              paramsNode.x_pos = voxel.k
-              paramsNode.y_pos = voxel.i
-              paramsNode.z_pos = voxel.j
-            }
-            setStateParamsEdit(paramsNode)
-          }
-          setIsLoadFile(false)
-          setLoadedSuccess(true)
-        })
-        viewer.addEventListener('sliceupdate', function (event: any) {
-          const { volume } = event
-          const paramsNode: Params = {
-            x_pos: 0,
-            y_pos: 0,
-            z_pos: 0,
-            x_rotate: volume.header.xspace.radian,
-            y_rotate: volume.header.yspace.radian,
-            z_rotate: volume.header.zspace.radian,
-            x_resize: volume.header.xspace.step,
-            y_resize: volume.header.yspace.step,
-            z_resize: volume.header.zspace.step,
-          }
-          volumes.current = volume
-          if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
-            const voxel = volume.getVoxelCoords()
-            paramsNode.x_pos = voxel.k
-            paramsNode.y_pos = voxel.i
-            paramsNode.z_pos = voxel.j
-          }
-          setStateParams(paramsNode)
-          setStateParamsEdit(paramsNode)
-        })
+        viewer.addEventListener('volumeloaded', (e: any) => volumeLoaded(e, true))
+        viewer.addEventListener('sliceupdate', volumeLoaded)
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
         viewer.setDefaultPanelSize(256, 256)
@@ -276,7 +279,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="x_pos"
-                        value={stateParamsEdit?.x_pos || 0}
+                        value={paramAligment?.x_pos || 0}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -285,7 +288,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="y_pos"
-                        value={stateParamsEdit?.y_pos || 0}
+                        value={paramAligment?.y_pos || 0}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -294,7 +297,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <input
                         type={'number'}
                         name="z_pos"
-                        value={stateParamsEdit?.z_pos || 0}
+                        value={paramAligment?.z_pos || 0}
                         onChange={onChangeValue}
                       />
                     </Flex>
@@ -302,7 +305,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>roll {'{rad}'}</Text>
                       <input
                         name="x_rotate"
-                        value={stateParamsEdit?.x_rotate || 0}
+                        value={paramAligment?.x_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -311,7 +314,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>pitch {'{rad}'}</Text>
                       <input
                         name="y_rotate"
-                        value={stateParamsEdit?.y_rotate || 0}
+                        value={paramAligment?.y_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -320,7 +323,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>yaw {'{rad}'}</Text>
                       <input
                         name="z_rotate"
-                        value={stateParamsEdit?.z_rotate || 0}
+                        value={paramAligment?.z_rotate || 0}
                         onChange={onChangeValue}
                         onBlur={onBlurRadian}
                       />
@@ -329,14 +332,14 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <Text>resize {'{x}'}</Text>
                       <input
                         name="x_resize"
-                        value={stateParamsEdit?.x_resize || 0}
+                        value={paramAligment?.x_resize || 0}
                         onChange={onChangeValue}
                       />
                     </Flex>
                     <Flex>
                       <Text>resize {'{y}'}</Text>
                       <input
-                        value={stateParamsEdit?.y_resize || 0}
+                        value={paramAligment?.y_resize || 0}
                         name="y_resize"
                         onChange={onChangeValue}
                       />
@@ -344,12 +347,16 @@ const ImageAlignment: FC<ImageViewProps> = ({
                     <Flex>
                       <Text>resize {'{z}'}</Text>
                       <input
-                        value={stateParamsEdit?.z_resize || 0}
+                        value={paramAligment?.z_resize || 0}
                         name="z_resize"
                         onChange={onChangeValue}
                       />
                     </Flex>
-                    <ButtonSet onClick={() => setValueToBraibrowser(stateParamsEdit)}>Set Origin</ButtonSet>
+                    <ButtonSet
+                      onClick={() => setValueToBraibrowser(paramAligment)}
+                    >
+                      Set Origin
+                    </ButtonSet>
                   </ContentSet>
                 </BoxSet>
                 <Flex

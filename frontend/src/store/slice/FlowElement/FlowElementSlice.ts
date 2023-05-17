@@ -28,18 +28,6 @@ import { addAlgorithmNode, addInputNode } from './FlowElementActions'
 import { getLabelByPath } from './FlowElementUtils'
 import { uploadFile } from '../FileUploader/FileUploaderActions'
 
-const initParams = {
-  x_pos: 0,
-  y_pos: 0,
-  z_pos: 0,
-  x_rotate: 0,
-  y_rotate: 0,
-  z_rotate: 0,
-  x_resize: 0,
-  y_resize: 0,
-  z_resize: 0,
-}
-
 const initialElements: Elements<NodeData> = [
   {
     id: INITIAL_IMAGE_ELEMENT_ID,
@@ -114,7 +102,7 @@ export const flowElementSlice = createSlice({
       state,
       action: PayloadAction<{
         nodeId: string
-        params: Params
+        params: Params[] | ((params: Params[]) => Params[])
       }>,
     ) => {
       let { nodeId, params } = action.payload
@@ -126,7 +114,13 @@ export const flowElementSlice = createSlice({
         if (!targetItem.data) {
           return
         }
-        targetItem.data.params = params
+        console.log('params', params)
+        let newParams = params
+        if (typeof params === 'function') {
+          newParams = params(targetItem.data.params as Params[])
+        }
+        console.log('newParams', newParams)
+        targetItem.data.params = newParams as Params[]
       }
     },
   },

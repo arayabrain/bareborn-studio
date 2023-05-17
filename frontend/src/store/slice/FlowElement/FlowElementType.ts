@@ -9,7 +9,7 @@ export const NODE_TYPE_SET = {
 
 export type NODE_TYPE = typeof NODE_TYPE_SET[keyof typeof NODE_TYPE_SET]
 
-export type NodeData = (AlgorithmNodeData | InputNodeData) & {params?: Params}
+export type NodeData = (AlgorithmNodeData | InputNodeData) & {params?: Params[]}
 
 interface NodeDataBaseType<T extends NODE_TYPE> {
   label: string
@@ -28,6 +28,7 @@ export interface ElementCoord {
 }
 
 export type Params = {
+  image_id: number | string
   x_pos: number
   y_pos: number
   z_pos: number
