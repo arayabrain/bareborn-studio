@@ -8,7 +8,7 @@ type ModalDeleteAccountProps = {
   onSubmit: () => void
 }
 
-const regexPassword = /^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,100}$/
+const regexPassword = /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
 
 const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
   onClose,
@@ -37,7 +37,7 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
 
   const validateReEnter = (value: string): string => {
     if (!value) return 'This field is required'
-    if (value !== values.password) {
+    if (value !== values.new_password) {
       return 'Passwords do not match'
     }
     return ''
