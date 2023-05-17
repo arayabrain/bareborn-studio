@@ -44,7 +44,7 @@ const Project: React.FC = () => {
             <IconButton
               sx={{ mr: 1 }}
               // href="https://github.com/oist/studio"
-              href={'#'}
+              href={''}
               target="_blank"
             >
               <GitHubIcon />
@@ -54,7 +54,7 @@ const Project: React.FC = () => {
             <IconButton
               // href="https://studio.readthedocs.io/en/latest/"
               target="_blank"
-              href={'#'}
+              href={''}
             >
               <MenuBookIcon />
             </IconButton>
