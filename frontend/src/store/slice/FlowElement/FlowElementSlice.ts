@@ -28,6 +28,14 @@ import { addAlgorithmNode, addInputNode } from './FlowElementActions'
 import { getLabelByPath } from './FlowElementUtils'
 import { uploadFile } from '../FileUploader/FileUploaderActions'
 
+const initParams = {
+  alignments: {
+    path: 'alignments' as string,
+    type: 'child' as string,
+    value: [] as Params[],
+  },
+}
+
 const initialElements: Elements<NodeData> = [
   {
     id: INITIAL_IMAGE_ELEMENT_ID,
@@ -35,6 +43,7 @@ const initialElements: Elements<NodeData> = [
     data: {
       type: NODE_TYPE_SET.INPUT,
       label: INITIAL_IMAGE_ELEMENT_NAME,
+      param: initParams,
     },
     style: INITIAL_DATA_STYLE,
     position: { x: 50, y: 150 },
@@ -102,7 +111,7 @@ export const flowElementSlice = createSlice({
       state,
       action: PayloadAction<{
         nodeId: string
-        params: Params[] | ((params: Params[]) => Params[])
+        params: Params[]
       }>,
     ) => {
       let { nodeId, params } = action.payload
@@ -115,10 +124,10 @@ export const flowElementSlice = createSlice({
           return
         }
         let newParams = params
-        if (typeof params === 'function') {
-          newParams = params(targetItem.data.params as Params[])
+        if (!targetItem.data.param) {
+          targetItem.data.param = initParams
         }
-        targetItem.data.params = newParams as Params[]
+        targetItem.data.param.alignments.value = newParams as Params[]
       }
     },
   },
@@ -199,6 +208,7 @@ export const flowElementSlice = createSlice({
               data: {
                 label: node.data?.label ?? '',
                 type: node.data?.type ?? 'input',
+                param: initParams,
               },
             }
           } else {
@@ -207,6 +217,7 @@ export const flowElementSlice = createSlice({
               data: {
                 label: node.data?.label ?? '',
                 type: node.data?.type ?? 'algorithm',
+                param: initParams,
               },
             }
           }

@@ -9,7 +9,15 @@ export const NODE_TYPE_SET = {
 
 export type NODE_TYPE = typeof NODE_TYPE_SET[keyof typeof NODE_TYPE_SET]
 
-export type NodeData = (AlgorithmNodeData | InputNodeData) & {params?: Params[]}
+export type NodeData = (AlgorithmNodeData | InputNodeData) & {
+  param?: {
+    alignments: {
+      path: string
+      type: string
+      value: Params[]
+    }
+  }
+}
 
 interface NodeDataBaseType<T extends NODE_TYPE> {
   label: string
@@ -39,7 +47,6 @@ export type Params = {
   y_resize: number
   z_resize: number
 }
-
 
 export interface FlowElement {
   flowElements: Elements<NodeData>

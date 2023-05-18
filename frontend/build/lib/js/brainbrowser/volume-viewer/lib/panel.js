@@ -575,7 +575,7 @@
       cursor.x > panel.image_center.x
         ? panel.image_center.x * 2 - cursor.x
         : cursor.x,
-      4,
+      2,
     )
 
     var newX = cursor.x + Math.cos(radian) * radius
