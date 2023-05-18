@@ -96,7 +96,7 @@ const Projects = () => {
                 Workflow
               </ButtonAdd>
               <ButtonAdd variant="contained" onClick={() => onResults(data.id)}>
-                Results
+                Result
               </ButtonAdd>
               <ButtonAdd
                 variant="contained"
