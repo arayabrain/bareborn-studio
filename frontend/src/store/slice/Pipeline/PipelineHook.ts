@@ -29,6 +29,7 @@ export function useRunPipeline() {
   const runPostData = useSelector(selectRunPostData)
   const handleRunPipeline = React.useCallback(
     (name: string) => {
+      console.log('asdassdasass', { runPostData: { name, ...runPostData, forceRunList: [] } })
       dispatch(run({ runPostData: { name, ...runPostData, forceRunList: [] } }))
     },
     [dispatch, runPostData],

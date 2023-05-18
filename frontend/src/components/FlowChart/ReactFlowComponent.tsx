@@ -45,7 +45,7 @@ import {
 import { FileSelectDialog } from 'components/common/FileSelectDialog'
 import { FormHelperText, Popover } from '@mui/material'
 import ImageAlignment from '../ImageAlignment'
-import { Params } from 'store/slice/FlowElement/FlowElementType'
+import { Params } from 'store/slice/InputNode/InputNodeType'
 
 const initDialogFile = {
   filePath: '',

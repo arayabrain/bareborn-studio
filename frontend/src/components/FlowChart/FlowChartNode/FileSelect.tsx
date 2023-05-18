@@ -4,12 +4,12 @@ import ButtonGroup from '@mui/material/ButtonGroup'
 
 import { FILE_TREE_TYPE } from 'api/files/Files'
 import { LinearProgressWithLabel } from './LinerProgressWithLabel'
-import { FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
+import { AlignmentData, FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { DialogContext } from '../DialogContext'
 import { useSelector } from 'react-redux'
-import { selectNodeById } from 'store/slice/FlowElement/FlowElementSelectors'
+import { selectInputNodeParam } from 'store/slice/InputNode/InputNodeSelectors'
 
 export const FileSelect = React.memo<{
   multiSelect?: boolean
@@ -71,7 +71,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
     const [searchParams] = useSearchParams()
     const { onOpenImageAlignment } = useContext(DialogContext)
 
-    const flowElement = useSelector(selectNodeById(nodeId || ''))
+    const inputNode = useSelector(selectInputNodeParam(nodeId || '')) as AlignmentData
 
     const id = searchParams.get('id')
     const getNameSelectec = () => {
@@ -107,7 +107,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
               if (!nodeId) return
               onOpenImageAlignment(true, {
                 nodeId,
-                alignments: flowElement?.data?.param?.alignments.value || [],
+                alignments: inputNode.alignments.value,
               })
             }}
             style={{ width: '80%' }}

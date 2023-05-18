@@ -3,8 +3,8 @@ import { ChangeEvent, FC, useEffect, useMemo, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { Object } from 'pages/Database'
 import { useDispatch } from 'react-redux'
-import { editFlowElementParamsAlignmentById } from 'store/slice/FlowElement/FlowElementSlice'
-import { Params } from 'store/slice/FlowElement/FlowElementType'
+import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
+import { Params } from 'store/slice/InputNode/InputNodeType'
 // import { setSaveFileName } from 'store/slice/VisualizeItem/VisualizeItemSlice'
 
 type ImageViewProps = {
@@ -72,9 +72,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
   const onOk = () => {
     if (params?.nodeId && stateParams) {
       dispatch(
-        editFlowElementParamsAlignmentById({
+        setInputNodeParamAlignment({
           nodeId: params.nodeId,
-          params: stateParams,
+          param: stateParams,
         }),
       )
     }
@@ -515,3 +515,4 @@ const CloseIconWrapper = styled(CloseIcon)({
 })
 
 export default ImageAlignment
+

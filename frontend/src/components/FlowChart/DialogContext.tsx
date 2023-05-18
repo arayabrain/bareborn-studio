@@ -1,6 +1,6 @@
 import { FILE_TREE_TYPE } from 'api/files/Files'
 import { createContext } from 'react'
-import { Params } from 'store/slice/FlowElement/FlowElementType'
+import { Params } from 'store/slice/InputNode/InputNodeType'
 
 export declare type OpenDialogValue = {
   filePath: string | string[]
