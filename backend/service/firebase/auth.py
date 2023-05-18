@@ -42,12 +42,12 @@ async def authenticate(user: UserAuth):
             email=user.email,
             password=user.password,
         )
-        access_token = create_access_token(subject=user['localId'])
-        token = Token(access_token=access_token, token_type='bearer')
     except Exception as e:
         return None, make_response(
             HTTPStatus.INTERNAL_SERVER_ERROR, code.E_FAIL, str(e)
         )
+    access_token = create_access_token(subject=user['localId'])
+    token = Token(access_token=access_token, token_type='bearer')
     return token, None
 
 
