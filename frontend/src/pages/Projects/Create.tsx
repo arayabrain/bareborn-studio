@@ -149,7 +149,12 @@ const ProjectFormComponent = () => {
 
   const onDeleteFactor = (row: DataFactor) => {
     setImageIDs((pre) =>
-      pre.filter((id) => !row.data.find((rowData) => rowData.image_id === id)),
+      pre.filter((id) => {
+        if (projectLevel === 'factor') {
+          return !row.data.find((rowData) => rowData.image_id === id)
+        }
+        return !row.within.find((w) => w.data.find((d) => d.image_id === id))
+      }),
     )
     setDataFactors((pre) => pre.filter((e) => e.id !== row.id))
   }
