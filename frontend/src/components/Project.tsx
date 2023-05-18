@@ -40,25 +40,23 @@ const Project: React.FC = () => {
             <Tab label="Result" {...a11yProps(1)} />
             <Tab label="Visualize" {...a11yProps(2)} />
           </Tabs>
-          <Tooltip title="GitHub repository">
-            <IconButton
-              sx={{ mr: 1 }}
-              // href="https://github.com/oist/studio"
-              href={''}
-              target="_blank"
-            >
-              <GitHubIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Documentation">
-            <IconButton
-              // href="https://studio.readthedocs.io/en/latest/"
-              target="_blank"
-              href={''}
-            >
-              <MenuBookIcon />
-            </IconButton>
-          </Tooltip>
+          {/*<Tooltip title="GitHub repository">*/}
+          {/*  <IconButton*/}
+          {/*    sx={{ mr: 1 }}*/}
+          {/*    href="https://github.com/oist/studio"*/}
+          {/*    target="_blank"*/}
+          {/*  >*/}
+          {/*    <GitHubIcon />*/}
+          {/*  </IconButton>*/}
+          {/*</Tooltip>*/}
+          {/*<Tooltip title="Documentation">*/}
+          {/*  <IconButton*/}
+          {/*    href="https://studio.readthedocs.io/en/latest/"*/}
+          {/*    target="_blank"*/}
+          {/*  >*/}
+          {/*    <MenuBookIcon />*/}
+          {/*  </IconButton>*/}
+          {/*</Tooltip>*/}
         </Toolbar>
       </StyledAppBar>
       <TabPanel value={value} index={0}>
