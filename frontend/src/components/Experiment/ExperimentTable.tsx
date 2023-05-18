@@ -30,7 +30,7 @@ import {
   selectExperimentList,
 } from 'store/slice/Experiments/ExperimentsSelectors'
 import {
-  deleteExperimentByList,
+  // deleteExperimentByList,
   getExperiments,
 } from 'store/slice/Experiments/ExperimentsActions'
 import { ExperimentStatusIcon } from './ExperimentStatusIcon'
@@ -176,13 +176,13 @@ const LOCAL_STORAGE_KEY_PER_PAGE = 'studio_experiment_table_per_page'
 const TableImple = React.memo(() => {
   const experimentList = useSelector(selectExperimentList)
   const experimentListKeys = Object.keys(experimentList)
-  const dispatch = useDispatch()
+  // const dispatch = useDispatch()
   const navigate = useNavigate()
-  const onClickReload = () => {
-    dispatch(getExperiments())
-  }
-  const [checkedList, setCheckedList] = useState<string[]>([])
-  const [open, setOpen] = React.useState(false)
+  // const onClickReload = () => {
+  //   dispatch(getExperiments())
+  // }
+  // const [checkedList, setCheckedList] = useState<string[]>([])
+  // const [open, setOpen] = React.useState(false)
   const recordsIsEmpty = experimentListKeys.length === 0
   const startTime = data.startTime.split(' ')
   const finishTime = data.finishTime.split(' ')
@@ -203,13 +203,17 @@ const TableImple = React.memo(() => {
     navigate('/projects')
   }
 
-  const [page, setPage] = React.useState(0)
+  const [page,
+    // setPage
+  ] = useState(0)
 
   // const handleChangePage = (event: unknown, newPage: number) => {
   //   setPage(newPage)
   // }
 
-  const [rowsPerPage, setRowsPerPage] = useLocalStorage(
+  const [rowsPerPage,
+    // setRowsPerPage
+  ] = useLocalStorage(
     LOCAL_STORAGE_KEY_PER_PAGE,
     10,
     (value) => {
