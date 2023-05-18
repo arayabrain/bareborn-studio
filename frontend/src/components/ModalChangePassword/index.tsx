@@ -17,13 +17,20 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
 }) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [values, setValues] = useState<{ [key: string]: string }>({})
-
   const onChangeValue = (
     event: ChangeEvent<HTMLInputElement>,
     validate?: Function,
   ) => {
     const { name, value } = event.target
     setValues({ ...values, [name]: value })
+    if(name === 'new_password' && values.confirm_password) {
+      if(!validate?.(value)) {
+        setErrors({ ...errors, [name]: validate?.(value), confirm_password: value !== values.confirm_password ? 'Passwords do not match' : ''})
+        return
+      }
+        setErrors({ ...errors, [name]: validate?.(value), confirm_password: ''})
+        return
+    }
     setErrors({ ...errors, [name]: validate?.(value) })
   }
 
@@ -44,8 +51,9 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
   }
 
   const validateReEnterWhenInputPassword = () => {
-    const { reEnter, password } = values
-    if (reEnter && reEnter !== password) {
+    const { reEnter, new_password } = values
+    if (!new_password) setErrors((pre) => ({ ...pre, new_password: 'This field is required' }))
+    if (reEnter && reEnter !== new_password) {
       setErrors((pre) => ({ ...pre, reEnter: 'Passwords do not match' }))
     }
   }
@@ -75,6 +83,7 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
               onChange={(e) => onChangeValue(e, validatePassword)}
               name="password"
               error={errors.password}
+              onBlur={(e) => onChangeValue(e, validatePassword)}
               placeholder="Old Password"
             />
           </FormInline>
@@ -99,6 +108,7 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
               name="confirm_password"
               error={errors.confirm_password}
               placeholder="Confirm Password"
+              onBlur={(e) => onChangeValue(e, validateReEnter)}
             />
           </FormInline>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
