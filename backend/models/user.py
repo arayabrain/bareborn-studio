@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Optional, List, Union
+from typing import List, Optional
+
 from pydantic import BaseModel, EmailStr, Field, validator
 
 
@@ -10,22 +11,26 @@ class Role(BaseModel):
 
 class UserAuth(BaseModel):
     email: EmailStr
-    password: str = Field(max_length=255, regex='^(?=.*\d)(?=.*[@$!%*#?&])(?=.*[a-zA-Z]).{6,255}$')
+    password: str
+
+
+class UserCreate(BaseModel):
+    display_name: str = Field(max_length=100)
+    lab: str = Field(max_length=100)
+    role: int
+    email: EmailStr
+    password: str = Field(
+        max_length=255, regex='^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$'
+    )
+
+    class Config:
+        anystr_strip_whitespace = True
 
     @validator('email')
     def email_must_less_than_255(cls, value):
         if len(value) >= 255:
             raise ValueError("Email too long")
         return value
-
-
-class UserCreate(UserAuth):
-    display_name: str = Field(max_length=100)
-    lab: str = Field(max_length=100)
-    role: int
-
-    class Config:
-        anystr_strip_whitespace = True
 
     @validator('lab', 'display_name')
     def check_empty_string(cls, value: str):
@@ -48,13 +53,14 @@ class UserUpdate(BaseModel):
             raise ValueError('Value cannot be empty')
         return value.strip()
 
+
 class User(BaseModel):
     uid: str
     email: EmailStr
-    display_name: Optional[str] = Field(max_length=100)
+    display_name: Optional[str]
     created_time: Optional[datetime] = None
     role: int
-    lab: Optional[str] = Field(max_length=100)
+    lab: Optional[str]
     last_login_time: Optional[datetime] = None
 
 
