@@ -206,47 +206,47 @@ export const defaultDatabase: DatabaseData = {
       recording_time: '2023-04-07',
       subjects: [
         {
-          id: "0",
-          parent_id: "0",
+          id: '0',
+          parent_id: '0',
           label: 'new subject',
           sessions: [
             {
-              id: "0",
-              parent_id: "0",
+              id: '0',
+              parent_id: '0',
               label: 'new session',
               datatypes: [
                 {
-                  id: "0",
-                  parent_id: "0",
+                  id: '0',
+                  parent_id: '0',
                   label: 'anat',
                   images: [
                     {
                       id: 0,
-                      parent_id: "0",
-                      image_url: '/lib/test.nii',
+                      parent_id: '0',
+                      image_url: window.location.origin + '/lib/test.nii',
                       attributes: {
                         size: [15.0, 15.0, 15.0],
                         type: 'TYPE_1',
                         protocol: 'Protocol',
-                        voxel_size: [100, 100, 100]
+                        voxel_size: [100, 100, 100],
                       },
                     },
                   ],
                 },
                 {
-                  id: "1",
-                  parent_id: "0",
+                  id: '1',
+                  parent_id: '0',
                   label: 'func',
                   images: [
                     {
                       id: 1,
-                      parent_id: "0",
-                      image_url: '/lib/test0.nii',
+                      parent_id: '0',
+                      image_url: window.location.origin + '/lib/test0.nii',
                       attributes: {
                         size: [15.0, 15.0, 15.0],
                         type: 'TYPE_1',
                         protocol: 'Protocol',
-                        voxel_size: [100, 100, 100]
+                        voxel_size: [100, 100, 100],
                       },
                     },
                   ],
@@ -256,69 +256,69 @@ export const defaultDatabase: DatabaseData = {
           ],
         },
         {
-          id: "1",
-          parent_id: "0",
+          id: '1',
+          parent_id: '0',
           label: 'project subject',
           sessions: [
             {
-              id: "1",
-              parent_id: "1",
+              id: '1',
+              parent_id: '1',
               label: 'zsession',
               datatypes: [
                 {
-                  id: "2",
-                  parent_id: "1",
+                  id: '2',
+                  parent_id: '1',
                   label: 'anat',
                   images: [
                     {
                       id: 2,
-                      parent_id: "2",
-                      image_url: '/lib/test1.nii',
+                      parent_id: '2',
+                      image_url: window.location.origin + '/lib/test1.nii',
                       attributes: {
                         size: [15.0, 15.0, 15.0],
                         type: 'TYPE_1',
                         protocol: 'Protocol',
-                        voxel_size: [100, 100, 100]
+                        voxel_size: [100, 100, 100],
                       },
                     },
                   ],
                 },
                 {
-                  id: "3",
-                  parent_id: "1",
+                  id: '3',
+                  parent_id: '1',
                   label: 'zunc',
                   images: [
                     {
                       id: 3,
-                      parent_id: "3",
-                      image_url: '/lib/test2.nii',
+                      parent_id: '3',
+                      image_url: window.location.origin + '/lib/test2.nii',
                       attributes: {
                         size: [15.0, 15.0, 15.0],
                         type: 'T2_RATE',
                         protocol: 'X Protocol',
-                        voxel_size: [100, 100, 100]
+                        voxel_size: [100, 100, 100],
                       },
                     },
                     {
                       id: 4,
-                      parent_id: "3",
-                      image_url: '/lib/test3.nii',
+                      parent_id: '3',
+                      image_url: window.location.origin + '/lib/test3.nii',
                       attributes: {
                         size: [15.0, 15.0, 15.0],
                         type: 'TYPE_1',
                         protocol: 'Protocol',
-                        voxel_size: [100, 100, 100]
+                        voxel_size: [100, 100, 100],
                       },
                     },
                     {
                       id: 5,
-                      parent_id: "3",
-                      image_url: '/lib/test4.nii',
+                      parent_id: '3',
+                      image_url: window.location.origin + '/lib/test4.nii',
                       attributes: {
                         size: [15.0, 15.0, 15.0],
                         type: 'T3_RATE',
                         protocol: 'Z Protocol',
-                        voxel_size: [100, 100, 100]
+                        voxel_size: [100, 100, 100],
                       },
                     },
                   ],
@@ -338,20 +338,20 @@ export const defaultDatabase: DatabaseData = {
       recording_time: '2023-04-06',
       subjects: [
         {
-          id: "3",
-          parent_id: "1",
+          id: '3',
+          parent_id: '1',
           label: 'subject name',
           sessions: [],
         },
         {
-          id: "4",
-          parent_id: "1",
+          id: '4',
+          parent_id: '1',
           label: 'zubject name',
           sessions: [],
         },
         {
-          id: "5",
-          parent_id: "1",
+          id: '5',
+          parent_id: '1',
           label: 'lubject name',
           sessions: [],
         },
@@ -384,7 +384,7 @@ const dataImages: DatabaseListData = {
         size: [15.3, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Protocol',
-        voxel_size: [100,100,100]
+        voxel_size: [100, 100, 100],
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -403,7 +403,7 @@ const dataImages: DatabaseListData = {
         size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Protocol',
-        voxel_size: [100,100,100]
+        voxel_size: [100, 100, 100],
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -422,7 +422,7 @@ const dataImages: DatabaseListData = {
         size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Protocol',
-        voxel_size: [100,100,100]
+        voxel_size: [100, 100, 100],
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -441,7 +441,7 @@ const dataImages: DatabaseListData = {
         size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Protocol',
-        voxel_size: [100,100,100]
+        voxel_size: [100, 100, 100],
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -460,7 +460,7 @@ const dataImages: DatabaseListData = {
         size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'Z Protocol',
-        voxel_size: [100,100,100]
+        voxel_size: [100, 100, 100],
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
@@ -479,7 +479,7 @@ const dataImages: DatabaseListData = {
         size: [15.0, 15.0, 15.0],
         type: 'TYPE_1',
         protocol: 'X Protocol',
-        voxel_size: [100,100,100]
+        voxel_size: [100, 100, 100],
       },
       created_time: '2023-04-13T04:48:01.063Z',
       updated_time: '2023-04-13T04:48:01.063Z',
