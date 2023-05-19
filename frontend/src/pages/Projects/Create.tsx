@@ -31,6 +31,8 @@ import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { Object } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
+import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
+import { useDispatch } from 'react-redux'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
@@ -86,7 +88,9 @@ const ProjectFormComponent = () => {
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
   const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
+  const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
+  const dispatch = useDispatch()
 
   const [initDataTable /*setInitDataTable */] =
     useState<DatabaseData>(defaultDatabase)
@@ -144,12 +148,21 @@ const ProjectFormComponent = () => {
   }
 
   const onDeleteFactor = (row: DataFactor) => {
-    setImageIDs(pre => pre.filter(id => !row.data.find(rowData => rowData.image_id === id)))
+    setImageIDs((pre) =>
+      pre.filter((id) => {
+        if (projectLevel === 'factor') {
+          return !row.data.find((rowData) => rowData.image_id === id)
+        }
+        return !row.within.find((w) => w.data.find((d) => d.image_id === id))
+      }),
+    )
     setDataFactors((pre) => pre.filter((e) => e.id !== row.id))
   }
 
   const onDeleteWithin = (factor: DataFactor, row: DataWithin) => {
-    setImageIDs(pre => pre.filter(id => !row.data.find(rowData => rowData.image_id === id)))
+    setImageIDs((pre) =>
+      pre.filter((id) => !row.data.find((rowData) => rowData.image_id === id)),
+    )
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -165,8 +178,7 @@ const ProjectFormComponent = () => {
     within: DataWithin,
     row: ProjectAdd,
   ) => {
-    console.log('row', row)
-    setImageIDs(pre => pre.filter(id => id !== row.image_id))
+    setImageIDs((pre) => pre.filter((id) => id !== row.image_id))
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -186,7 +198,7 @@ const ProjectFormComponent = () => {
   }
 
   const onDeleteDataFactor = (factor: DataFactor, row: ProjectAdd) => {
-    setImageIDs(pre => pre.filter(id => id !== row.image_id))
+    setImageIDs((pre) => pre.filter((id) => id !== row.image_id))
     setDataFactors((pre) =>
       pre.map((p) => {
         if (p.id === factor.id) {
@@ -232,7 +244,7 @@ const ProjectFormComponent = () => {
         return rowDrag.some((row) => row.id === id)
       })
     if (checkExistIdImage) {
-      return alert('Image existed')
+      return alert('Duplicate images cannot be registered.')
     }
     const newIds = Array.isArray(rowDrag)
       ? rowDrag.map((row) => row.id)
@@ -415,6 +427,24 @@ const ProjectFormComponent = () => {
     if (imagePre) rowClick(imagePre as ImagesDatabase)
   }
 
+  const onCancle = () => {
+    navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
+  }
+
+  const onOk = () => {
+    if (nodeId) {
+      const urls = dataFactors
+        .map((el) => {
+          if (el.data.length) return el.data
+          return el.within.map((w) => w.data).flat()
+        })
+        .flat()
+        .map((image) => image.image_url)
+      dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+    }
+    onCancle()
+  }
+
   return (
     <ProjectsWrapper>
       {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
@@ -502,7 +532,11 @@ const ProjectFormComponent = () => {
                         })}
                         <BoxDrag
                           style={{
-                            borderBottom: rowDrag ? '1px dashed red' : '',
+                            borderBottom:
+                              (Array.isArray(rowDrag) && rowDrag.length) ||
+                              (!Array.isArray(rowDrag) && !!rowDrag)
+                                ? '1px dashed red'
+                                : '',
                           }}
                           onDrop={() => onDropData(factor, within)}
                           onMouseOver={() => onMouseOver(factor, within)}
@@ -518,7 +552,11 @@ const ProjectFormComponent = () => {
                       })}
                       <BoxDrag
                         style={{
-                          borderBottom: rowDrag ? '1px dashed red' : '',
+                          borderBottom:
+                            (Array.isArray(rowDrag) && rowDrag.length) ||
+                            (!Array.isArray(rowDrag) && !!rowDrag)
+                              ? '1px dashed red'
+                              : '',
                         }}
                         onDrop={() => onDropData(factor)}
                         onDragOver={onDragOver}
@@ -574,20 +612,8 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter
-          onClick={() =>
-            navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
-          }
-        >
-          {idEdit ? 'Ok' : 'Add'}
-        </ButtonFilter>
-        <ButtonFilter
-          onClick={() =>
-            navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
-          }
-        >
-          Cancel
-        </ButtonFilter>
+        <ButtonFilter onClick={onOk}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
+        <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
     </ProjectsWrapper>
   )
@@ -628,6 +654,7 @@ const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
   marginBottom: theme.spacing(3),
+  userSelect: 'none',
 }))
 
 const BoxOptions = styled(RadioGroup)(({ theme }) => ({

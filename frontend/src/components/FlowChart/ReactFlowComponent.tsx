@@ -45,6 +45,7 @@ import {
 import { FileSelectDialog } from 'components/common/FileSelectDialog'
 import { FormHelperText, Popover } from '@mui/material'
 import ImageAlignment from '../ImageAlignment'
+import { Params } from 'store/slice/InputNode/InputNodeType'
 
 const initDialogFile = {
   filePath: '',
@@ -60,10 +61,10 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
     const dispatch = useDispatch()
     const [openPopupAlignment, setOpenPopupAlignment] = useState<{
       open: boolean
-      params?: { [key: string]: string | undefined }
+      params?: { nodeId: string; alignments: Params[] }
     }>({
       open: false,
-      params: {},
+      params: { nodeId: '', alignments: [] },
     })
     const [dialogNodeId, setDialogNodeId] = useState('')
     const [dialogFile, setDialogFile] =

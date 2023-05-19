@@ -4,10 +4,12 @@ import ButtonGroup from '@mui/material/ButtonGroup'
 
 import { FILE_TREE_TYPE } from 'api/files/Files'
 import { LinearProgressWithLabel } from './LinerProgressWithLabel'
-import { FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
+import { AlignmentData, FILE_TYPE } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { DialogContext } from '../DialogContext'
+import { useSelector } from 'react-redux'
+import { selectInputNodeParam } from 'store/slice/InputNode/InputNodeSelectors'
 
 export const FileSelect = React.memo<{
   multiSelect?: boolean
@@ -68,6 +70,9 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const { onOpenImageAlignment } = useContext(DialogContext)
+
+    const inputNode = useSelector(selectInputNodeParam(nodeId || '')) as AlignmentData
+
     const id = searchParams.get('id')
     const getNameSelectec = () => {
       if (Array.isArray(filePath)) {
@@ -84,7 +89,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
             variant="outlined"
             onClick={() =>
               navigate(
-                `/projects/new-project?id=${id}&back=/projects/workflow?tab=0&id=${id}`,
+                `/projects/new-project?id=${id}&nodeId=${nodeId}&back=/projects/workflow?tab=0&id=${id}`,
               )
             }
           >
@@ -98,7 +103,13 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
         </div>
         <ButtonGroup size="small" style={{ width: '90%', margin: '8px 0' }}>
           <Button
-            onClick={() => onOpenImageAlignment(true, { nodeId })}
+            onClick={() => {
+              if (!nodeId) return
+              onOpenImageAlignment(true, {
+                nodeId,
+                alignments: inputNode.alignments.value,
+              })
+            }}
             style={{ width: '80%' }}
             variant="outlined"
           >

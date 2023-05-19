@@ -4,6 +4,7 @@ import ModalChangePassword from 'components/ModalChangePassword'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { useUser } from 'providers'
 import { useState } from 'react'
+import {optionsRole} from "../../utils/auth";
 
 const Account = () => {
   const { user } = useUser()
@@ -85,7 +86,7 @@ const Account = () => {
       </BoxFlex>
       <BoxFlex>
         <TitleData>Role</TitleData>
-        <BoxData>{user?.role}</BoxData>
+        <BoxData>{optionsRole.find(role => String(role.code) === String(user?.role))?.name}</BoxData>
       </BoxFlex>
       <BoxFlex sx={{ justifyContent: 'space-between', mt: 10 }}>
         <ButtonSubmit onClick={onConfirmChangePw}>Change Password</ButtonSubmit>

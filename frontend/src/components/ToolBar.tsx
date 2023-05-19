@@ -2,7 +2,7 @@ import React from 'react'
 import Box from '@mui/material/Box'
 
 import { UseRunPipelineReturnType } from 'store/slice/Pipeline/PipelineHook'
-import { NWBSettingButton } from './FlowChart/NWB'
+// import { NWBSettingButton } from './FlowChart/NWB'
 import { SnakemakeButton } from './FlowChart/Snakemake'
 import { RunButtons } from './RunButtons'
 import { Button } from '@mui/material'
@@ -28,7 +28,7 @@ export const ToolBar = React.memo<UseRunPipelineReturnType>((props) => {
         Projects
       </Button>
       <SnakemakeButton />
-      <NWBSettingButton />
+      {/*<NWBSettingButton />*/}
       <RunButtons {...props} />
     </Box>
   )

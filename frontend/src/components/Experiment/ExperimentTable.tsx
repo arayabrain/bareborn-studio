@@ -9,16 +9,16 @@ import TableBody from '@mui/material/TableBody'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
 import TableRow from '@mui/material/TableRow'
-import TablePagination from '@mui/material/TablePagination'
+// import TablePagination from '@mui/material/TablePagination'
 import Paper from '@mui/material/Paper'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
-import ReplayIcon from '@mui/icons-material/Replay'
-import DeleteIcon from '@mui/icons-material/Delete'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogTitle from '@mui/material/DialogTitle'
+// import ReplayIcon from '@mui/icons-material/Replay'
+// import DeleteIcon from '@mui/icons-material/Delete'
+// import Dialog from '@mui/material/Dialog'
+// import DialogActions from '@mui/material/DialogActions'
+// import DialogTitle from '@mui/material/DialogTitle'
 import Typography from '@mui/material/Typography'
 
 import { CollapsibleTable } from './CollapsibleTable'
@@ -30,7 +30,7 @@ import {
   selectExperimentList,
 } from 'store/slice/Experiments/ExperimentsSelectors'
 import {
-  deleteExperimentByList,
+  // deleteExperimentByList,
   getExperiments,
 } from 'store/slice/Experiments/ExperimentsActions'
 import { ExperimentStatusIcon } from './ExperimentStatusIcon'
@@ -56,7 +56,8 @@ type Data = {
     }[]
     nodeDict: object
     edgeDict: object
-    createAt: string
+    startTime: string
+    finishTime: string
 }
 
 const data: Data = {
@@ -68,7 +69,7 @@ const data: Data = {
   },
   "records": [{
       "id": 0,
-      "name": "MOUSE",
+      "name": "MOUSE1",
       "data": [{
           "unique_id": "caiman_cnmf_fq0042h2uj",
           "name": "caiman_cnmf",
@@ -100,7 +101,7 @@ const data: Data = {
       },
       {
           "id": 1,
-          "name": "MOUSE1",
+          "name": "MOUSE2",
           "data": [{
               "unique_id": "caiman_cnmf_fq0042h2uj",
               "name": "caiman_cnmf",
@@ -137,7 +138,8 @@ const data: Data = {
   ],
       "nodeDict": {},
       "edgeDict": {},
-      "createAt": "2023/04/07 04:28"
+      "startTime":"2023/05/16 04:28",
+      "finishTime":"2023/05/16 04:28"
 }
 
 export const ExperimentTable: React.FC = () => {
@@ -174,39 +176,44 @@ const LOCAL_STORAGE_KEY_PER_PAGE = 'studio_experiment_table_per_page'
 const TableImple = React.memo(() => {
   const experimentList = useSelector(selectExperimentList)
   const experimentListKeys = Object.keys(experimentList)
-  const dispatch = useDispatch()
+  // const dispatch = useDispatch()
   const navigate = useNavigate()
-  const onClickReload = () => {
-    dispatch(getExperiments())
-  }
-  const [checkedList, setCheckedList] = useState<string[]>([])
-  const [open, setOpen] = React.useState(false)
+  // const onClickReload = () => {
+  //   dispatch(getExperiments())
+  // }
+  // const [checkedList, setCheckedList] = useState<string[]>([])
+  // const [open, setOpen] = React.useState(false)
   const recordsIsEmpty = experimentListKeys.length === 0
-  const createAt = data.createAt.split(' ')
+  const startTime = data.startTime.split(' ')
+  const finishTime = data.finishTime.split(' ')
 
-  const onClickDelete = () => {
-    setOpen(true)
-  }
-  const onClickCancel = () => {
-    setOpen(false)
-  }
-  const onClickOk = () => {
-    dispatch(deleteExperimentByList(checkedList))
-    setCheckedList([])
-    setOpen(false)
-  }
+  // const onClickDelete = () => {
+  //   setOpen(true)
+  // }
+  // const onClickCancel = () => {
+  //   setOpen(false)
+  // }
+  // const onClickOk = () => {
+  //   dispatch(deleteExperimentByList(checkedList))
+  //   setCheckedList([])
+  //   setOpen(false)
+  // }
 
   const onClickBack = () => {
     navigate('/projects')
   }
 
-  const [page, setPage] = React.useState(0)
+  const [page,
+    // setPage
+  ] = useState(0)
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
-  }
+  // const handleChangePage = (event: unknown, newPage: number) => {
+  //   setPage(newPage)
+  // }
 
-  const [rowsPerPage, setRowsPerPage] = useLocalStorage(
+  const [rowsPerPage,
+    // setRowsPerPage
+  ] = useLocalStorage(
     LOCAL_STORAGE_KEY_PER_PAGE,
     10,
     (value) => {
@@ -214,13 +221,13 @@ const TableImple = React.memo(() => {
       return isNaN(valueNum) ? 10 : valueNum
     },
   )
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const newValue = parseInt(event.target.value, 10)
-    setRowsPerPage(newValue)
-    setPage(0)
-  }
+  // const handleChangeRowsPerPage = (
+  //   event: React.ChangeEvent<HTMLInputElement>,
+  // ) => {
+  //   const newValue = parseInt(event.target.value, 10)
+  //   setRowsPerPage(newValue)
+  //   setPage(0)
+  // }
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -229,131 +236,141 @@ const TableImple = React.memo(() => {
       : 0
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <Button onClick={onClickBack}
         sx={{width: 'fit-content', textTransform: 'unset', fontSize: 20}}
       >
         <KeyboardBackspaceIcon /> Projects
       </Button>
-      <Box sx={{display: 'flex', gap : 2, alignItems: 'center'}}>
-        <Typography>Status : </Typography>
-        <Box>
-          <ExperimentStatusIcon status={'success'}/>
-        </Box>
-        <Box>
-          <Typography>Timestamp: {createAt[0]}</Typography>
-          <Typography>{createAt[1]}</Typography>
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-        }}
-      >
-        <Button
-          sx={{
-            margin: (theme) => theme.spacing(0, 1, 1, 0),
-          }}
-          variant="outlined"
-          endIcon={<ReplayIcon />}
-          onClick={onClickReload}
-        >
-          Reload
-        </Button>
-        <Button
-          sx={{
-            marginBottom: (theme) => theme.spacing(1),
-          }}
-          variant="outlined"
-          color="error"
-          endIcon={<DeleteIcon />}
-          onClick={onClickDelete}
-          disabled={checkedList.length === 0}
-        >
-          Delete
-        </Button>
-      </Box>
-      <Dialog open={open}>
-        <DialogTitle>Are you sure you want to delete?</DialogTitle>
-        <DialogActions>
-          <Button onClick={onClickCancel} variant="outlined" color="inherit">
-            Cancel
-          </Button>
-          <Button onClick={onClickOk} variant="outlined" autoFocus>
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
-         <Paper
-           elevation={0}
-           variant="outlined"
-           sx={{
-               flexGlow: 1,
-               height: '100%',
-           }}
-         >
-           {
-             data.records.map((item) => {
-               const { name, id } = item
-                return (
-                <TableContainer key={id} component={Paper} elevation={0}>
-                  <Table aria-label="collapsible table">
-                    <TableBody>
-                      <ExperimentUidContext.Provider
-                        value={String(id)}
-                        key={id}
-                      >
-                        <RowItem
-                          data={item.data}
-                          name={name}
-                        />
-                      </ExperimentUidContext.Provider>
-                       {emptyRows > 0 && (
-                         <TableRow
-                           style={{
-                             height: 53 * emptyRows,
-                           }}
-                          >
-                            <TableCell colSpan={10} />
-                          </TableRow>
-                      )}
-                      {recordsIsEmpty && (
-                          <TableRow>
-                            <TableCell colSpan={10}>
-                              <Typography
-                                  sx={{
-                                    color: (theme) => theme.palette.text.secondary,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: '300px',
-                                    textAlign: 'center',
-                                  }}
-                                  variant="h6"
-                              >
-                                No Rows...
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                )
-             })
-           }
-           <TablePagination
-               rowsPerPageOptions={[5, 10, 25]}
-               component="div"
-               count={experimentListKeys.length}
-               rowsPerPage={rowsPerPage}
-               page={page}
-               onPageChange={handleChangePage}
-               onRowsPerPageChange={handleChangeRowsPerPage}
-           />
-         </Paper>
+          <Box sx={{
+            display: 'flex',
+            gap : 4,
+            width: '90%',
+            margin: 'auto',
+            alignItems: 'flex-start'
+          }}>
+              <Typography>
+                  Status:
+              </Typography>
+              <Box>
+                  <ExperimentStatusIcon status={'success'}/>
+              </Box>
+              <Box>
+                  <Typography>Start time: {startTime[0]} {startTime[1]}</Typography>
+                  <Typography>Finish time: {finishTime[0]} {finishTime[1]}</Typography>
+              </Box>
+          </Box>
+          {/*<Box*/}
+          {/*    sx={{*/}
+          {/*        display: 'flex',*/}
+          {/*        justifyContent: 'flex-end',*/}
+          {/*        alignItems: 'center',*/}
+          {/*    }}*/}
+          {/*>*/}
+              {/*<Button*/}
+              {/*  sx={{*/}
+              {/*    margin: (theme) => theme.spacing(0, 1, 1, 0),*/}
+              {/*  }}*/}
+              {/*  variant="outlined"*/}
+              {/*  endIcon={<ReplayIcon />}*/}
+              {/*  onClick={onClickReload}*/}
+              {/*>*/}
+              {/*  Reload*/}
+              {/*</Button>*/}
+              {/*<Button*/}
+              {/*  sx={{*/}
+              {/*    marginBottom: (theme) => theme.spacing(1),*/}
+              {/*  }}*/}
+              {/*  variant="outlined"*/}
+              {/*  color="error"*/}
+              {/*  endIcon={<DeleteIcon />}*/}
+              {/*  onClick={onClickDelete}*/}
+              {/*  disabled={checkedList.length === 0}*/}
+              {/*>*/}
+              {/*  Delete*/}
+              {/*</Button>*/}
+          {/*</Box>*/}
+          {/*<Dialog open={open}>*/}
+          {/*    <DialogTitle>Are you sure you want to delete?</DialogTitle>*/}
+          {/*    <DialogActions>*/}
+          {/*        <Button onClick={onClickCancel} variant="outlined" color="inherit">*/}
+          {/*            Cancel*/}
+          {/*        </Button>*/}
+          {/*        <Button onClick={onClickOk} variant="outlined" autoFocus>*/}
+          {/*            OK*/}
+          {/*        </Button>*/}
+          {/*    </DialogActions>*/}
+          {/*</Dialog>*/}
+          <Paper
+              elevation={0}
+              variant="outlined"
+              sx={{
+                  flexGlow: 1,
+                  height: '100%',
+                  width: '90%',
+                  margin: 'auto'
+              }}
+          >
+              {
+                  data.records.map((item) => {
+                      const { name, id } = item
+                      return (
+                          <TableContainer key={id} component={Paper} elevation={0}>
+                              <Table aria-label="collapsible table">
+                                  <TableBody>
+                                      <ExperimentUidContext.Provider
+                                          value={String(id)}
+                                          key={id}
+                                      >
+                                          <RowItem
+                                              data={item.data}
+                                              name={name}
+                                          />
+                                      </ExperimentUidContext.Provider>
+                                      {emptyRows > 0 && (
+                                          <TableRow
+                                              style={{
+                                                  height: 53 * emptyRows,
+                                              }}
+                                          >
+                                              <TableCell colSpan={10} />
+                                          </TableRow>
+                                      )}
+                                      {recordsIsEmpty && (
+                                          <TableRow>
+                                              <TableCell colSpan={10}>
+                                                  <Typography
+                                                      sx={{
+                                                          color: (theme) => theme.palette.text.secondary,
+                                                          display: 'flex',
+                                                          alignItems: 'center',
+                                                          justifyContent: 'center',
+                                                          height: '300px',
+                                                          textAlign: 'center',
+                                                      }}
+                                                      variant="h6"
+                                                  >
+                                                      No Rows...
+                                                  </Typography>
+                                              </TableCell>
+                                          </TableRow>
+                                      )}
+                                  </TableBody>
+                              </Table>
+                          </TableContainer>
+                      )
+                  })
+              }
+              {/*<TablePagination*/}
+              {/*    rowsPerPageOptions={[5, 10, 25]}*/}
+              {/*    component="div"*/}
+              {/*    count={experimentListKeys.length}*/}
+              {/*    rowsPerPage={rowsPerPage}*/}
+              {/*    page={page}*/}
+              {/*    onPageChange={handleChangePage}*/}
+              {/*    onRowsPerPageChange={handleChangeRowsPerPage}*/}
+              {/*/>*/}
+          </Paper>
     </Box>
   )
 })

@@ -16,13 +16,24 @@ import {
   FILE_TYPE_SET,
   InputNode,
   INPUT_NODE_SLICE_NAME,
+  Params,
+  ImageInputNode,
+  AlignmentData,
 } from './InputNodeType'
 import { isCsvInputNode, isHDF5InputNode } from './InputNodeUtils'
+
+const initParams: AlignmentData = {
+  alignments: {
+    path: 'alignments',
+    type: 'child',
+    value: [],
+  },
+}
 
 const initialState: InputNode = {
   [INITIAL_IMAGE_ELEMENT_ID]: {
     fileType: FILE_TYPE_SET.IMAGE,
-    param: {},
+    param: initParams,
   },
 }
 
@@ -45,6 +56,17 @@ export const inputNodeSlice = createSlice({
       if (isCsvInputNode(inputNode)) {
         inputNode.param = param
       }
+    },
+    setInputNodeParamAlignment(
+      state,
+      action: PayloadAction<{
+        nodeId: string
+        param: Params[]
+      }>,
+    ) {
+      const { nodeId, param } = action.payload
+      const inputNode = state[nodeId] as ImageInputNode
+      inputNode.param.alignments.value = param
     },
     setInputNodeHDF5Path(
       state,
@@ -87,7 +109,7 @@ export const inputNodeSlice = createSlice({
             case FILE_TYPE_SET.IMAGE:
               state[node.id] = {
                 fileType,
-                param: {},
+                param: initParams,
               }
               break
             case FILE_TYPE_SET.HDF5:
@@ -143,7 +165,7 @@ export const inputNodeSlice = createSlice({
                 newState[node.id] = {
                   fileType: FILE_TYPE_SET.IMAGE,
                   selectedFilePath: node.data.path as string[],
-                  param: {},
+                  param: initParams,
                 }
               } else if (node.data.fileType === FILE_TYPE_SET.CSV) {
                 newState[node.id] = {
@@ -177,7 +199,10 @@ export const inputNodeSlice = createSlice({
       }),
 })
 
-export const { setCsvInputNodeParam, setInputNodeHDF5Path } =
-  inputNodeSlice.actions
+export const {
+  setCsvInputNodeParam,
+  setInputNodeHDF5Path,
+  setInputNodeParamAlignment,
+} = inputNodeSlice.actions
 
 export default inputNodeSlice.reducer

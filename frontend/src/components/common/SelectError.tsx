@@ -41,7 +41,7 @@ const SelectError: FC<SelectErrorProps> = ({
         onBlur={onBlur}
         error={!!errorMessage}
       >
-        {options.map((item: { code: number, name: string }, index) => {
+        {options.map((item: { code: number, name: string }) => {
           return (
             <MenuItem key={item.code} value={item.code}>
               {item.name}

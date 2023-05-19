@@ -2,11 +2,11 @@ import React from 'react'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Toolbar from '@mui/material/Toolbar'
-import IconButton from '@mui/material/IconButton'
-import Tooltip from '@mui/material/Tooltip'
+// import IconButton from '@mui/material/IconButton'
+// import Tooltip from '@mui/material/Tooltip'
 import { styled } from '@mui/material/styles'
-import GitHubIcon from '@mui/icons-material/GitHub'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
+// import GitHubIcon from '@mui/icons-material/GitHub'
+// import MenuBookIcon from '@mui/icons-material/MenuBook'
 
 import { useRunPipeline } from 'store/slice/Pipeline/PipelineHook'
 import FlowChart from './FlowChart/FlowChart'
@@ -37,26 +37,26 @@ const Project: React.FC = () => {
             textColor="primary"
           >
             <Tab label="Workflow" {...a11yProps(0)} />
-            <Tab label="Results" {...a11yProps(1)} />
+            <Tab label="Result" {...a11yProps(1)} />
             <Tab label="Visualize" {...a11yProps(2)} />
           </Tabs>
-          <Tooltip title="GitHub repository">
-            <IconButton
-              sx={{ mr: 1 }}
-              href="https://github.com/oist/studio"
-              target="_blank"
-            >
-              <GitHubIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Documentation">
-            <IconButton
-              href="https://studio.readthedocs.io/en/latest/"
-              target="_blank"
-            >
-              <MenuBookIcon />
-            </IconButton>
-          </Tooltip>
+          {/*<Tooltip title="GitHub repository">*/}
+          {/*  <IconButton*/}
+          {/*    sx={{ mr: 1 }}*/}
+          {/*    href="https://github.com/oist/studio"*/}
+          {/*    target="_blank"*/}
+          {/*  >*/}
+          {/*    <GitHubIcon />*/}
+          {/*  </IconButton>*/}
+          {/*</Tooltip>*/}
+          {/*<Tooltip title="Documentation">*/}
+          {/*  <IconButton*/}
+          {/*    href="https://studio.readthedocs.io/en/latest/"*/}
+          {/*    target="_blank"*/}
+          {/*  >*/}
+          {/*    <MenuBookIcon />*/}
+          {/*  </IconButton>*/}
+          {/*</Tooltip>*/}
         </Toolbar>
       </StyledAppBar>
       <TabPanel value={value} index={0}>

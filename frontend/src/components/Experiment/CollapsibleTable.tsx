@@ -75,7 +75,7 @@ const TableRowOfFunction = ({ data } : {data: MouseType}) => {
                 <ExperimentStatusIcon status={success} />
             </TableCell>
             <TableCell>
-                <Button onClick={() => setPopup(true)}>
+                <Button disabled={success === 'success'? false : true} onClick={() => setPopup(true)}>
                     <OpenInNewIcon />
                 </Button>
             </TableCell>
@@ -84,6 +84,7 @@ const TableRowOfFunction = ({ data } : {data: MouseType}) => {
             open={popup}
             urls={outputs}
             onClose={() => setPopup(false)}
+            readOnly={true}
         />
     </>
   )

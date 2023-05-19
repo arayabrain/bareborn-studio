@@ -49,10 +49,7 @@ class Runner:
                 # 全体の結果を保存する
                 path = join_filepath(os.path.dirname(os.path.dirname(__rule.output)))
                 path = join_filepath([path, f"whole_{__rule.type}.nwb"])
-                cls.save_all_nwb(
-                    path,
-                    output_info['nwbfile']
-                )
+                cls.save_all_nwb(path, output_info['nwbfile'])
 
             print("output: ", __rule.output)
 
@@ -62,7 +59,7 @@ class Runner:
         except Exception as e:
             PickleWriter.write(
                 __rule.output,
-                list(traceback.TracebackException.from_exception(e).format())[-2:]
+                list(traceback.TracebackException.from_exception(e).format())[-2:],
             )
 
     @classmethod
@@ -83,18 +80,11 @@ class Runner:
         nwbfile = {}
         for x in all_nwbfile.values():
             nwbfile = merge_nwbfile(nwbfile, x)
-        save_nwb(
-            save_path,
-            input_nwbfile,
-            nwbfile
-        )
+        save_nwb(save_path, input_nwbfile, nwbfile)
 
     @classmethod
     def execute_function(cls, path, params, input_info):
-        wrapper = cls.dict2leaf(
-            wrapper_dict,
-            path.split('/')
-        )
+        wrapper = cls.dict2leaf(wrapper_dict, path.split('/'))
         func = copy.deepcopy(wrapper["function"])
         output_info = func(params=params, **input_info)
         del func
