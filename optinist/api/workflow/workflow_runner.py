@@ -108,13 +108,6 @@ class WorkflowRunner:
 
                 if node.id in endNodeList:
                     last_outputs.append(rule.output)
-            elif node.type == NodeType.ALIGNMENT:
-                rule_dict[node.id] = SmkRule(
-                    unique_id=self.unique_id,
-                    node=node,
-                    edgeDict=self.edgeDict,
-                    nwbfile=nwbfile,
-                ).alignment()
             else:
                 assert False, "NodeType doesn't exists"
 

@@ -16,10 +16,7 @@ from optinist.routers.model import FILETYPE
 
 
 def process_image(rule_config, params):
-    print(params)
-    ...
-    outputfile = FileWriter.image(rule_config)
-    PickleWriter.write(rule_config.output, outputfile)
+    print("params:", params)
 
 
 if __name__ == "__main__":

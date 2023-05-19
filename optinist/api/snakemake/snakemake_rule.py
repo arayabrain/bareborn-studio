@@ -32,7 +32,8 @@ class SmkRule:
         )
 
     def image(self) -> Rule:
-        return self.builder.set_type("image").build()
+        params = get_typecheck_params(self._node.data.param, "images_alignment")
+        return self.builder.set_type("image").set_params(params).build()
 
     def csv(self, nodeType="csv") -> Rule:
         return self.builder.set_type(nodeType).build()
@@ -75,19 +76,6 @@ class SmkRule:
             .set_output(algo_output)
             .set_path(self._node.data.path)
             .set_type(self._node.data.label)
-            .build()
-        )
-
-    def alignment(self):
-        algo_output = get_pickle_file(
-            self._unique_id, self._node.id, self._node.data.label
-        )
-        params = get_typecheck_params(self._node.data.param, self._node.data.label)
-        return (
-            self.builder.set_params(params)
-            .set_output(algo_output)
-            .set_path(self._node.data.path)
-            .set_type("image")
             .build()
         )
 
