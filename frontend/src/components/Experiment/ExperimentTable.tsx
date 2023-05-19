@@ -244,28 +244,20 @@ const TableImple = React.memo(() => {
       </Button>
           <Box sx={{
             display: 'flex',
-            gap : 3,
+            gap : 4,
             width: '90%',
             margin: 'auto',
             alignItems: 'flex-start'
           }}>
-              <Typography sx={{
-                  width: 30,
-                  wordWrap: 'break-word'
-              }}>
-                  Status :
+              <Typography>
+                  Status:
               </Typography>
               <Box>
                   <ExperimentStatusIcon status={'success'}/>
               </Box>
               <Box>
-                  <Box>
-                      <Typography>Start time: {startTime[0]} {startTime[1]}</Typography>
-                  </Box>
-                  <Box>
-                      <Typography>Finish time: {finishTime[0]}</Typography>
-                      <Typography>{finishTime[1]}</Typography>
-                  </Box>
+                  <Typography>Start time: {startTime[0]} {startTime[1]}</Typography>
+                  <Typography>Finish time: {finishTime[0]} {finishTime[1]}</Typography>
               </Box>
           </Box>
           {/*<Box*/}

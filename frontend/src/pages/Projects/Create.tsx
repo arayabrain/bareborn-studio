@@ -244,7 +244,7 @@ const ProjectFormComponent = () => {
         return rowDrag.some((row) => row.id === id)
       })
     if (checkExistIdImage) {
-      return alert('Image existed')
+      return alert('Duplicate images cannot be registered.')
     }
     const newIds = Array.isArray(rowDrag)
       ? rowDrag.map((row) => row.id)
