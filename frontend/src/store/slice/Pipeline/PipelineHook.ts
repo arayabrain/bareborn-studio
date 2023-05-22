@@ -1,5 +1,6 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom'
 
 import { selectRunPostData } from 'store/selectors/run/RunSelectors'
 import {
@@ -14,6 +15,10 @@ import { selectFilePathIsUndefined } from '../InputNode/InputNodeSelectors'
 import { selectAlgorithmNodeNotExist } from '../AlgorithmNode/AlgorithmNodeSelectors'
 import { useSnackbar } from 'notistack'
 import { RUN_STATUS } from './PipelineType'
+import {
+  fetchExperiment,
+  getExperiments,
+} from '../Experiments/ExperimentsActions'
 
 const POLLING_INTERVAL = 5000
 
@@ -37,6 +42,12 @@ export function useRunPipeline() {
   const handleRunPipelineByUid = React.useCallback(() => {
     dispatch(runByCurrentUid({ runPostData }))
   }, [dispatch, runPostData])
+  const [searchParams] = useSearchParams()
+  React.useEffect(() => {
+    const projectId = searchParams.get('id')
+    projectId && dispatch(fetchExperiment(projectId.toString()))
+    // eslint-disable-next-line
+  }, [])
   const handleCancelPipeline = React.useCallback(() => {
     if (uid != null) {
       dispatch(cancelPipeline())
@@ -60,14 +71,19 @@ export function useRunPipeline() {
     if (prevStatus !== status) {
       if (status === RUN_STATUS.FINISHED) {
         enqueueSnackbar('Finished', { variant: 'success' })
+        dispatch(getExperiments())
+      } else if (status === RUN_STATUS.START_SUCCESS) {
+        dispatch(getExperiments())
       } else if (status === RUN_STATUS.ABORTED) {
         enqueueSnackbar('Aborted', { variant: 'error' })
+        dispatch(getExperiments())
       } else if (status === RUN_STATUS.CANCELED) {
         enqueueSnackbar('Canceled', { variant: 'info' })
+        dispatch(getExperiments())
       }
       setPrevStatus(status)
     }
-  }, [status, prevStatus, enqueueSnackbar])
+  }, [dispatch, status, prevStatus, enqueueSnackbar])
   return {
     filePathIsUndefined,
     algorithmNodeNotExist,
