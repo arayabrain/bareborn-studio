@@ -323,7 +323,6 @@ const AccountManager = () => {
       setIdDel(undefined)
       setOpenDelete(false)
       getList()
-      clearTimeout()
     } catch {
     } finally {
       setIsLoading(false)
