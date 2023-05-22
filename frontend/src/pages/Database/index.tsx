@@ -8,7 +8,7 @@ import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
-import { isReseacher} from "../../utils/auth";
+import { isReseacher } from "../../utils/auth";
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -680,18 +680,15 @@ const Database = () => {
         </Box>
       </BoxSelectTypeView>
       {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
-      {
-        user &&
-          <DatabaseTableComponent
-              defaultExpand
-              onSort={handleSort}
-              rowClick={rowClick}
-              orderKey={columnSort}
-              orderBy={orderBy}
-              data={datasTable.records}
-              columns={columns(rowClick, setOpenDelete, type, user)}
-          />
-      }
+        <DatabaseTableComponent
+            defaultExpand
+            onSort={handleSort}
+            rowClick={rowClick}
+            orderKey={columnSort}
+            orderBy={orderBy}
+            data={datasTable.records}
+            columns={columns(rowClick, setOpenDelete, type, user)}
+        />
       <ImageView
         disabled={disabled}
         url={viewer.url}

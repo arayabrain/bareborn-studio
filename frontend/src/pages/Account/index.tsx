@@ -4,7 +4,7 @@ import ModalChangePassword from 'components/ModalChangePassword'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { useUser } from 'providers'
 import { useState } from 'react'
-import {optionsRole} from "../../utils/auth";
+import { isAdmin, optionsRole } from "../../utils/auth";
 
 const Account = () => {
   const { user } = useUser()
@@ -90,7 +90,10 @@ const Account = () => {
       </BoxFlex>
       <BoxFlex sx={{ justifyContent: 'space-between', mt: 10 }}>
         <ButtonSubmit onClick={onConfirmChangePw}>Change Password</ButtonSubmit>
-        <ButtonSubmit onClick={onConfirmDelete}>Delete Account</ButtonSubmit>
+        {
+          !isAdmin(user?.role) &&
+          <ButtonSubmit onClick={onConfirmDelete}>Delete Account</ButtonSubmit>
+        }
       </BoxFlex>
     </AccountWrapper>
   )
