@@ -198,7 +198,7 @@ export const inputNodeSlice = createSlice({
                 newState[node.id] = {
                   fileType: FILE_TYPE_SET.IMAGE,
                   selectedFilePath: node.data.path as string[],
-                  param: {},
+                  param: initParams,
                 }
               } else if (node.data.fileType === FILE_TYPE_SET.CSV) {
                 newState[node.id] = {
