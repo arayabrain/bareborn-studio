@@ -8,8 +8,13 @@ import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { UserContext, useUser } from 'providers'
-import { getToken, isAdmin } from 'utils/auth'
+import { User, UserContext, useUser } from 'providers'
+import {
+  getToken,
+  isAdmin,
+  removeExToken,
+  removeToken,
+} from 'utils/auth'
 import { getMe } from 'api/auth'
 
 export const drawerWidth = 240
@@ -54,6 +59,8 @@ const Layout: FC = ({ children }) => {
         navigate('/login')
       }
     } catch {
+      removeToken()
+      removeExToken()
       navigate('/login')
     }
   }

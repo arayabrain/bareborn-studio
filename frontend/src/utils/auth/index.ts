@@ -7,6 +7,15 @@ export const getToken = () => {
 export const removeToken = () => {
   return localStorage.removeItem('access_token')
 }
+export const saveExToken = (ExToken: string) => {
+  localStorage.setItem('ExToken', ExToken)
+}
+export const getExToken = () => {
+  return localStorage.getItem('ExToken')
+}
+export const removeExToken = () => {
+  return localStorage.removeItem('ExToken')
+}
 
 export const isAdmin = (role?: number | string) => {
   return role === 1
@@ -19,14 +28,14 @@ export const isReseacher = (role?: string | number) => {
 export const optionsRole = [
   {
     code: 1,
-    name: "Admin"
+    name: 'Admin',
   },
   {
     code: 10,
-    name: "Data Manager"
+    name: 'Data Manager',
   },
   {
     code: 20,
-    name: "User"
-  }
+    name: 'User',
+  },
 ]
