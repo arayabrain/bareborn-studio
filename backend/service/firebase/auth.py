@@ -46,8 +46,8 @@ async def authenticate(user: UserAuth):
         return None, make_response(
             HTTPStatus.INTERNAL_SERVER_ERROR, code.E_FAIL, str(e)
         )
-    access_token = create_access_token(subject=user['localId'])
-    token = Token(access_token=access_token, token_type='bearer')
+    ex_token = create_access_token(subject=user['localId'])
+    token = Token(access_token=user['idToken'], token_type='bearer', ex_token=ex_token)
     return token, None
 
 
