@@ -6,3 +6,4 @@ class Token(BaseModel):
     access_token: str
     refresh_token: Optional[str]
     token_type: str
+    ex_token: Optional[str]
