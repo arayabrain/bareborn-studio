@@ -358,7 +358,6 @@ const AccountManager = () => {
         name: 'action',
         width: 185,
         render: (data) => {
-          if (data?.uid === user?.uid) return null
           return (
             <>
               <ALink
@@ -367,12 +366,15 @@ const AccountManager = () => {
               >
                 <EditIcon sx={{ color: 'black' }} />
               </ALink>
-              <ALink
-                sx={{ ml: 1.25 }}
-                onClick={() => onConfirmDelete(data?.uid)}
-              >
-                <DeleteIcon sx={{ color: 'red' }} />
-              </ALink>
+              {
+                !(data?.uid === user?.uid) &&
+                <ALink
+                    sx={{ ml: 1.25 }}
+                    onClick={() => onConfirmDelete(data?.uid)}
+                >
+                  <DeleteIcon sx={{ color: 'red' }} />
+                </ALink>
+              }
             </>
           )
         },
