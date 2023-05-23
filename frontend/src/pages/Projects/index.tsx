@@ -3,8 +3,6 @@ import { useCallback, useMemo, useState } from 'react'
 import TableComponent, { Column } from '../../components/Table'
 import { useNavigate } from 'react-router-dom'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import { useUser } from "../../providers";
-import { isReseacher } from "../../utils/auth";
 
 export type DataProject = {
   id: number | string
@@ -18,7 +16,6 @@ export type DataProject = {
 }
 
 const Projects = () => {
-  const { user } = useUser()
   const navigate = useNavigate()
   const [idDelete, setIdDelete] = useState<number | string | undefined>()
   const [data, setData] = useState<DataProject[]>([
@@ -101,22 +98,19 @@ const Projects = () => {
               <ButtonAdd variant="contained" onClick={() => onResults(data.id)}>
                 Result
               </ButtonAdd>
-              {
-                !isReseacher(user?.role) &&
-                  <ButtonAdd
-                      variant="contained"
-                      onClick={() => onDelete(data.id)}
-                      sx={{ backgroundColor: 'red !important' }}
-                  >
-                      Del
-                  </ButtonAdd>
-              }
+              <ButtonAdd
+                variant="contained"
+                onClick={() => onDelete(data.id)}
+                sx={{ backgroundColor: 'red !important' }}
+              >
+                Del
+              </ButtonAdd>
             </BoxAction>
           )
         },
       },
     ],
-    [onWorkflow, onResults, onEdit, user],
+    [onWorkflow, onResults, onEdit],
   )
   return (
     <ProjectsWrapper>
