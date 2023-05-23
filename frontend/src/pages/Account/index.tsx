@@ -18,8 +18,13 @@ const Account = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const onEditName = async (e: any) => {
-    setIsLoading(true)
     const { value } = e.target
+    if(!value) {
+      alert('This field is required')
+      setIsEditName(false)
+      return
+    }
+    setIsLoading(true)
     try {
       setUser({...user, display_name: value})
       await editNameProfile({...user, display_name: value})
