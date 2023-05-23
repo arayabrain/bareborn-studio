@@ -8,8 +8,14 @@ import SourceIcon from '@mui/icons-material/Source'
 import StorageIcon from '@mui/icons-material/Storage'
 import GroupIcon from '@mui/icons-material/Group'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { UserContext, useUser } from 'providers'
-import { getToken, isAdmin } from 'utils/auth'
+import { User, UserContext, useUser } from 'providers'
+import {
+  getToken,
+  isAdmin,
+  removeToken,
+  removeUserUID,
+  saveUserUID,
+} from 'utils/auth'
 import { getMe } from 'api/auth'
 
 export const drawerWidth = 240
@@ -17,7 +23,7 @@ export const drawerWidth = 240
 const ignorePaths = ['/login', '/account-delete', '/reset-password']
 
 const Layout: FC = ({ children }) => {
-  const [user, setUser] = useState()
+  const [user, setUser] = useState<User | undefined>()
   const location = useLocation()
   const [width, setWidth] = useState(drawerWidth)
   const navigate = useNavigate()
@@ -38,22 +44,19 @@ const Layout: FC = ({ children }) => {
   const checkkAuth = async () => {
     if (user) return
     const token = getToken()
+    const isPageLogin = ['/login', '/reset-password'].includes(
+      window.location.pathname,
+    )
     try {
       if (token) {
         const data = await getMe()
+        saveUserUID(data.uid)
         setUser(data)
-        if (['/login', '/reset-password'].includes(window.location.pathname)) {
-          navigate('/')
-        }
-        return
-      }
-      if (
-        // !auth.currentUser &&
-        !['/login', '/reset-password'].includes(window.location.pathname)
-      ) {
-        navigate('/login')
-      }
+        if (isPageLogin) navigate('/')
+      } else if (!isPageLogin) throw new Error('fail auth')
     } catch {
+      removeToken()
+      removeUserUID()
       navigate('/login')
     }
   }
