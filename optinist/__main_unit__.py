@@ -11,8 +11,7 @@ from optinist.api.config.config_reader import ConfigReader
 from optinist.api.utils.filepath_creater import join_filepath
 
 from backend.routers import auth, user_manage
-from studio.routers import (algolist, experiment, files, hdf5, outputs, params,
-                            run)
+from optinist.routers import (algolist, experiment, files, hdf5, outputs, params, run)
 
 app = FastAPI(docs_url="/docs", openapi_url="/openapi")
 app.include_router(auth.router, prefix='/auth', tags=['auth'])
@@ -76,7 +75,8 @@ def main(develop_mode: bool = False):
     fastapi_logging_config["formatters"]["access"]["fmt"] = logging_config["fastapi_logging_config"]["access_fmt"]
 
     if develop_mode:
-        reload_options = {"reload_dirs": ["optinist"]} if args.reload else {}
+        reload_dirs = ["optinist", "backend"]
+        reload_options = {"reload_dirs": reload_dirs} if args.reload else {}
         uvicorn.run("optinist.__main_unit__:app", host=args.host, port=args.port, log_config=fastapi_logging_config, reload=args.reload, **reload_options)
     else:
         uvicorn.run("optinist.__main_unit__:app", host=args.host, port=args.port, log_config=fastapi_logging_config, reload=False)

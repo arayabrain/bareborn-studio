@@ -5,15 +5,37 @@ import {
   deleteExperimentByUidApi,
   importExperimentByUidApi,
   deleteExperimentByListApi,
+  ExperimentDTO,
+  fetchExperimentApi,
 } from 'api/experiments/Experiments'
 import { RunPostData } from 'api/run/Run'
 import { EXPERIMENTS_SLICE_NAME } from './ExperimentsType'
+import { selectCurrentProjectId } from '../Project/ProjectSelector'
+import { ThunkApiConfig } from 'store/store'
 
-export const getExperiments = createAsyncThunk<ExperimentsDTO, undefined>(
-  `${EXPERIMENTS_SLICE_NAME}/getExperiments`,
-  async (_, thunkAPI) => {
+export const getExperiments = createAsyncThunk<
+  ExperimentsDTO,
+  undefined,
+  ThunkApiConfig
+>(`${EXPERIMENTS_SLICE_NAME}/getExperiments`, async (_, thunkAPI) => {
+  const projectId = selectCurrentProjectId(thunkAPI.getState())
+  if (projectId) {
     try {
-      const response = await getExperimentsApi()
+      const response = await getExperimentsApi(projectId)
+      return response
+    } catch (e) {
+      return thunkAPI.rejectWithValue(e)
+    }
+  } else {
+    return thunkAPI.rejectWithValue('project id does not exist.')
+  }
+})
+
+export const fetchExperiment = createAsyncThunk<ExperimentDTO, string>(
+  `${EXPERIMENTS_SLICE_NAME}/fetchExperiment`,
+  async (projectId, thunkAPI) => {
+    try {
+      const response = await fetchExperimentApi(projectId)
       return response
     } catch (e) {
       return thunkAPI.rejectWithValue(e)

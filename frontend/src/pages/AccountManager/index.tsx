@@ -15,7 +15,7 @@ import InputError from '../../components/common/InputError'
 import SelectError from '../../components/common/SelectError'
 import { createUser, deleteUser, editUser, listUser } from 'api/auth'
 import { useUser } from 'providers'
-import { DataProject } from 'pages/Projects'
+import { ProjectType } from 'store/slice/Project/ProjectType'
 import { isAdmin, optionsRole } from 'utils/auth'
 import Loading from '../../components/common/Loading'
 
@@ -46,7 +46,8 @@ const ModalComponent: FC<ModalComponentProps> = ({
 }) => {
   const regex =
     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-  const regexPassword = /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
+  const regexPassword =
+    /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
   const [formData, setFormData] = useState<{ [key: string]: string }>(
     dataEdit || initState,
   )
@@ -278,8 +279,8 @@ const AccountManager = () => {
       nextPageToken.push(data.next_page_token)
     }
     const newData = data.data.map((item: any) => {
-      const name = optionsRole.find(role => item.role === role.code)?.name
-      return {...item, role: name}
+      const name = optionsRole.find((role) => item.role === role.code)?.name
+      return { ...item, role: name }
     })
     setData(newData)
     setPaginate((pre) => ({
@@ -303,10 +304,12 @@ const AccountManager = () => {
     setOpenDelete(true)
   }
 
-  const onForgotPassword = (data: DataProject) => {
-    const code = optionsRole.find(role => String(role.name) === String(data.role))?.code
+  const onForgotPassword = (data: ProjectType) => {
+    const code = optionsRole.find(
+      (role) => String(role.name) === String(data.role),
+    )?.code
     //todo call api
-    setDataEdit({...data, role: code})
+    setDataEdit({ ...data, role: code })
     setIsOpenModal(true)
   }
 
