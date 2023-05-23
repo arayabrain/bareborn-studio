@@ -3,7 +3,7 @@ import { getMe, login } from 'api/auth'
 import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { saveToken } from 'utils/auth'
+import { saveToken, saveUserUID } from 'utils/auth'
 import Loading from "../../components/common/Loading";
 
 const Login = () => {
@@ -40,6 +40,7 @@ const Login = () => {
   const getUser = async () => {
     const data = await getMe()
     setUser(data)
+    saveUserUID(data.uid)
     navigate('/')
   }
   const validateSubmit = () => {
