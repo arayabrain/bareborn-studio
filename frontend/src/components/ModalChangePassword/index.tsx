@@ -5,7 +5,7 @@ import { ChangeEvent, FC, useState } from 'react'
 type ModalDeleteAccountProps = {
   onClose: () => void
   open: boolean
-  onSubmit: () => void
+  onSubmit: (oldPass: string, newPass: string) => void
 }
 
 const regexPassword = /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
@@ -58,10 +58,38 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
     }
   }
 
+  const validateForm = () => {
+    const errorPass = validatePassword(values.password)
+    const errorNewPass = validatePassword(values.new_password)
+    const errorConfirmPass = validatePassword(values.confirm_password)
+    return {
+      password: errorPass,
+      new_password: errorNewPass,
+      confirm_password: errorConfirmPass
+    }
+  }
+
+  const onChangePass = () => {
+    const newErrors: { [key: string]: string } = validateForm()
+    if(errors.password || errors.new_password || errors.confirm_password) return
+    if(newErrors.password || newErrors.new_password || newErrors.confirm_password) {
+      setErrors(newErrors)
+      return
+    }
+    onSubmit(values.password, values.new_password)
+    setValues({})
+  }
+
+  const onCloseModal = () => {
+    setErrors({})
+    setValues({})
+    onClose()
+  }
+
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={onCloseModal}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
@@ -112,10 +140,10 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
             />
           </FormInline>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <ButtonConfirm onClick={onSubmit}>UPDATE</ButtonConfirm>
+            <ButtonConfirm onClick={() => onChangePass()}>UPDATE</ButtonConfirm>
           </Box>
         </BoxConfirm>
-        <Button onClick={onClose}>
+        <Button onClick={onCloseModal}>
           <Typography
             sx={{
               textDecoration: 'underline',
