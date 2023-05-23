@@ -30,6 +30,21 @@ export const deleteUser = async (userId: string | number) => {
   return response.data
 }
 
+export const deleteAccountProfile = async () => {
+  const response = await axios.delete(`/auth/me`)
+  return response.data
+}
+
+export const editNameProfile = async (data: object) => {
+  const response = await axios.put(`/auth/me`, data)
+  return response.data
+}
+
+export const editPassProfile = async (data: object) => {
+  const response = await axios.put(`/auth/change-password`, data)
+  return response.data
+}
+
 export const resetPassword = async (email: string) => {
   const response = await axios.post(`/admin/user/send_reset_password?email=${email}`, email)
   return response.data
