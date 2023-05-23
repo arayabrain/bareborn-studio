@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, Response, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyHeader
 from jose import JWTError, jwt
 from pydantic import ValidationError
 
@@ -66,15 +66,16 @@ def validate_token(
 
 async def get_current_user(
     res: Response,
+    ExToken: Optional[str] = Depends(APIKeyHeader(name='ExToken')),
     credential: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
 ):
-    if credential is None:
+    if ExToken is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={'WWW-Authenticate': 'Bearer realm="auth_required"'},
         )
     payload, e = validate_token(
-        credential.credentials,
+        ExToken,
         token_type='access_token',
     )
     if e:
