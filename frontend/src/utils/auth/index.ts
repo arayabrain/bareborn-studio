@@ -7,14 +7,14 @@ export const getToken = () => {
 export const removeToken = () => {
   return localStorage.removeItem('access_token')
 }
-export const saveUserUID = (user_uid: string) => {
-  localStorage.setItem('user_uid', user_uid)
+export const saveExToken = (ExToken: string) => {
+  localStorage.setItem('ExToken', ExToken)
 }
-export const getUserUID = () => {
-  return localStorage.getItem('user_uid')
+export const getExToken = () => {
+  return localStorage.getItem('ExToken')
 }
-export const removeUserUID = () => {
-  return localStorage.removeItem('user_uid')
+export const removeExToken = () => {
+  return localStorage.removeItem('ExToken')
 }
 
 export const isAdmin = (role?: number | string) => {

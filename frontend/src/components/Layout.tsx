@@ -12,9 +12,8 @@ import { User, UserContext, useUser } from 'providers'
 import {
   getToken,
   isAdmin,
+  removeExToken,
   removeToken,
-  removeUserUID,
-  saveUserUID,
 } from 'utils/auth'
 import { getMe } from 'api/auth'
 
@@ -50,13 +49,12 @@ const Layout: FC = ({ children }) => {
     try {
       if (token) {
         const data = await getMe()
-        saveUserUID(data.uid)
         setUser(data)
         if (isPageLogin) navigate('/')
       } else if (!isPageLogin) throw new Error('fail auth')
     } catch {
       removeToken()
-      removeUserUID()
+      removeExToken()
       navigate('/login')
     }
   }

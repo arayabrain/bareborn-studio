@@ -3,8 +3,8 @@ import { getMe, login } from 'api/auth'
 import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { saveToken, saveUserUID } from 'utils/auth'
-import Loading from "../../components/common/Loading";
+import { saveExToken, saveToken } from 'utils/auth'
+import Loading from '../../components/common/Loading'
 
 const Login = () => {
   const { setUser } = useUser()
@@ -26,13 +26,13 @@ const Login = () => {
     if (errorCheck) return
     setIsLoading(true)
     try {
-      const { access_token } = await login(values)
+      const { access_token, ex_token } = await login(values)
       saveToken(access_token)
+      saveExToken(ex_token)
       getUser()
     } catch (e) {
       setErrors({ email: 'Email or password is wrong', password: '' })
-    }
-    finally {
+    } finally {
       setIsLoading(false)
     }
   }
@@ -40,7 +40,6 @@ const Login = () => {
   const getUser = async () => {
     const data = await getMe()
     setUser(data)
-    saveUserUID(data.uid)
     navigate('/')
   }
   const validateSubmit = () => {
@@ -95,7 +94,9 @@ const Login = () => {
               value={values.password}
               placeholder="Enter your password"
             />
-            <TextError data-testid="error-password">{errors.password}</TextError>
+            <TextError data-testid="error-password">
+              {errors.password}
+            </TextError>
           </Box>
           <Description>
             Forgot your password?
@@ -114,9 +115,7 @@ const Login = () => {
           </Stack>
         </FormSignUp>
       </LoginContent>
-      {
-        isLoading && <Loading />
-      }
+      {isLoading && <Loading />}
     </LoginWrapper>
   )
 }
