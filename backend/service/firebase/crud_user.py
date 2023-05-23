@@ -1,10 +1,14 @@
-import json
-
 from fastapi import HTTPException
 from firebase_admin import auth
 
 from backend.models import User
-from backend.models.user import ListUserPaging, Role, UserCreate, UserUpdate
+from backend.models.user import (
+    ListUserPaging,
+    UserAuth,
+    UserChangePassword,
+    UserCreate,
+    UserUpdate,
+)
 
 
 async def list_user(offset: int = 0, limit: int = 10):
@@ -80,13 +84,36 @@ async def read_user(user_id: str):
 async def update_user(user_id: str, data: UserUpdate):
     try:
         user_data = data.dict(exclude_unset=True)
-        role_data = user_data.pop('role')
-        lab_data = user_data.pop('lab')
-
-        user_claims = {'role': role_data, 'lab': lab_data}
-        auth.set_custom_user_claims(user_id, user_claims)
-
+        role_data = user_data.pop('role', None)
+        lab_data = user_data.pop('lab', None)
+        if role_data is not None and lab_data is not None:
+            user_claims = {'role': role_data, 'lab': lab_data}
+            auth.set_custom_user_claims(user_id, user_claims)
         user = auth.update_user(user_id, **user_data)
+        role = user.custom_claims.get('role') if user.custom_claims else None
+        lab = user.custom_claims.get('lab') if user.custom_claims else None
+        return User(
+            uid=user.uid,
+            email=user.email,
+            display_name=user.display_name,
+            role=role,
+            lab=lab,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+async def change_password(user_id: str, data: UserChangePassword):
+    from backend.service import firebase
+
+    user = await read_user(user_id)
+    _, err = await firebase.authenticate(
+        UserAuth(email=user.email, password=data.old_password)
+    )
+    if err:
+        raise HTTPException(status_code=400, detail='Incorrect password')
+    try:
+        user = auth.update_user(user_id, password=data.new_password)
         role = user.custom_claims.get('role') if user.custom_claims else None
         lab = user.custom_claims.get('lab') if user.custom_claims else None
         return User(
@@ -105,12 +132,3 @@ async def delete_user(user_id: str):
 
     auth.delete_user(user.uid)
     return user
-
-
-async def get_role_list():
-    try:
-        role_list = json.load(open('user_role.json'))
-        role_list = [Role(**role) for role in role_list]
-        return role_list
-    except:
-        raise Exception("Error reading 'user_role.json' file")

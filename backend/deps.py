@@ -80,7 +80,13 @@ async def get_current_user(
     if e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e)
     res.headers['WWW-Authenticate'] = 'Bearer realm="auth_required"'
-    user = await read_user(user_id=payload['sub'])
+    try:
+        user = await read_user(user_id=payload['sub'])
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
     return user.dict()
 
 
