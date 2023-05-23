@@ -54,6 +54,17 @@ class UserUpdate(BaseModel):
         return value.strip()
 
 
+class UserUpdateName(BaseModel):
+    display_name: str = Field(max_length=100)
+
+
+class UserChangePassword(BaseModel):
+    old_password: str
+    new_password: str = Field(
+        max_length=255, regex='^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$'
+    )
+
+
 class User(BaseModel):
     uid: str
     email: EmailStr
