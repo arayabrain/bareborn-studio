@@ -9,7 +9,7 @@ type ModalDeleteAccountProps = {
 }
 
 const regexPassword = /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
-
+const regexIgnoreS = /[^!#$%&()*+,-./@_|a-zA-Z0-9]/
 const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
   onClose,
   open,
@@ -38,6 +38,9 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
     if (!value) return 'This field is required'
     if (!regexPassword.test(value)) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
+    }
+    if(regexIgnoreS.test(value)) {
+      return 'Allowed special characters (!#$%&()*+,-./@_|)'
     }
     return ''
   }
