@@ -48,6 +48,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   const regexPassword =
     /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
+  const regexIgnoreS = /[^!#$%&()*+,-./@_|a-zA-Z0-9]/
   const [formData, setFormData] = useState<{ [key: string]: string }>(
     dataEdit || initState,
   )
@@ -76,6 +77,9 @@ const ModalComponent: FC<ModalComponentProps> = ({
     let datas = values || formData
     if (!regexPassword.test(value) && value) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
+    }
+    if(regexIgnoreS.test(value)){
+      return 'Allowed special characters (!#$%&()*+,-./@_|)'
     }
     if (isConfirm && datas.password !== value && value) {
       return 'password is not match'

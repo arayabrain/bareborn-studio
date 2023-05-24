@@ -27,6 +27,14 @@ const VisualizeNew = () => {
                     <WrapperInput text={'horizontal'}/>
                 </Box>
             </CutCoords>
+            <Box sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
+            }}>
+              <ParamsButton>Save Params</ParamsButton>
+              <ParamsButton>Load Params</ParamsButton>
+            </Box>
           </VisualizeInputWrapper>
           <ButtonWrapper>
               <VisualizeButton>GENERATE</VisualizeButton>
@@ -58,6 +66,16 @@ const CutCoords = styled(Box)({
 const VisualizeInputWrapper = styled(Box)({
     display: 'flex',
     justifyContent: 'space-between'
+})
+
+const ParamsButton = styled('button')({
+  height: 'fit-content',
+  padding: 5,
+  '&:hover': {
+    cursor: 'pointer',
+    background: '#d1d7e0',
+    boxShadow: '0 0 0 4px #fff, 0 0 0 8px #4070f4'
+  }
 })
 
 const ButtonWrapper = styled(Box)({
