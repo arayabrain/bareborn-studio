@@ -74,7 +74,6 @@ const ParamsButton = styled('button')({
   '&:hover': {
     cursor: 'pointer',
     background: '#d1d7e0',
-    boxShadow: '0 0 0 4px #fff, 0 0 0 8px #4070f4'
   }
 })
 
