@@ -81,7 +81,6 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
       return
     }
     onSubmit(values.password, values.new_password)
-    setValues({})
   }
 
   const onCloseModal = () => {
