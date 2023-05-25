@@ -36,6 +36,7 @@ const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
 
   const validatePassword = (value: string): string => {
     if (!value) return 'This field is required'
+    if(value.length > 255) return 'The text may not be longer than 255 characters'
     if (!regexPassword.test(value)) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
     }
