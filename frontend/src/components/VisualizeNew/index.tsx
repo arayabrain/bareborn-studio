@@ -1,30 +1,154 @@
 import {styled, Box, Typography, Container} from "@mui/material";
+import {useCallback, useState} from "react";
+import {loadParams, saveParams} from "../../api/auth";
+import Loading from "../common/Loading";
 
-const WrapperInput = ({text} : {text: string}) => {
+type InputType = {
+  text: string
+  value?: string
+  onChange: (e: any) => void
+  onKeyDown?: (e: any) => void
+}
+
+type ParamsType = {
+  cut_coords: {
+    coronal: string
+    sagittal: string
+    horizontal: string
+  }
+  threshold: string
+}
+
+const regexInput = /[^0-9,-]/
+
+const WrapperInput = ({text, value, onChange, onKeyDown} : InputType) => {
     return (
         <Wrapper>
             <Typography sx={{minWidth: 100}}>{text}</Typography>
-            <VisualizeInput sx={{width: 250}}/>
+            <VisualizeInput
+                name={text}
+                sx={{width: 250}}
+                value={value}
+                onKeyDown={onKeyDown}
+                onChange={(event: any) => onChange(event)}
+
+            />
         </Wrapper>
     )
 }
 
 const VisualizeNew = () => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [dataParams, setDataParams] = useState<ParamsType>({
+    cut_coords: {
+      coronal: '',
+      sagittal: '',
+      horizontal: '',
+    },
+    threshold: ''
+  })
+  const onLoadParams = async () => {
+    setIsLoading(true)
+    try {
+      const res = await loadParams()
+      const { coronal, sagittal, horizontal} = res.cut_coords
+      const newCutCoords = {
+        coronal: coronal.join(','),
+        sagittal: sagittal.join(','),
+        horizontal: horizontal.join(',')
+      }
+      setDataParams({cut_coords: newCutCoords, threshold: res.threshold.join(',')})
+    }
+    finally {
+      setIsLoading(false)
+    }
+  }
+
+  const checkCharEnd = useCallback((value: string) => {
+    return value[value.length - 1] === ',' || value[value.length - 1] === '-' || !value
+  },[dataParams])
+
+  const onSaveParams = async () => {
+    if(!dataParams) return
+    const { coronal, sagittal, horizontal} = dataParams.cut_coords
+    if(checkCharEnd(coronal) || checkCharEnd(sagittal) || checkCharEnd(horizontal) || checkCharEnd(dataParams.threshold)) {
+      return
+    }
+    const newParams = {
+      threshold: dataParams.threshold.split(',').map((item: string) => Number(item)),
+      cut_coords: {
+        coronal: coronal.split(',').map((item: string) => Number(item)),
+        sagittal: sagittal.split(',').map((item: string) => Number(item)),
+        horizontal: horizontal.split(',').map((item: string) => Number(item))
+      }
+    }
+    setIsLoading(true)
+    try {
+      await saveParams(newParams)
+    }
+    finally {
+      setIsLoading(false)
+    }
+  }
+  const onChangeParams = (event: any) => {
+    const { value, name } = event.target
+    if(name === 'threshold') {
+       setDataParams({...dataParams, threshold: value || []})
+      return
+    }
+    const newCutCoords = {...dataParams.cut_coords, [name]: value}
+    setDataParams({...dataParams, cut_coords: newCutCoords})
+  }
+
+  const onKeyInput = (event: any) => {
+    const {name, value} = event.target
+    if(event.key === 'Backspace') {
+      if(name === 'threshold') {
+        setDataParams({...dataParams, threshold: value})
+        return
+      }
+      const newCutCoords = {...dataParams.cut_coords, [name]: value}
+      setDataParams({...dataParams, cut_coords: newCutCoords})
+      return
+    }
+    if(regexInput.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
   return (
       <Container>
-          <Title>
-              STAT IMAGES
-          </Title>
+          <Title>STAT IMAGES</Title>
           <VisualizeInputWrapper>
             <Box>
-                <WrapperInput text={'threshold'}/>
+                <WrapperInput
+                    text={'threshold'}
+                    value={dataParams?.threshold || ''}
+                    onKeyDown={onKeyInput}
+                    onChange={onChangeParams}
+                />
             </Box>
             <CutCoords>
                 <Typography>cut_coords</Typography>
                 <Box>
-                    <WrapperInput text={'coronal'}/>
-                    <WrapperInput text={'sagittal'}/>
-                    <WrapperInput text={'horizontal'}/>
+                    <WrapperInput
+                        text={'coronal'}
+                        value={dataParams?.cut_coords.coronal || ''}
+                        onKeyDown={onKeyInput}
+                        onChange={onChangeParams}
+                    />
+                    <WrapperInput
+                        text={'sagittal'}
+                        value={dataParams?.cut_coords.sagittal || ''}
+                        onKeyDown={onKeyInput}
+                        onChange={onChangeParams}
+                    />
+                    <WrapperInput
+                        text={'horizontal'}
+                        value={dataParams?.cut_coords.horizontal || ''}
+                        onKeyDown={onKeyInput}
+                        onChange={onChangeParams}
+                    />
                 </Box>
             </CutCoords>
             <Box sx={{
@@ -32,8 +156,8 @@ const VisualizeNew = () => {
               flexDirection: 'column',
               gap: 2
             }}>
-              <ParamsButton>Save Params</ParamsButton>
-              <ParamsButton>Load Params</ParamsButton>
+              <ParamsButton onClick={onSaveParams}>Save Params</ParamsButton>
+              <ParamsButton onClick={onLoadParams}>Load Params</ParamsButton>
             </Box>
           </VisualizeInputWrapper>
           <ButtonWrapper>
@@ -43,6 +167,10 @@ const VisualizeNew = () => {
           <ImageWrapper>
               <Image src={'/Images/image-visualize.png'} alt={''} />
           </ImageWrapper>
+        {
+          isLoading &&
+          <Loading />
+        }
       </Container>
   )
 }

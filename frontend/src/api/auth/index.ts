@@ -45,6 +45,16 @@ export const editPassProfile = async (data: object) => {
   return response.data
 }
 
+export const saveParams = async (data: object) => {
+  const response = await axios.post(`/image_stat/param`, data)
+  return response.data
+}
+
+export const loadParams = async () => {
+  const response = await axios.get(`/image_stat/param`)
+  return response.data
+}
+
 export const resetPassword = async (email: string) => {
   const response = await axios.post(`/admin/user/send_reset_password?email=${email}`, email)
   return response.data
