@@ -75,7 +75,7 @@ const Account = () => {
       handleCloseChangePw()
     }
     catch {
-      alert('Failed to Change Password.!')
+      alert('Failed to Change Password!')
     }
     finally {
       setIsLoading(false)
