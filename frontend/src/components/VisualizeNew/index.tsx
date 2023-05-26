@@ -7,7 +7,6 @@ type InputType = {
   text: string
   value?: string
   onChange: (e: any) => void
-  onKeyDown?: (e: any) => void
 }
 
 type ParamsType = {
@@ -21,7 +20,7 @@ type ParamsType = {
 
 const regexInput = /[^0-9,-]/
 
-const WrapperInput = ({text, value, onChange, onKeyDown} : InputType) => {
+const WrapperInput = ({text, value, onChange} : InputType) => {
     return (
         <Wrapper>
             <Typography sx={{minWidth: 100}}>{text}</Typography>
@@ -29,9 +28,7 @@ const WrapperInput = ({text, value, onChange, onKeyDown} : InputType) => {
                 name={text}
                 sx={{width: 250}}
                 value={value}
-                onKeyDown={onKeyDown}
                 onChange={(event: any) => onChange(event)}
-
             />
         </Wrapper>
     )
@@ -91,29 +88,25 @@ const VisualizeNew = () => {
     }
   }
   const onChangeParams = (event: any) => {
-    const { value, name } = event.target
+    let { value, name } = event.target
+    if(regexInput.test(value)) {
+      const checkChar = (checkChar: any, value: any) => {
+        const arrValue = value.split('')
+        const index = arrValue.findIndex((item: string) => regexInput.test(item))
+        if(index !== -1) {
+          value = value.replace(value[index], '')
+          return checkChar(checkChar, value)
+        }
+        return value
+      }
+      value = checkChar(checkChar, value)
+    }
     if(name === 'threshold') {
        setDataParams({...dataParams, threshold: value || []})
       return
     }
     const newCutCoords = {...dataParams.cut_coords, [name]: value}
     setDataParams({...dataParams, cut_coords: newCutCoords})
-  }
-
-  const onKeyInput = (event: any) => {
-    const {name, value} = event.target
-    if(event.key === 'Backspace') {
-      if(name === 'threshold') {
-        setDataParams({...dataParams, threshold: value})
-        return
-      }
-      const newCutCoords = {...dataParams.cut_coords, [name]: value}
-      setDataParams({...dataParams, cut_coords: newCutCoords})
-      return
-    }
-    if(regexInput.test(event.key)) {
-      event.preventDefault();
-    }
   }
 
   return (
@@ -124,7 +117,6 @@ const VisualizeNew = () => {
                 <WrapperInput
                     text={'threshold'}
                     value={dataParams?.threshold || ''}
-                    onKeyDown={onKeyInput}
                     onChange={onChangeParams}
                 />
             </Box>
@@ -134,19 +126,16 @@ const VisualizeNew = () => {
                     <WrapperInput
                         text={'coronal'}
                         value={dataParams?.cut_coords.coronal || ''}
-                        onKeyDown={onKeyInput}
                         onChange={onChangeParams}
                     />
                     <WrapperInput
                         text={'sagittal'}
                         value={dataParams?.cut_coords.sagittal || ''}
-                        onKeyDown={onKeyInput}
                         onChange={onChangeParams}
                     />
                     <WrapperInput
                         text={'horizontal'}
                         value={dataParams?.cut_coords.horizontal || ''}
-                        onKeyDown={onKeyInput}
                         onChange={onChangeParams}
                     />
                 </Box>
@@ -232,7 +221,7 @@ const ImageWrapper = styled(Box)({
 
 const Image = styled('img')({
     width: '100%',
-    objectFit: 'contain'
+    objectFit: 'contain',
 })
 
 export default VisualizeNew
