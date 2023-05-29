@@ -10,5 +10,5 @@ class CutCoordParam(BaseModel):
 
 
 class StatImageParam(BaseModel):
-    threshold: List[int] = [0, 0]
+    threshold: List[float] = [0.0, 0.0]
     cut_coords: CutCoordParam = CutCoordParam()
