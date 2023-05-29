@@ -1,6 +1,16 @@
-import {styled, Box, Typography, Container} from "@mui/material";
-import {useCallback, useState} from "react";
-import {loadParams, saveParams} from "../../api/auth";
+import {
+  styled,
+  Box,
+  Typography,
+  Container,
+  Button,
+  DialogContent,
+  Dialog,
+  DialogActions,
+  DialogContentText
+} from "@mui/material";
+import { useCallback, useState } from "react";
+import { loadParams, saveParams } from "../../api/auth";
 import Loading from "../common/Loading";
 
 type InputType = {
@@ -18,7 +28,39 @@ type ParamsType = {
   threshold: string
 }
 
-const regexInput = /[^0-9,-]/
+type AlertDialogProps = {
+  open: boolean
+  handleClose: () => void
+  onSaveParams: () => void
+}
+
+const regexThreshold = /[^0-9,.-]/
+const regexCutCoords = /[^0-9,-]/
+
+const  AlertDialog = ({open, handleClose, onSaveParams}: AlertDialogProps) => {
+  return (
+      <div>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+        >
+          <DialogContent>
+            <DialogContentText>
+              Save parameters OK?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={onSaveParams} autoFocus>
+              Ok
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+  );
+}
 
 const WrapperInput = ({text, value, onChange} : InputType) => {
     return (
@@ -35,6 +77,7 @@ const WrapperInput = ({text, value, onChange} : InputType) => {
 }
 
 const VisualizeNew = () => {
+  const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false)
   const [dataParams, setDataParams] = useState<ParamsType>({
     cut_coords: {
@@ -44,6 +87,7 @@ const VisualizeNew = () => {
     },
     threshold: ''
   })
+
   const onLoadParams = async () => {
     setIsLoading(true)
     try {
@@ -62,21 +106,21 @@ const VisualizeNew = () => {
   }
 
   const checkCharEnd = useCallback((value: string) => {
-    return value[value.length - 1] === ',' || value[value.length - 1] === '-' || !value
-  },[dataParams])
+    return value[value.length - 1] === ',' || value[value.length - 1] === '-' || value[value.length - 1] === '.' || !value
+  },[])
+
+  const toNumberArr = useCallback((value: string) => {
+    return value.split(',').map((item: string) => Number(item))
+  },[])
 
   const onSaveParams = async () => {
-    if(!dataParams) return
     const { coronal, sagittal, horizontal} = dataParams.cut_coords
-    if(checkCharEnd(coronal) || checkCharEnd(sagittal) || checkCharEnd(horizontal) || checkCharEnd(dataParams.threshold)) {
-      return
-    }
     const newParams = {
-      threshold: dataParams.threshold.split(',').map((item: string) => Number(item)),
+      threshold: toNumberArr(dataParams.threshold),
       cut_coords: {
-        coronal: coronal.split(',').map((item: string) => Number(item)),
-        sagittal: sagittal.split(',').map((item: string) => Number(item)),
-        horizontal: horizontal.split(',').map((item: string) => Number(item))
+        coronal: toNumberArr(coronal),
+        sagittal: toNumberArr(sagittal),
+        horizontal: toNumberArr(horizontal)
       }
     }
     setIsLoading(true)
@@ -85,14 +129,21 @@ const VisualizeNew = () => {
     }
     finally {
       setIsLoading(false)
+      setOpen(false)
     }
   }
+
   const onChangeParams = (event: any) => {
     let { value, name } = event.target
-    if(regexInput.test(value)) {
-      const checkChar = (checkChar: any, value: any) => {
+    if((name === 'threshold' && regexThreshold.test(value)) || (name !== 'threshold' && regexCutCoords.test(value))) {
+      const checkChar = (checkChar: any, value: string) => {
         const arrValue = value.split('')
-        const index = arrValue.findIndex((item: string) => regexInput.test(item))
+        const index = arrValue.findIndex((item: string) => {
+          if(name === 'threshold') {
+            return regexThreshold.test(item)
+          }
+          return regexCutCoords.test(item)
+        })
         if(index !== -1) {
           value = value.replace(value[index], '')
           return checkChar(checkChar, value)
@@ -108,9 +159,26 @@ const VisualizeNew = () => {
     const newCutCoords = {...dataParams.cut_coords, [name]: value}
     setDataParams({...dataParams, cut_coords: newCutCoords})
   }
+  
+  const handleClickOpen = () => {
+    const { coronal, sagittal, horizontal} = dataParams.cut_coords
+    if(!dataParams || checkCharEnd(coronal) || checkCharEnd(sagittal) || checkCharEnd(horizontal) || checkCharEnd(dataParams.threshold)) {
+      return
+    }
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   return (
       <Container>
+          <AlertDialog
+            open={open}
+            handleClose={handleClose}
+            onSaveParams={onSaveParams}
+          />
           <Title>STAT IMAGES</Title>
           <VisualizeInputWrapper>
             <Box>
@@ -145,7 +213,7 @@ const VisualizeNew = () => {
               flexDirection: 'column',
               gap: 2
             }}>
-              <ParamsButton onClick={onSaveParams}>Save Params</ParamsButton>
+              <ParamsButton onClick={handleClickOpen}>Save Params</ParamsButton>
               <ParamsButton onClick={onLoadParams}>Load Params</ParamsButton>
             </Box>
           </VisualizeInputWrapper>
