@@ -39,16 +39,15 @@ const initState = {
   confirmPassword: '',
 }
 
+export const regexPassword = /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
+export const regexEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+const regexIgnoreS = /[^!#$%&()*+,-./@_|a-zA-Z0-9]/
+
 const ModalComponent: FC<ModalComponentProps> = ({
   onSubmitEdit,
   setIsOpenModal,
   dataEdit,
 }) => {
-  const regex =
-    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-  const regexPassword =
-    /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
-  const regexIgnoreS = /[^!#$%&()*+,-./@_|a-zA-Z0-9]/
   const [formData, setFormData] = useState<{ [key: string]: string }>(
     dataEdit || initState,
   )
@@ -58,7 +57,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   const validateEmail = (value: string): string => {
     const error = validateField('email', 255, value)
     if (error) return error
-    if (!regex.test(value)) {
+    if (!regexEmail.test(value)) {
       return 'Invalid email format'
     }
     return ''

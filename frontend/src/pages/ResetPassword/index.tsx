@@ -1,10 +1,9 @@
 import { Box, Stack, styled, Typography, Link } from '@mui/material'
 import { ChangeEvent, FormEvent, useState } from 'react'
-import {resetPassword} from "../../api/auth";
+import { resetPassword } from "../../api/auth";
 import Loading from "../../components/common/Loading";
-import {useNavigate} from "react-router-dom";
-
-const regexEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+import { useNavigate } from "react-router-dom";
+import { regexEmail } from "../AccountManager";
 
 const ResetPassword = () => {
     const navigate = useNavigate()
