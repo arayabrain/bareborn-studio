@@ -4,7 +4,8 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, Response, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyHeader
+from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
+from firebase_admin import auth
 from jose import JWTError, jwt
 from pydantic import ValidationError
 
@@ -15,6 +16,7 @@ load_dotenv()
 ALGORITHM = 'HS256'
 
 SECRET_KEY = os.getenv('SECRET_KEY', '123456')
+USE_FIREBASE_TOKEN = os.getenv('USE_FIREBASE_TOKEN', 'False') == 'True'
 
 
 def create_access_token(
@@ -66,9 +68,25 @@ def validate_token(
 
 async def get_current_user(
     res: Response,
-    ExToken: Optional[str] = Depends(APIKeyHeader(name='ExToken')),
+    ExToken: Optional[str] = Depends(APIKeyHeader(name='ExToken', auto_error=False)),
     credential: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
 ):
+    if USE_FIREBASE_TOKEN:
+        if credential is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                headers={'WWW-Authenticate': 'Bearer realm="auth_required"'},
+            )
+        try:
+            user = auth.verify_id_token(credential.credentials)
+            user = await read_user(user_id=user['uid'])
+            return user.dict()
+        except Exception as err:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Could not validate credentials",
+                headers={'WWW-Authenticate': 'Bearer error="invalid_token"'},
+            )
     if ExToken is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -81,7 +99,13 @@ async def get_current_user(
     if e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e)
     res.headers['WWW-Authenticate'] = 'Bearer realm="auth_required"'
-    user = await read_user(user_id=payload['sub'])
+    try:
+        user = await read_user(user_id=payload['sub'])
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
     return user.dict()
 
 
