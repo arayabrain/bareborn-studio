@@ -17,14 +17,11 @@ type InputType = {
   text: string
   value?: string
   onChange: (e: any) => void
+  error: string
 }
 
 type ParamsType = {
-  cut_coords: {
-    coronal: string
-    sagittal: string
-    horizontal: string
-  }
+  cut_coords: any
   threshold: string
 }
 
@@ -62,17 +59,20 @@ const  AlertDialog = ({open, handleClose, onSaveParams}: AlertDialogProps) => {
   );
 }
 
-const WrapperInput = ({text, value, onChange} : InputType) => {
+const WrapperInput = ({text, value, onChange, error} : InputType) => {
     return (
-        <Wrapper>
-            <Typography sx={{minWidth: 100}}>{text}</Typography>
-            <VisualizeInput
-                name={text}
-                sx={{width: 250}}
-                value={value}
-                onChange={(event: any) => onChange(event)}
-            />
-        </Wrapper>
+        <Box sx={{display: 'flex'}}>
+              <Typography sx={{minWidth: 100}}>{text}</Typography>
+              <Box sx={{display: 'flex', flexDirection: 'column'}}>
+                <VisualizeInput
+                    name={text}
+                    sx={{width: 250}}
+                    value={value}
+                    onChange={(event: any) => onChange(event)}
+                />
+                <SpanError>{error}</SpanError>
+              </Box>
+        </Box>
     )
 }
 
@@ -80,6 +80,14 @@ const VisualizeNew = () => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false)
   const [dataParams, setDataParams] = useState<ParamsType>({
+    cut_coords: {
+      coronal: '',
+      sagittal: '',
+      horizontal: '',
+    },
+    threshold: ''
+  })
+  const [errors, setErrors] = useState<ParamsType>({
     cut_coords: {
       coronal: '',
       sagittal: '',
@@ -135,6 +143,20 @@ const VisualizeNew = () => {
 
   const onChangeParams = (event: any) => {
     let { value, name } = event.target
+    const newArr = value.split(',')
+    const checkArr = newArr.some((item: string) => !Number(item) && item !== '0')
+    if(name === 'threshold') {
+      if(checkArr || newArr.length !== 2) {
+        setErrors({...errors, threshold: 'wrong format [float, float]'})
+      }
+      else setErrors({...errors, threshold: ''})
+    }
+    if(name !== 'threshold') {
+      if(checkArr || newArr.length !== 5) {
+        setErrors({...errors, cut_coords: {...errors.cut_coords, [name]: 'wrong format [int, int, int, int, int]'}})
+      }
+      else setErrors({...errors, cut_coords: {...errors.cut_coords, [name]: ''}})
+    }
     if((name === 'threshold' && regexThreshold.test(value)) || (name !== 'threshold' && regexCutCoords.test(value))) {
       const checkChar = (checkChar: any, value: string) => {
         const arrValue = value.split('')
@@ -161,7 +183,9 @@ const VisualizeNew = () => {
   }
   
   const handleClickOpen = () => {
-    const { coronal, sagittal, horizontal} = dataParams.cut_coords
+    const { coronal, sagittal, horizontal } = dataParams.cut_coords
+    const { cut_coords } = errors
+    if(Object.keys(cut_coords).some(item => !!cut_coords[item]) || errors.threshold) return
     if(!dataParams || checkCharEnd(coronal) || checkCharEnd(sagittal) || checkCharEnd(horizontal) || checkCharEnd(dataParams.threshold)) {
       return
     }
@@ -186,6 +210,7 @@ const VisualizeNew = () => {
                     text={'threshold'}
                     value={dataParams?.threshold || ''}
                     onChange={onChangeParams}
+                    error={errors.threshold}
                 />
             </Box>
             <CutCoords>
@@ -195,16 +220,19 @@ const VisualizeNew = () => {
                         text={'coronal'}
                         value={dataParams?.cut_coords.coronal || ''}
                         onChange={onChangeParams}
+                        error={errors.cut_coords.coronal}
                     />
                     <WrapperInput
                         text={'sagittal'}
                         value={dataParams?.cut_coords.sagittal || ''}
                         onChange={onChangeParams}
+                        error={errors.cut_coords.sagittal}
                     />
                     <WrapperInput
                         text={'horizontal'}
                         value={dataParams?.cut_coords.horizontal || ''}
                         onChange={onChangeParams}
+                        error={errors.cut_coords.horizontal}
                     />
                 </Box>
             </CutCoords>
@@ -231,10 +259,6 @@ const VisualizeNew = () => {
       </Container>
   )
 }
-
-const Wrapper = styled(Box)({
-    display: 'flex'
-})
 
 const Title = styled(Typography)({
     fontSize: 25,
@@ -279,7 +303,11 @@ const VisualizeButton = styled('button')({
 })
 
 const VisualizeInput = styled('input')({
-    height: 'fit-content'
+    height: 'fit-content',
+})
+
+const SpanError = styled('span')({
+  color: 'red'
 })
 
 const ImageWrapper = styled(Box)({
