@@ -110,7 +110,15 @@ const VisualizeNew = () => {
     }
     finally {
       setIsLoading(false)
-    }
+      setErrors({
+        cut_coords: {
+          coronal: '',
+          sagittal: '',
+          horizontal: '',
+        },
+        threshold: ''
+      }
+      )}
   }
 
   const checkCharEnd = useCallback((value: string) => {
