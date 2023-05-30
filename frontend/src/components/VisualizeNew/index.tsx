@@ -69,6 +69,7 @@ const WrapperInput = ({text, value, onChange, error} : InputType) => {
                     sx={{width: 250}}
                     value={value}
                     onChange={(event: any) => onChange(event)}
+                    onBlur={(event: any) => onChange(event)}
                 />
                 <SpanError>{error}</SpanError>
               </Box>
@@ -121,10 +122,6 @@ const VisualizeNew = () => {
       )}
   }
 
-  const checkCharEnd = useCallback((value: string) => {
-    return value[value.length - 1] === ',' || value[value.length - 1] === '-' || value[value.length - 1] === '.' || !value
-  },[])
-
   const toNumberArr = useCallback((value: string) => {
     return value.split(',').map((item: string) => Number(item))
   },[])
@@ -149,22 +146,26 @@ const VisualizeNew = () => {
     }
   }
 
-  const onChangeParams = (event: any) => {
-    let { value, name } = event.target
+  const validateParams = (value: string, name: string) => {
+    if (!value) return 'This field is required'
     const newArr = value.split(',')
     const checkArr = newArr.some((item: string) => !Number(item) && item !== '0')
-    if(name === 'threshold') {
-      if(checkArr || newArr.length !== 2) {
-        setErrors({...errors, threshold: 'wrong format [float, float]'})
+    if (name === 'threshold') {
+      if (checkArr || newArr.length !== 2) {
+        return 'wrong format [float, float]'
       }
-      else setErrors({...errors, threshold: ''})
+      return ''
     }
-    if(name !== 'threshold') {
-      if(checkArr || newArr.length !== 5) {
-        setErrors({...errors, cut_coords: {...errors.cut_coords, [name]: 'wrong format [int, int, int, int, int]'}})
-      }
-      else setErrors({...errors, cut_coords: {...errors.cut_coords, [name]: ''}})
+    if(checkArr || newArr.length !== 5) {
+      return 'wrong format [int, int, int, int, int]'
     }
+    return ''
+  }
+
+  const onChangeParams = (event: any) => {
+    let { value, name } = event.target
+    if(name === 'threshold') setErrors({...errors, threshold: validateParams(value, name)})
+    if(name !== 'threshold') setErrors({...errors, cut_coords: {...errors.cut_coords, [name]: validateParams(value, name)}})
     if((name === 'threshold' && regexThreshold.test(value)) || (name !== 'threshold' && regexCutCoords.test(value))) {
       const checkChar = (checkChar: any, value: string) => {
         const arrValue = value.split('')
@@ -183,7 +184,7 @@ const VisualizeNew = () => {
       value = checkChar(checkChar, value)
     }
     if(name === 'threshold') {
-       setDataParams({...dataParams, threshold: value || []})
+       setDataParams({...dataParams, threshold: value})
       return
     }
     const newCutCoords = {...dataParams.cut_coords, [name]: value}
@@ -191,12 +192,18 @@ const VisualizeNew = () => {
   }
   
   const handleClickOpen = () => {
-    const { coronal, sagittal, horizontal } = dataParams.cut_coords
+    const { coronal, sagittal, horizontal} = dataParams.cut_coords
     const { cut_coords } = errors
+    setErrors({
+      cut_coords: {
+        coronal: validateParams(coronal, 'coronal'),
+        sagittal: validateParams(sagittal, 'sagittal'),
+        horizontal: validateParams(horizontal, 'horizontal'),
+      },
+      threshold: validateParams(dataParams.threshold, 'threshold')
+    })
+    if( !coronal || ! sagittal || !horizontal || !dataParams.threshold ) return
     if(Object.keys(cut_coords).some(item => !!cut_coords[item]) || errors.threshold) return
-    if(!dataParams || checkCharEnd(coronal) || checkCharEnd(sagittal) || checkCharEnd(horizontal) || checkCharEnd(dataParams.threshold)) {
-      return
-    }
     setOpen(true);
   };
 
