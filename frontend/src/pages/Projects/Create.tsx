@@ -383,8 +383,8 @@ const ProjectFormComponent = () => {
     setViewer({ open: false, url: '' })
   }
 
-  const rowClick = (row: ImagesDatabase) => {
-    const { view, checkNext, checkPre } = onRowClick(datasTable, row)
+  const rowClick = async (row: ImagesDatabase) => {
+    const { view, checkNext, checkPre } = await onRowClick(datasTable, row)
     setViewer(view)
     setDisabled({ left: !checkPre, right: !checkNext })
   }

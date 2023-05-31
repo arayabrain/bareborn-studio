@@ -242,7 +242,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
                   viewer_insert_className: 'overlay-viewer-display',
                 },
               },
-              complete: function () {},
+              complete: function () {
+                setIsLoadFile(false)
+              },
             },
           ],
         })

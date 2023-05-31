@@ -5,6 +5,7 @@ import {
   RecordDatabase,
   RecordList,
 } from 'pages/Database'
+import {getRawdb} from "../../api/auth";
 
 export type OrderKey =
   | keyof (RecordDatabase | RecordList)
@@ -15,20 +16,19 @@ export type OrderKey =
   | 'attributes.protocol'
   | 'attributes.size'
 
-export const onRowClick = (
+export const onRowClick = async (
   datas: DatabaseData | DatabaseListData,
   row: ImagesDatabase | RecordList,
   type: 'tree' | 'list' = 'tree',
 ) => {
+  const dataAttributes = await getRawdb(row.id)
   const view = {
     open: true,
     url: row.image_url,
     id: row.id,
     session_id: (row as ImagesDatabase).session_id,
     parent_id: (row as ImagesDatabase).parent_id,
-    jsonData:
-      (row as ImagesDatabase).attributes ||
-      (row as RecordList).image_attributes,
+    jsonData: type !== 'tree' ?  dataAttributes : (row as ImagesDatabase).attributes,
     image: row,
   }
   const checkNext = onGet(datas, row, false, type)

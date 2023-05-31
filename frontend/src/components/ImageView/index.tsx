@@ -42,6 +42,7 @@ const ImageView: FC<ImageViewProps> = ({
       setTimeout(loadFile, 0)
       return
     }
+    setIsLoadFile(false)
     setOpacity(0)
     setContracts(1)
     setBrightness(0)

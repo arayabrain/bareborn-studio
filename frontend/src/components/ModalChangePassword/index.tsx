@@ -1,7 +1,7 @@
 import { Box, Button, Modal, styled, Typography } from '@mui/material'
 import InputPassword from 'components/InputPassword'
 import { ChangeEvent, FC, useState } from 'react'
-import { regexPassword } from "../../pages/AccountManager";
+import { regexIgnoreS, regexPassword } from "../../pages/AccountManager";
 
 type ModalDeleteAccountProps = {
   onClose: () => void
@@ -9,7 +9,6 @@ type ModalDeleteAccountProps = {
   onSubmit: (oldPass: string, newPass: string) => void
 }
 
-const regexIgnoreS = /[^!#$%&()*+,-./@_|a-zA-Z0-9]/
 const ModalChangePassword: FC<ModalDeleteAccountProps> = ({
   onClose,
   open,

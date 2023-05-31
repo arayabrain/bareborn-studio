@@ -9,6 +9,8 @@ import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
 import { isReseacher } from "../../utils/auth";
+import {getDataBaseList, getDataBaseTree} from "../../api/auth";
+import { BASE_URL_DATABASE } from "../../const/API";
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -362,131 +364,6 @@ export const defaultDatabase: DatabaseData = {
   ],
 }
 
-const dataImages: DatabaseListData = {
-  pagenation: {
-    page: 0,
-    limit: 0,
-    total: 0,
-    total_pages: 0,
-  },
-  records: [
-    {
-      id: 0,
-      lab_name: 'lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test.nii',
-      image_attributes: {
-        size: [15.3, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 1,
-      lab_name: 'z lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test0.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 2,
-      lab_name: 'x lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test1.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 3,
-      lab_name: 'c lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test2.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 4,
-      lab_name: '4 lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test3.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Z Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 5,
-      lab_name: 'string',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test4.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'X Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-  ],
-}
-
 export const columns = (
   rowClick: Function,
   setOpenDelete: Function,
@@ -571,6 +448,7 @@ export const columns = (
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
+  const [dataImages, setDataImages] = useState<DatabaseListData>()
   const [datasTable, setDatasTable] = useState<DatabaseData | DatabaseListData>(
     defaultDatabase,
   )
@@ -593,13 +471,26 @@ const Database = () => {
       setDatasTable(defaultDatabase)
       setInitDataTable(defaultDatabase)
     } else {
-      setDatasTable(dataImages)
-      setInitDataTable(dataImages)
-    }
-  }, [type])
+      if(dataImages) {
+        setDatasTable(dataImages)
+        setInitDataTable(dataImages)
+      }
 
-  const rowClick = (row: ImagesDatabase | RecordList) => {
-    const { view, checkNext, checkPre } = onRowClick(datasTable, row, type)
+    }
+  }, [type, dataImages])
+
+  useEffect(() => {
+      const fetchData = async () => {
+        const dataList = await getDataBaseList()
+        const dataTree = await getDataBaseTree()
+        console.log('dataTree', dataTree)
+        setDataImages(dataList)
+      }
+      fetchData()
+  },[])
+
+  const rowClick = async (row: ImagesDatabase | RecordList) => {
+    const { view, checkNext, checkPre } = await onRowClick(datasTable, row, type)
     setViewer(view)
     setDisabled({ left: !checkPre, right: !checkNext })
   }
@@ -624,16 +515,16 @@ const Database = () => {
     setOrdeBy(orderByValue)
   }
 
-  const onNext = () => {
+  const onNext = async () => {
     if (!viewer.image) return
     const imageNext = onGet(datasTable as any, viewer.image, false, type)
-    if (imageNext) rowClick(imageNext)
+    if (imageNext) await rowClick(imageNext)
   }
 
-  const onPrevious = () => {
+  const onPrevious = async () => {
     if (!viewer.image) return
     const imagePre = onGet(datasTable, viewer.image, true, type)
-    if (imagePre) rowClick(imagePre)
+    if (imagePre) await rowClick(imagePre)
   }
 
   return (
@@ -691,7 +582,7 @@ const Database = () => {
         />
       <ImageView
         disabled={disabled}
-        url={viewer.url}
+        url={viewer.url && type !== 'tree' ? `${BASE_URL_DATABASE}${viewer.url}` : viewer.url}
         open={viewer.open}
         jsonData={viewer.jsonData}
         onClose={onCloseImageView}
