@@ -16,6 +16,7 @@ import React, {
   Fragment,
   useRef,
   CSSProperties,
+  useEffect,
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
@@ -33,6 +34,7 @@ import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
 import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { useDispatch } from 'react-redux'
+import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
@@ -107,6 +109,11 @@ const ProjectFormComponent = () => {
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
+
+  useEffect(() => {
+    dispatch(getDatasetList())
+    //eslint-disable-next-line
+  }, [])
 
   const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value)
@@ -481,12 +488,12 @@ const ProjectFormComponent = () => {
               label="Between factor"
             />
           </Box>
-            <FormControlLabel
-                value="within-factor"
-                control={<Radio />}
-                label="Between factor-within factor"
-                disabled={idEdit ? true : false}
-            />
+          <FormControlLabel
+            value="within-factor"
+            control={<Radio />}
+            label="Between factor-within factor"
+            disabled={idEdit ? true : false}
+          />
         </Box>
       </BoxOptions>
       <DropAndDropBox>

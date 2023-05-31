@@ -3,7 +3,7 @@ export const PROJECT_SLICE_NAME = 'project'
 export type Project = {
   projects: ProjectType[]
   currentProject?: {
-    id: string
+    id?: string
   }
 }
 
