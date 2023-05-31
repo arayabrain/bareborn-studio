@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
-import { ChangeEvent, useEffect, useState } from 'react'
+import {ChangeEvent, useCallback, useEffect, useState} from 'react'
 import DatabaseTableComponent, { Column } from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -9,8 +9,9 @@ import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
 import { isReseacher } from "../../utils/auth";
-import {getDataBaseList, getDataBaseTree} from "../../api/auth";
+import { getDataBaseList, getDataBaseTree } from "../../api/rawdb";
 import { BASE_URL_DATABASE } from "../../const/API";
+import Loading from "../../components/common/Loading";
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -90,7 +91,7 @@ export type Image = {
     id: number
     parent_id: number
     image_url: string
-    attributes: Object
+    image_attributes: Object
   }
 }
 
@@ -110,7 +111,7 @@ export type ImagesDatabase = {
   image_url: string
   datatype_label?: string
   type?: string
-  attributes: Object
+  image_attributes: Object
   session_id?: number
   record_index?: number
   subject_index?: number
@@ -200,168 +201,7 @@ export const defaultDatabase: DatabaseData = {
     total: 0,
     total_pages: 0,
   },
-  records: [
-    {
-      id: 0,
-      lab_name: 'string',
-      user_name: 'string',
-      recording_time: '2023-04-07',
-      subjects: [
-        {
-          id: '0',
-          parent_id: '0',
-          label: 'new subject',
-          sessions: [
-            {
-              id: '0',
-              parent_id: '0',
-              label: 'new session',
-              datatypes: [
-                {
-                  id: '0',
-                  parent_id: '0',
-                  label: 'anat',
-                  images: [
-                    {
-                      id: 0,
-                      parent_id: '0',
-                      image_url: window.location.origin + '/lib/test.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'TYPE_1',
-                        protocol: 'Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                  ],
-                },
-                {
-                  id: '1',
-                  parent_id: '0',
-                  label: 'func',
-                  images: [
-                    {
-                      id: 1,
-                      parent_id: '0',
-                      image_url: window.location.origin + '/lib/test0.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'TYPE_1',
-                        protocol: 'Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '1',
-          parent_id: '0',
-          label: 'project subject',
-          sessions: [
-            {
-              id: '1',
-              parent_id: '1',
-              label: 'zsession',
-              datatypes: [
-                {
-                  id: '2',
-                  parent_id: '1',
-                  label: 'anat',
-                  images: [
-                    {
-                      id: 2,
-                      parent_id: '2',
-                      image_url: window.location.origin + '/lib/test1.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'TYPE_1',
-                        protocol: 'Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                  ],
-                },
-                {
-                  id: '3',
-                  parent_id: '1',
-                  label: 'zunc',
-                  images: [
-                    {
-                      id: 3,
-                      parent_id: '3',
-                      image_url: window.location.origin + '/lib/test2.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'T2_RATE',
-                        protocol: 'X Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                    {
-                      id: 4,
-                      parent_id: '3',
-                      image_url: window.location.origin + '/lib/test3.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'TYPE_1',
-                        protocol: 'Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                    {
-                      id: 5,
-                      parent_id: '3',
-                      image_url: window.location.origin + '/lib/test4.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'T3_RATE',
-                        protocol: 'Z Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-      created_time: '2023-04-07T04:28:09.686Z',
-      updated_time: '2023-04-07T04:28:09.686Z',
-    },
-    {
-      id: 1,
-      lab_name: 'lab name',
-      user_name: 'user name',
-      recording_time: '2023-04-06',
-      subjects: [
-        {
-          id: '3',
-          parent_id: '1',
-          label: 'subject name',
-          sessions: [],
-        },
-        {
-          id: '4',
-          parent_id: '1',
-          label: 'zubject name',
-          sessions: [],
-        },
-        {
-          id: '5',
-          parent_id: '1',
-          label: 'lubject name',
-          sessions: [],
-        },
-      ],
-      created_time: '2023-04-07T04:28:09.686Z',
-      updated_time: '2023-04-07T04:28:09.686Z',
-    },
-  ],
+  records: []
 }
 
 export const columns = (
@@ -393,24 +233,26 @@ export const columns = (
   },
   {
     title: 'Type',
-    name: type === 'tree' ? 'attributes.type' : 'image_attributes.type',
+    name: type === 'tree' ? 'image_attributes.image_type' : 'image_attributes.type',
     filter: true,
   },
   {
     title: 'Protocol',
-    name: type === 'tree' ? 'attributes.protocol' : 'image_attributes.protocol',
+    name: type === 'tree' ? 'image_attributes.protocol' : 'image_attributes.protocol',
     filter: true,
   },
   {
     title: 'Size',
-    name: type === 'tree' ? 'attributes.size' : 'image_attributes.size',
+    name: type === 'tree' ? 'image_attributes.scale' : 'image_attributes.scale',
     filter: true,
+    render: (_, v) => JSON.stringify(v)
   },
   {
     title: 'Voxel size',
     name:
-      type === 'tree' ? 'attributes.voxel_size' : 'image_attributes.voxel_size',
+      type === 'tree' ? 'image_attributes.voxel' : 'image_attributes.voxel',
     filter: true,
+    render: (_, v) => JSON.stringify(v)
   },
   {
     title: '',
@@ -448,48 +290,47 @@ export const columns = (
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
-  const [dataImages, setDataImages] = useState<DatabaseListData>()
-  const [datasTable, setDatasTable] = useState<DatabaseData | DatabaseListData>(
-    defaultDatabase,
-  )
-  const [initDataTable, setInitDataTable] = useState<
-    DatabaseData | DatabaseListData
-  >(defaultDatabase)
+  const [databases, setDatabases] = useState<DatabaseData | DatabaseListData>()
   const [openDelete, setOpenDelete] = useState(false)
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [type, setType] = useState<'tree' | 'list'>('tree')
   const [disabled, setDisabled] = useState({ left: false, right: false })
+  const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
 
   const onCloseImageView = () => {
     setViewer({ open: false, url: '' })
   }
 
-  useEffect(() => {
-    if (type === 'tree') {
-      setDatasTable(defaultDatabase)
-      setInitDataTable(defaultDatabase)
-    } else {
-      if(dataImages) {
-        setDatasTable(dataImages)
-        setInitDataTable(dataImages)
-      }
-
-    }
-  }, [type, dataImages])
-
-  useEffect(() => {
-      const fetchData = async () => {
-        const dataList = await getDataBaseList()
+  const fetchData = useCallback(async () => {
+    setIsLoading(true)
+    if(type === 'tree') {
+      try {
         const dataTree = await getDataBaseTree()
-        setDataImages(dataList)
+        setDatabases(dataTree)
       }
+      finally {
+        setIsLoading(false)
+      }
+      return
+    }
+    try {
+      const dataList = await getDataBaseList()
+      setDatabases(dataList)
+    }
+    finally {
+      setIsLoading(false)
+    }
+  }, [type])
+
+  useEffect(() => {
       fetchData()
-  },[])
+  }, [fetchData])
 
   const rowClick = async (row: ImagesDatabase | RecordList) => {
-    const { view, checkNext, checkPre } = await onRowClick(datasTable, row, type)
+    if(!databases) return
+    const { view, checkNext, checkPre } = await onRowClick(databases, row, type)
     setViewer(view)
     setDisabled({ left: !checkPre, right: !checkNext })
   }
@@ -503,26 +344,27 @@ const Database = () => {
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
+    if(!databases) return
     const data = onSort(
-      JSON.parse(JSON.stringify(initDataTable.records)),
+      JSON.parse(JSON.stringify(databases.records)),
       orderByValue,
       orderKey as OrderKey,
       type,
     )
-    setDatasTable({ ...datasTable, records: data as any })
+    setDatabases({ ...databases, records: data as any })
     setColumnSort(orderKey)
     setOrdeBy(orderByValue)
   }
 
   const onNext = async () => {
     if (!viewer.image) return
-    const imageNext = onGet(datasTable as any, viewer.image, false, type)
+    const imageNext = onGet(databases as any, viewer.image, false, type)
     if (imageNext) await rowClick(imageNext)
   }
 
   const onPrevious = async () => {
-    if (!viewer.image) return
-    const imagePre = onGet(datasTable, viewer.image, true, type)
+    if (!viewer.image || !databases) return
+    const imagePre = onGet(databases, viewer.image, true, type)
     if (imagePre) await rowClick(imagePre)
   }
 
@@ -576,18 +418,22 @@ const Database = () => {
             rowClick={rowClick}
             orderKey={columnSort}
             orderBy={orderBy}
-            data={datasTable.records}
+            data={databases && databases.records}
             columns={columns(rowClick, setOpenDelete, type, user)}
         />
       <ImageView
         disabled={disabled}
-        url={viewer.url && type !== 'tree' ? `${BASE_URL_DATABASE}${viewer.url}` : viewer.url}
+        url={viewer.url && `${BASE_URL_DATABASE}${viewer.url}`}
         open={viewer.open}
         jsonData={viewer.jsonData}
         onClose={onCloseImageView}
         onNext={onNext}
         onPrevious={onPrevious}
+        id={Number(viewer.id)}
       />
+      {
+        isLoading && <Loading />
+      }
       </DatabaseWrapper>
   )
 }

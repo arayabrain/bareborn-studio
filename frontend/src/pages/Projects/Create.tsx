@@ -257,10 +257,10 @@ const ProjectFormComponent = () => {
           project_name: rowDrag.datatype_label,
           image_count: 1,
           image_id: rowDrag.id,
-          project_type: rowDrag.attributes.type as string,
-          protocol: rowDrag.attributes.protocol as string,
+          project_type: rowDrag.image_attributes.image_type as string,
+          protocol: rowDrag.image_attributes.protocol as string,
           image_url: rowDrag?.image_url,
-          jsonData: rowDrag?.attributes,
+          jsonData: rowDrag?.image_attributes,
         },
       ]
     } else if (Array.isArray(rowDrag)) {
@@ -269,10 +269,10 @@ const ProjectFormComponent = () => {
         project_name: row.datatype_label,
         image_count: 1,
         image_id: row.id,
-        project_type: row.attributes.type as string,
-        protocol: row.attributes.protocol as string,
+        project_type: row.image_attributes.image_type as string,
+        protocol: row.image_attributes.protocol as string,
         image_url: row?.image_url,
-        jsonData: row?.attributes,
+        jsonData: row?.image_attributes,
       }))
     }
     if (projectLevel !== 'within-factor') {
@@ -456,6 +456,7 @@ const ProjectFormComponent = () => {
         onClose={onCloseImageView}
         onNext={onNext}
         onPrevious={onPrevious}
+        id={Number(viewer.id)}
       />
       {isEditName ? (
         <InputName
