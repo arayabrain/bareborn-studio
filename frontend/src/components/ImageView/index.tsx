@@ -1,10 +1,21 @@
-import { Box, IconButton, Modal, styled } from '@mui/material'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogContentText,
+  IconButton,
+  Modal,
+  styled,
+  DialogContent,
+  DialogActions
+} from '@mui/material'
 import { FC, useEffect, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import ChangeDrag from './ChangeSize'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import { Object } from 'pages/Database'
+import {editAttributes} from "../../api/auth";
 
 type ImageViewProps = {
   open: boolean
@@ -14,6 +25,36 @@ type ImageViewProps = {
   url?: string
   jsonData?: Object
   disabled?: { left: boolean; right: boolean }
+}
+
+type AlertDialogProps = {
+  open: boolean
+  handleClose: () => void
+}
+
+const AlertDialog = ({ open, handleClose }: AlertDialogProps) => {
+  return (
+      <div>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+        >
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Do you want Save?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={handleClose} autoFocus>
+              Ok
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+  );
 }
 
 const ImageView: FC<ImageViewProps> = ({
@@ -35,6 +76,10 @@ const ImageView: FC<ImageViewProps> = ({
   const [contracts, setContracts] = useState(1)
   const [brightness, setBrightness] = useState(0)
   const [isLoadFile, setIsLoadFile] = useState(false)
+  const [openSave, setOpenSave] = useState(false)
+  const [text, setText] = useState(JSON.stringify(jsonData || ''))
+  const [error, setError] = useState<string>('')
+
   const volumes = useRef<any>()
 
   useEffect(() => {
@@ -82,7 +127,12 @@ const ImageView: FC<ImageViewProps> = ({
     viewerRef.current.redrawVolumes()
   }
 
-  const onChangeJson = () => {}
+  const onChangeJson = (event: any) => {
+    const { value } = event.target
+    setText(value)
+  }
+
+
 
   const loadFileIndex = () => {
     if (!url || isLoadFile || !viewerRef.current) return
@@ -163,6 +213,22 @@ const ImageView: FC<ImageViewProps> = ({
     )
   }
 
+  const handleClickOpenSave = () => {
+    setOpenSave(true);
+  };
+
+  const handleCloseSave = () => {
+    setOpenSave(false);
+  };
+
+  const handleSaveAttributes = async () => {
+    if(!JSON.parse(text)) {
+      setError('wrong format JSON')
+      return
+    }
+    setError('')
+  }
+
   return (
     <Modal
       open={open}
@@ -241,8 +307,8 @@ const ImageView: FC<ImageViewProps> = ({
             </div>
             <WrapperJson>
               <TextArea
-                onChange={onChangeJson}
-                value={JSON.stringify(jsonData || '')}
+                onChange={(event) => onChangeJson(event)}
+                value={text}
               />
             </WrapperJson>
             {!disabled?.right ? (
@@ -268,7 +334,12 @@ const ImageView: FC<ImageViewProps> = ({
           <ButtonClose onClick={onClose}>
             <CloseIconWrapper />
           </ButtonClose>
+          <ButtonSave onClick={handleClickOpenSave}>Save</ButtonSave>
         </ImageViewWrapper>
+        <AlertDialog
+            open={openSave}
+            handleClose={handleCloseSave}
+        />
       </div>
     </Modal>
   )
@@ -295,6 +366,16 @@ const ButtonClose = styled(IconButton)({
   right: '10%',
   zIndex: 9999,
   background: 'rgba(255,255,255,0.4)',
+})
+
+const ButtonSave = styled('button')({
+  position: 'absolute',
+  padding: '10px 20px',
+  bottom: '5%',
+  left: '50%',
+  '&:hover': {
+    cursor: 'pointer'
+  }
 })
 
 const ButtonNext = styled(ButtonClose)({
