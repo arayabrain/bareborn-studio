@@ -41,7 +41,7 @@ const initState = {
 
 export const regexPassword = /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
 export const regexEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-const regexIgnoreS = /[^!#$%&()*+,-./@_|a-zA-Z0-9]/
+export const regexIgnoreS = /[^!#$%&()*+,-./@_|a-zA-Z0-9]/
 
 const ModalComponent: FC<ModalComponentProps> = ({
   onSubmitEdit,
