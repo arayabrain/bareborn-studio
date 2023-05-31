@@ -483,7 +483,6 @@ const Database = () => {
       const fetchData = async () => {
         const dataList = await getDataBaseList()
         const dataTree = await getDataBaseTree()
-        console.log('dataTree', dataTree)
         setDataImages(dataList)
       }
       fetchData()
