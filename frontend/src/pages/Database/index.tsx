@@ -212,7 +212,7 @@ export const columns = (
 ): Column[] => [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true },
-  { title: 'Date', name: 'recording_time', filter: true },
+  { title: 'Date', name: 'recording_time', filter: true, width: 110 },
   {
     title: 'Subject',
     name: type === 'tree' ? 'subject' : 'subject_label',

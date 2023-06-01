@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
-import DatabaseTableComponent from 'components/DatabaseTable'
+import DatabaseTableComponent, { Column } from 'components/DatabaseTable'
 import React, {
   useState,
   DragEvent,
@@ -38,17 +38,18 @@ import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
 import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
 import { createProject } from 'store/slice/Project/ProjectAction'
 import Loading from 'components/common/Loading'
+import { getDataBaseTree } from 'api/rawdb'
 
-const columns = [
-  { title: 'User', name: 'user_name', filter: true },
-  { title: 'Date', name: 'recording_time', filter: true, width: 100 },
-  { title: 'Subject', name: 'subject', filter: true },
+const columns: Column[] = [
+  { title: 'User', name: 'user_name', filter: true, width: 100 },
+  { title: 'Date', name: 'recording_time', filter: true, width: 130 },
+  { title: 'Subject', name: 'subject', filter: true, width: 120 },
   {
     title: 'Session',
     name: 'session',
     child: 'label',
     filter: true,
-    width: 100,
+    width: 190,
   },
   {
     title: 'Datatype',
@@ -56,8 +57,18 @@ const columns = [
     filter: true,
     width: 100,
   },
-  { title: 'Size', name: 'attributes.size', filter: true },
-  { title: 'Voxel size', name: 'attributes.voxel_size', filter: true },
+  {
+    title: 'Size',
+    name: 'image_attributes.scale',
+    filter: true,
+    render: (_, value) => JSON.stringify(value),
+  },
+  {
+    title: 'Voxel size',
+    name: 'image_attributes.voxel',
+    filter: true,
+    render: (_, value) => JSON.stringify(value),
+  },
 ]
 
 type ProjectAdd = {
@@ -91,14 +102,14 @@ const ProjectFormComponent = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
-  const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
   const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
   const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
   const dispatch = useDispatch()
 
-  const [initDataTable /*setInitDataTable */] =
+  const [databasese, setDatabases] = useState<DatabaseData>(defaultDatabase)
+  const [initDatabase, setInitDatabase] =
     useState<DatabaseData>(defaultDatabase)
   const [projectName, setProjectName] = useState('Prj Name 1')
   const [projectType, setProjectType] = useState<ProjectTypeValue>(
@@ -118,6 +129,19 @@ const ProjectFormComponent = () => {
     dispatch(getDatasetList())
     //eslint-disable-next-line
   }, [])
+
+  useEffect(() => {
+    getDataTree().then()
+    //eslint-disable-next-line
+  }, [])
+
+  const getDataTree = async () => {
+    try {
+      const response = await getDataBaseTree()
+      setDatabases(response)
+      setInitDatabase(response)
+    } catch {}
+  }
 
   const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value)
@@ -395,7 +419,7 @@ const ProjectFormComponent = () => {
   }
 
   const rowClick = async (row: ImagesDatabase) => {
-    const { view, checkNext, checkPre } = await onRowClick(datasTable, row)
+    const { view, checkNext, checkPre } = await onRowClick(databasese, row)
     setViewer(view)
     setDisabled({ left: !checkPre, right: !checkNext })
   }
@@ -417,24 +441,24 @@ const ProjectFormComponent = () => {
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
     const data = onSort(
-      JSON.parse(JSON.stringify(initDataTable.records)),
+      JSON.parse(JSON.stringify(initDatabase.records)),
       orderByValue,
       orderKey as OrderKey,
     )
-    setDatasTable({ ...datasTable, records: data as RecordDatabase[] })
+    setDatabases({ ...databasese, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
     setOrdeBy(orderByValue)
   }
 
   const onNext = () => {
     if (!viewer.image) return
-    const imageNext = onGet(datasTable, viewer.image, false)
+    const imageNext = onGet(databasese, viewer.image, false)
     if (imageNext) rowClick(imageNext as ImagesDatabase)
   }
 
   const onPrevious = () => {
     if (!viewer.image) return
-    const imagePre = onGet(datasTable, viewer.image, true)
+    const imagePre = onGet(databasese, viewer.image, true)
     if (imagePre) rowClick(imagePre as ImagesDatabase)
   }
 
@@ -634,7 +658,7 @@ const ProjectFormComponent = () => {
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
             draggable
-            data={datasTable.records}
+            data={databasese.records}
             columns={columns}
           />
         </DropBox>
@@ -686,7 +710,7 @@ const BoxDrag = styled(Box)({
 const BoxFactor = styled(Box)({})
 
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
-  width: '100%',
+  width: `calc(100% - ${theme.spacing(2)})`,
   padding: theme.spacing(2),
   marginBottom: theme.spacing(3),
   userSelect: 'none',
