@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 
 import { selectRunPostData } from 'store/selectors/run/RunSelectors'
 import {
@@ -43,10 +43,15 @@ export function useRunPipeline() {
     dispatch(runByCurrentUid({ runPostData }))
   }, [dispatch, runPostData])
   const [searchParams] = useSearchParams()
+  const location = useLocation()
+  const [isEdited] = useState<{ edited: boolean }>(
+    location.state as { edited: boolean },
+  )
+
   React.useEffect(() => {
     const projectId = searchParams.get('id')
-    projectId && dispatch(fetchExperiment(projectId.toString()))
-    // eslint-disable-next-line
+    projectId && !isEdited && dispatch(fetchExperiment(projectId.toString()))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const handleCancelPipeline = React.useCallback(() => {
     if (uid != null) {

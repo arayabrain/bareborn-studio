@@ -28,14 +28,14 @@ export const isReseacher = (role?: string | number) => {
 export const optionsRole = [
   {
     code: 1,
-    name: "Admin"
+    name: 'Admin',
   },
   {
     code: 10,
-    name: "Data Manager"
+    name: 'Data Manager',
   },
   {
     code: 20,
-    name: "User"
-  }
+    name: 'User',
+  },
 ]
