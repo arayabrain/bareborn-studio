@@ -1,5 +1,5 @@
-import axios from "components/utils/axios";
-import {DATABASE_URL_HOST} from "const/API";
+import axios from 'components/utils/axios'
+import { DATABASE_URL_HOST } from 'const/API'
 
 export const getDataBaseTree = async () => {
   const response = await axios.get(`${DATABASE_URL_HOST}/rawdb/search`)
