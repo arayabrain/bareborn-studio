@@ -4,10 +4,10 @@ import ModalChangePassword from 'components/ModalChangePassword'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { useUser } from 'providers'
 import { useState } from 'react'
-import { isAdmin, optionsRole } from "../../utils/auth";
-import {deleteAccountProfile, editNameProfile, editPassProfile} from "../../api/auth";
+import { isAdmin, optionsRole } from "utils/auth";
+import {deleteAccountProfile, editNameProfile, editPassProfile} from "api/auth";
 import { useNavigate } from "react-router-dom";
-import Loading from "../../components/common/Loading";
+import Loading from "components/common/Loading";
 
 const Account = () => {
   const { user, setUser } = useUser()

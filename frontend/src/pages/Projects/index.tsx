@@ -1,7 +1,7 @@
 import { Box, Button, styled } from '@mui/material'
 import { useCallback, useMemo, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import TableComponent, { Column } from '../../components/Table'
+import TableComponent, { Column } from 'components/Table'
 import { useNavigate } from 'react-router-dom'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { selectProjectList } from 'store/slice/Project/ProjectSelector'

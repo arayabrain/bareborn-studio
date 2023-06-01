@@ -10,7 +10,7 @@ import {
   DialogContentText
 } from "@mui/material";
 import { useCallback, useState } from "react";
-import { loadParams, saveParams } from "../../api/auth";
+import { loadParams, saveParams } from "api/auth";
 import Loading from "../common/Loading";
 
 type InputType = {

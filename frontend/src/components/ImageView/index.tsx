@@ -16,7 +16,7 @@ import ChangeDrag from './ChangeSize'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import { Object } from 'pages/Database'
-import { editAttributes } from "../../api/rawdb";
+import { editAttributes } from "api/rawdb";
 import Loading from "../common/Loading";
 
 type ImageViewProps = {

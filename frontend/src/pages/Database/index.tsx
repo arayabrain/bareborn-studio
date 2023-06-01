@@ -8,10 +8,10 @@ import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
-import { isReseacher } from "../../utils/auth";
-import { getDataBaseList, getDataBaseTree } from "../../api/rawdb";
-import { BASE_URL_DATABASE } from "../../const/API";
-import Loading from "../../components/common/Loading";
+import { isReseacher } from "utils/auth";
+import { getDataBaseList, getDataBaseTree } from "api/rawdb";
+import { BASE_URL_DATABASE } from "const/API";
+import Loading from "components/common/Loading";
 
 type PopupSearchProps = {
   onClose?: () => any
