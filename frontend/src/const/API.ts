@@ -4,4 +4,4 @@ const HOST_DATABASE = process.env.REACT_APP_SERVER_DATABASE_HOST
 
 export const BASE_URL = `http://${HOST}:${PORT}`
 export const WS_BASE_URL = `ws://${HOST}:${PORT}`
-export const BASE_URL_DATABASE = HOST_DATABASE
+export const BASE_URL_DATABASE = `${HOST_DATABASE}`
