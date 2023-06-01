@@ -10,7 +10,7 @@ import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
 import { isReseacher } from 'utils/auth'
 import { getDataBaseList, getDataBaseTree } from 'api/rawdb'
-// import { DATABASE_URL_HOST } from 'const/API'
+import { DATABASE_URL_HOST } from 'const/API'
 import Loading from 'components/common/Loading'
 
 type PopupSearchProps = {
@@ -424,7 +424,7 @@ const Database = () => {
       />
       <ImageView
         disabled={disabled}
-        url={viewer.url && `${process.env.REACT_APP_SERVER_DATABASE_HOST}${viewer.url}`}
+        url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
         open={viewer.open}
         jsonData={viewer.jsonData}
         onClose={onCloseImageView}

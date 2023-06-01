@@ -1,22 +1,22 @@
-import axios from "components/utils/axios";
-// import {DATABASE_URL_HOST} from "const/API";
+import axios from 'components/utils/axios'
+import { DATABASE_URL_HOST } from 'const/API'
 
 export const getDataBaseTree = async () => {
-  const response = await axios.get(`${process.env.REACT_APP_SERVER_DATABASE_HOST}/rawdb/search`)
+  const response = await axios.get(`${DATABASE_URL_HOST}/rawdb/search`)
   return response.data
 }
 
 export const getDataBaseList = async () => {
-  const response = await axios.get(`${process.env.REACT_APP_SERVER_DATABASE_HOST}/rawdb/search/list`)
+  const response = await axios.get(`${DATABASE_URL_HOST}/rawdb/search/list`)
   return response.data
 }
 
 export const getRawdb = async (id: number) => {
-  const response = await axios.get(`${process.env.REACT_APP_SERVER_DATABASE_HOST}/rawdb/${id}`)
+  const response = await axios.get(`${DATABASE_URL_HOST}/rawdb/${id}`)
   return response.data
 }
 
 export const editAttributes = async (id: number, data: string) => {
-  const response = await axios.put(`${process.env.REACT_APP_SERVER_DATABASE_HOST}/rawdb/${id}`, data)
+  const response = await axios.put(`${DATABASE_URL_HOST}/rawdb/${id}`, data)
   return response.data
 }
