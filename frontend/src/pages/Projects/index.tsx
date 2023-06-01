@@ -5,8 +5,10 @@ import TableComponent, { Column } from '../../components/Table'
 import { useNavigate } from 'react-router-dom'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { selectProjectList } from 'store/slice/Project/ProjectSelector'
-import { deleteProject } from 'store/slice/Project/ProjectSlice'
-import { getProjectList } from 'store/slice/Project/ProjectAction'
+import {
+  deleteProject,
+  getProjectList,
+} from 'store/slice/Project/ProjectAction'
 
 export type DataProject = {
   id: number | string
@@ -57,8 +59,9 @@ const Projects = () => {
 
   const onDeleteSubmit = () => {
     const id = idDelete
+    if (!id) return
     setIdDelete(undefined)
-    dispatch(deleteProject(id))
+    dispatch(deleteProject({ project_id: Number(id) }))
   }
 
   const handleCloseDelete = () => {
@@ -67,7 +70,7 @@ const Projects = () => {
 
   const columns = useMemo(
     (): Column[] => [
-      { title: 'Project Name', name: 'name' },
+      { title: 'Project Name', name: 'project_name' },
       { title: 'Created', name: 'created_time' },
       { title: 'Updated', name: 'updated_time' },
       { title: 'Images', name: 'image_count', align: 'center' },

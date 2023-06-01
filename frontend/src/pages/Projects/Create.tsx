@@ -35,6 +35,9 @@ import { RecordDatabase } from '../Database'
 import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { useDispatch } from 'react-redux'
 import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
+import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
+import { createProject } from 'store/slice/Project/ProjectAction'
+import Loading from 'components/common/Loading'
 
 const columns = [
   { title: 'User', name: 'user_name', filter: true },
@@ -87,6 +90,7 @@ const ProjectFormComponent = () => {
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(false)
   const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
   const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
@@ -97,8 +101,8 @@ const ProjectFormComponent = () => {
   const [initDataTable /*setInitDataTable */] =
     useState<DatabaseData>(defaultDatabase)
   const [projectName, setProjectName] = useState('Prj Name 1')
-  const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
-    'factor',
+  const [projectType, setProjectType] = useState<ProjectTypeValue>(
+    ProjectTypeValue.WITHIN_FACTOR,
   )
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
@@ -120,10 +124,10 @@ const ProjectFormComponent = () => {
   }
 
   const handleChangeLevel = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const type = event.target.value as 'within-factor' | 'factor'
-    setProjectLevel(type)
+    const type = Number(event.target.value) as ProjectTypeValue
+    setProjectType(type)
     let within: DataWithin[] = []
-    if (type === 'within-factor') {
+    if (type === ProjectTypeValue.WITHIN_FACTOR) {
       within = [{ name: nameDefault, id: getNanoId(), data: [] }]
     }
     setImageIDs([])
@@ -157,7 +161,7 @@ const ProjectFormComponent = () => {
   const onDeleteFactor = (row: DataFactor) => {
     setImageIDs((pre) =>
       pre.filter((id) => {
-        if (projectLevel === 'factor') {
+        if (projectType === ProjectTypeValue.FACTOR) {
           return !row.data.find((rowData) => rowData.image_id === id)
         }
         return !row.within.find((w) => w.data.find((d) => d.image_id === id))
@@ -282,7 +286,7 @@ const ProjectFormComponent = () => {
         jsonData: row?.attributes,
       }))
     }
-    if (projectLevel !== 'within-factor') {
+    if (projectType === ProjectTypeValue.FACTOR) {
       setDataFactors((pre) =>
         pre.map((p) => {
           if (p.id === factor.id) {
@@ -438,7 +442,25 @@ const ProjectFormComponent = () => {
     navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
   }
 
-  const onOk = () => {
+  const generateName = (name: string, index: number, subject: string) => {
+    if (name === nameDefault) {
+      return `${subject} factor name ${index}`
+    }
+    return name
+  }
+
+  const getBorderDrag = (): string => {
+    if (
+      (Array.isArray(rowDrag) && rowDrag.length) ||
+      (!Array.isArray(rowDrag) && !!rowDrag)
+    ) {
+      return '1px dashed red'
+    }
+    return ''
+  }
+
+  const onOk = async () => {
+    setLoading(true)
     if (nodeId) {
       const urls = dataFactors
         .map((el) => {
@@ -448,8 +470,33 @@ const ProjectFormComponent = () => {
         .flat()
         .map((image) => image.image_url)
       dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+    } else {
+      const project = {
+        project_name: projectName,
+        project_type: projectType,
+        image_count: imageIDs.length,
+      }
+      const dataset = dataFactors.map((factor, index) => ({
+        folder_name: generateName(factor.name, index, 'Between'),
+        source_image_ids: factor.data.map((d) => d.image_id),
+        sub_folders: factor.within.map((within, iWithin) => ({
+          folder_name: generateName(within.name, iWithin, 'Within'),
+          source_image_ids: within.data.map((d) => d.image_id),
+        })),
+      }))
+      dispatch(
+        createProject({
+          project,
+          dataset,
+          callback: (isSuccess: boolean) => {
+            if (isSuccess) {
+              return onCancle()
+            }
+            setLoading(false)
+          },
+        }),
+      )
     }
-    onCancle()
   }
 
   return (
@@ -476,20 +523,20 @@ const ProjectFormComponent = () => {
       )}
       <BoxOptions
         aria-labelledby="demo-radio-buttons-group-label"
-        value={projectLevel}
+        value={projectType}
         name="radio-buttons-group"
         onChange={handleChangeLevel}
       >
         <Box>
           <Box>
             <FormControlLabel
-              value="factor"
+              value={ProjectTypeValue.FACTOR}
               control={<Radio />}
               label="Between factor"
             />
           </Box>
           <FormControlLabel
-            value="within-factor"
+            value={ProjectTypeValue.WITHIN_FACTOR}
             control={<Radio />}
             label="Between factor-within factor"
             disabled={idEdit ? true : false}
@@ -505,32 +552,21 @@ const ProjectFormComponent = () => {
                   <Input
                     onChange={(e) => onChangeNameFactor(factor, e.target.value)}
                     style={{ width: 'calc(100% - 64px)' }}
-                    value={
-                      factor.name === nameDefault
-                        ? `Between factor name ${index}`
-                        : factor.name
-                    }
+                    value={generateName(factor.name, index, 'Between')}
                   />
                   <Button onClick={() => onDeleteFactor(factor)}>
                     <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
                   </Button>
-                  {projectLevel === 'within-factor' ? (
-                    factor.within.map((within, indexWithin) => (
+                  {projectType === ProjectTypeValue.WITHIN_FACTOR ? (
+                    factor.within.map((within, iWithin) => (
                       <BoxFactor key={within.id} style={{ marginLeft: 24 }}>
                         <Input
-                          onChange={(e) =>
-                            onChangeNameWithinFactor(
-                              factor,
-                              within,
-                              e.target.value,
-                            )
-                          }
+                          onChange={(e) => {
+                            const { value } = e.target
+                            onChangeNameWithinFactor(factor, within, value)
+                          }}
                           style={{ width: 'calc(100% - 64px)' }}
-                          value={
-                            within.name === nameDefault
-                              ? `Within factor name ${indexWithin}`
-                              : within.name
-                          }
+                          value={generateName(within.name, iWithin, 'Within')}
                         />
                         <Button onClick={() => onDeleteWithin(factor, within)}>
                           <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
@@ -539,13 +575,7 @@ const ProjectFormComponent = () => {
                           onDeleteDataWithin(factor, within, row)
                         })}
                         <BoxDrag
-                          style={{
-                            borderBottom:
-                              (Array.isArray(rowDrag) && rowDrag.length) ||
-                              (!Array.isArray(rowDrag) && !!rowDrag)
-                                ? '1px dashed red'
-                                : '',
-                          }}
+                          style={{ borderBottom: getBorderDrag() }}
                           onDrop={() => onDropData(factor, within)}
                           onMouseOver={() => onMouseOver(factor, within)}
                           onDragOver={onDragOver}
@@ -559,13 +589,7 @@ const ProjectFormComponent = () => {
                         onDeleteDataFactor(factor, row)
                       })}
                       <BoxDrag
-                        style={{
-                          borderBottom:
-                            (Array.isArray(rowDrag) && rowDrag.length) ||
-                            (!Array.isArray(rowDrag) && !!rowDrag)
-                              ? '1px dashed red'
-                              : '',
-                        }}
+                        style={{ borderBottom: getBorderDrag() }}
                         onDrop={() => onDropData(factor)}
                         onDragOver={onDragOver}
                         onDragLeave={onDragLeave}
@@ -574,7 +598,8 @@ const ProjectFormComponent = () => {
                     </>
                   )}
                 </BoxFactor>
-                {projectLevel === 'within-factor' && dataFactors.length ? (
+                {projectType === ProjectTypeValue.WITHIN_FACTOR &&
+                dataFactors.length ? (
                   <NewRowButton
                     onClick={() => onAddWithin(factor.id)}
                     style={{ marginLeft: 24 }}
@@ -623,6 +648,7 @@ const ProjectFormComponent = () => {
         <ButtonFilter onClick={onOk}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
         <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
+      {loading && <Loading />}
     </ProjectsWrapper>
   )
 }
