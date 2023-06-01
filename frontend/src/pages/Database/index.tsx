@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
-import {ChangeEvent, useCallback, useEffect, useState} from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import DatabaseTableComponent, { Column } from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -8,10 +8,10 @@ import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
-import { isReseacher } from "utils/auth";
-import { getDataBaseList, getDataBaseTree } from "api/rawdb";
-import { BASE_URL_DATABASE } from "const/API";
-import Loading from "components/common/Loading";
+import { isReseacher } from 'utils/auth'
+import { getDataBaseList, getDataBaseTree } from 'api/rawdb'
+// import { DATABASE_URL_HOST } from 'const/API'
+import Loading from 'components/common/Loading'
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -201,7 +201,7 @@ export const defaultDatabase: DatabaseData = {
     total: 0,
     total_pages: 0,
   },
-  records: []
+  records: [],
 }
 
 export const columns = (
@@ -233,32 +233,35 @@ export const columns = (
   },
   {
     title: 'Type',
-    name: type === 'tree' ? 'image_attributes.image_type' : 'image_attributes.type',
+    name:
+      type === 'tree' ? 'image_attributes.image_type' : 'image_attributes.type',
     filter: true,
   },
   {
     title: 'Protocol',
-    name: type === 'tree' ? 'image_attributes.protocol' : 'image_attributes.protocol',
+    name:
+      type === 'tree'
+        ? 'image_attributes.protocol'
+        : 'image_attributes.protocol',
     filter: true,
   },
   {
     title: 'Size',
     name: type === 'tree' ? 'image_attributes.scale' : 'image_attributes.scale',
     filter: true,
-    render: (_, v) => JSON.stringify(v)
+    render: (_, v) => JSON.stringify(v),
   },
   {
     title: 'Voxel size',
-    name:
-      type === 'tree' ? 'image_attributes.voxel' : 'image_attributes.voxel',
+    name: type === 'tree' ? 'image_attributes.voxel' : 'image_attributes.voxel',
     filter: true,
-    render: (_, v) => JSON.stringify(v)
+    render: (_, v) => JSON.stringify(v),
   },
   {
     title: '',
     name: 'action',
     render: (data) => {
-      if(isReseacher(user?.role)) return null
+      if (isReseacher(user?.role)) return null
       return (
         <BoxButton>
           <ButtonControl
@@ -279,7 +282,7 @@ export const columns = (
               setOpenDelete?.(true)
             }}
           >
-              <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+            <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
           </ButtonControl>
         </BoxButton>
       )
@@ -305,12 +308,11 @@ const Database = () => {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
-    if(type === 'tree') {
+    if (type === 'tree') {
       try {
         const dataTree = await getDataBaseTree()
         setDatabases(dataTree)
-      }
-      finally {
+      } finally {
         setIsLoading(false)
       }
       return
@@ -318,18 +320,17 @@ const Database = () => {
     try {
       const dataList = await getDataBaseList()
       setDatabases(dataList)
-    }
-    finally {
+    } finally {
       setIsLoading(false)
     }
   }, [type])
 
   useEffect(() => {
-      fetchData()
+    fetchData()
   }, [fetchData])
 
   const rowClick = async (row: ImagesDatabase | RecordList) => {
-    if(!databases) return
+    if (!databases) return
     const { view, checkNext, checkPre } = await onRowClick(databases, row, type)
     setViewer(view)
     setDisabled({ left: !checkPre, right: !checkNext })
@@ -344,7 +345,7 @@ const Database = () => {
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
-    if(!databases) return
+    if (!databases) return
     const data = onSort(
       JSON.parse(JSON.stringify(databases.records)),
       orderByValue,
@@ -412,18 +413,18 @@ const Database = () => {
         </Box>
       </BoxSelectTypeView>
       {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
-        <DatabaseTableComponent
-            defaultExpand
-            onSort={handleSort}
-            rowClick={rowClick}
-            orderKey={columnSort}
-            orderBy={orderBy}
-            data={databases && databases.records}
-            columns={columns(rowClick, setOpenDelete, type, user)}
-        />
+      <DatabaseTableComponent
+        defaultExpand
+        onSort={handleSort}
+        rowClick={rowClick}
+        orderKey={columnSort}
+        orderBy={orderBy}
+        data={databases && databases.records}
+        columns={columns(rowClick, setOpenDelete, type, user)}
+      />
       <ImageView
         disabled={disabled}
-        url={viewer.url && `${BASE_URL_DATABASE}${viewer.url}`}
+        url={viewer.url && `${process.env.REACT_APP_SERVER_DATABASE_HOST}${viewer.url}`}
         open={viewer.open}
         jsonData={viewer.jsonData}
         onClose={onCloseImageView}
@@ -431,10 +432,8 @@ const Database = () => {
         onPrevious={onPrevious}
         id={Number(viewer.id)}
       />
-      {
-        isLoading && <Loading />
-      }
-      </DatabaseWrapper>
+      {isLoading && <Loading />}
+    </DatabaseWrapper>
   )
 }
 
