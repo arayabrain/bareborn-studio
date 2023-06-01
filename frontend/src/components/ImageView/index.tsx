@@ -6,6 +6,7 @@ import {
   IconButton,
   Modal,
   styled,
+  Typography,
   DialogContent,
   DialogActions
 } from '@mui/material'
@@ -15,7 +16,8 @@ import ChangeDrag from './ChangeSize'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import { Object } from 'pages/Database'
-import {editAttributes} from "../../api/auth";
+import { editAttributes } from "../../api/rawdb";
+import Loading from "../common/Loading";
 
 type ImageViewProps = {
   open: boolean
@@ -25,14 +27,16 @@ type ImageViewProps = {
   url?: string
   jsonData?: Object
   disabled?: { left: boolean; right: boolean }
+  id: number
 }
 
 type AlertDialogProps = {
   open: boolean
   handleClose: () => void
+  handleSaveAttributes: () => void
 }
 
-const AlertDialog = ({ open, handleClose }: AlertDialogProps) => {
+const AlertDialog = ({ open, handleClose, handleSaveAttributes }: AlertDialogProps) => {
   return (
       <div>
         <Dialog
@@ -48,7 +52,7 @@ const AlertDialog = ({ open, handleClose }: AlertDialogProps) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleClose} autoFocus>
+            <Button onClick={handleSaveAttributes} autoFocus>
               Ok
             </Button>
           </DialogActions>
@@ -65,6 +69,7 @@ const ImageView: FC<ImageViewProps> = ({
   onPrevious,
   jsonData,
   disabled,
+  id
 }) => {
   const viewerRef = useRef<any>()
   const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
@@ -77,10 +82,11 @@ const ImageView: FC<ImageViewProps> = ({
   const [brightness, setBrightness] = useState(0)
   const [isLoadFile, setIsLoadFile] = useState(false)
   const [openSave, setOpenSave] = useState(false)
-  const [text, setText] = useState(JSON.stringify(jsonData || ''))
-  const [error, setError] = useState<string>('')
-
+  const [textAttribute, setTextAttribute] = useState(JSON.stringify(jsonData || ''))
+  const [errorAttribute, setErrorAttribute] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(false)
   const volumes = useRef<any>()
+  const refTextArea = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -98,6 +104,10 @@ const ImageView: FC<ImageViewProps> = ({
     loadFileIndex()
     //eslint-disable-next-line
   }, [url])
+  useEffect(() => {
+    setTextAttribute(JSON.stringify(jsonData || ''))
+    //eslint-disable-next-line
+  }, [jsonData])
 
   const onChangeThreshold = (num: number) => {
     if (!volumes.current) return
@@ -129,10 +139,15 @@ const ImageView: FC<ImageViewProps> = ({
 
   const onChangeJson = (event: any) => {
     const { value } = event.target
-    setText(value)
+    try {
+      JSON.parse(value)
+      setErrorAttribute('')
+    }
+    catch {
+      setErrorAttribute('format JSON invalid')
+    }
+    setTextAttribute(value)
   }
-
-
 
   const loadFileIndex = () => {
     if (!url || isLoadFile || !viewerRef.current) return
@@ -214,6 +229,7 @@ const ImageView: FC<ImageViewProps> = ({
   }
 
   const handleClickOpenSave = () => {
+    if(errorAttribute) return
     setOpenSave(true);
   };
 
@@ -222,11 +238,14 @@ const ImageView: FC<ImageViewProps> = ({
   };
 
   const handleSaveAttributes = async () => {
-    if(!JSON.parse(text)) {
-      setError('wrong format JSON')
-      return
+    setIsLoading(true)
+    try {
+      await editAttributes(id, textAttribute)
     }
-    setError('')
+    finally {
+      handleCloseSave()
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -264,52 +283,64 @@ const ImageView: FC<ImageViewProps> = ({
                 <div id="brainbrowser"></div>
               </div>
               {opacity ? (
-                <BoxContentData>
-                  <p style={{ margin: 0, padding: '20px 0' }}>
-                    World Coordinates:
-                  </p>
-                  <span>X: {worldCoords.x.toPrecision(4)}</span>
-                  <span style={{ marginLeft: 20 }}>
+                <Box sx={{background: '#ffffff'}}>
+                  <BoxContentData>
+                    <p style={{ margin: 0, padding: '20px 0' }}>
+                      World Coordinates:
+                    </p>
+                    <span>X: {worldCoords.x.toPrecision(4)}</span>
+                    <span style={{ marginLeft: 20 }}>
                     Y: {worldCoords.y.toPrecision(4)}
                   </span>
-                  <span style={{ marginLeft: 20 }}>
+                    <span style={{ marginLeft: 20 }}>
                     Z: {worldCoords.z.toPrecision(4)}
                   </span>
-                  <p>Voxel Coordinates:</p>
-                  <span>I: {voxelCoords.i}</span>
-                  <span style={{ marginLeft: 20 }}>J: {voxelCoords.j}</span>
-                  <span style={{ marginLeft: 20 }}>K: {voxelCoords.k}</span>
-                  <p>Value: {values}</p>
-                  <ChangeDrag
-                    onChangeMin={onChangeMinThresh}
-                    max={maxThres}
-                    min={-maxThres}
-                    title={'Threshold'}
-                    value={thresholds}
-                    showInputMax
-                    showInputMin
-                    onChange={onChangeThreshold}
-                  />
-                  <ChangeDrag
-                    title={'Contrast (0.0 to 2.0)'}
-                    value={contracts}
-                    onChange={onChangeContract}
-                  />
-                  <ChangeDrag
-                    title={'Brightness (-1 to 1):'}
-                    value={brightness}
-                    min={-1}
-                    max={1}
-                    onChange={onChangeBrightness}
-                  />
-                </BoxContentData>
+                    <p>Voxel Coordinates:</p>
+                    <span>I: {voxelCoords.i}</span>
+                    <span style={{ marginLeft: 20 }}>J: {voxelCoords.j}</span>
+                    <span style={{ marginLeft: 20 }}>K: {voxelCoords.k}</span>
+                    <p>Value: {values}</p>
+                    <ChangeDrag
+                        onChangeMin={onChangeMinThresh}
+                        max={maxThres}
+                        min={-maxThres}
+                        title={'Threshold'}
+                        value={thresholds}
+                        showInputMax
+                        showInputMin
+                        onChange={onChangeThreshold}
+                    />
+                    <ChangeDrag
+                        title={'Contrast (0.0 to 2.0)'}
+                        value={contracts}
+                        onChange={onChangeContract}
+                    />
+                    <ChangeDrag
+                        title={'Brightness (-1 to 1):'}
+                        value={brightness}
+                        min={-1}
+                        max={1}
+                        onChange={onChangeBrightness}
+                    />
+                  </BoxContentData>
+                  <WrapperButton sx={{justifyContent: 'flex-end'}}>
+                    <ButtonCanCel onClick={onClose}>Cancel</ButtonCanCel>
+                  </WrapperButton>
+                </Box>
               ) : null}
             </div>
             <WrapperJson>
-              <TextArea
-                onChange={(event) => onChangeJson(event)}
-                value={text}
-              />
+              <WrapArea onClick={() => refTextArea.current?.focus?.()}>
+                <TextArea
+                    ref={refTextArea}
+                    onChange={(event) => onChangeJson(event)}
+                    value={textAttribute}
+                />
+                <Typography sx={{color: 'red', paddingLeft: 1, fontSize: 12}}>{errorAttribute}</Typography>
+              </WrapArea>
+              <WrapperButton>
+                <ButtonOk onClick={handleClickOpenSave}>Save Attributes</ButtonOk>
+              </WrapperButton>
             </WrapperJson>
             {!disabled?.right ? (
               <ButtonNext onClick={onNext}>
@@ -334,12 +365,15 @@ const ImageView: FC<ImageViewProps> = ({
           <ButtonClose onClick={onClose}>
             <CloseIconWrapper />
           </ButtonClose>
-          <ButtonSave onClick={handleClickOpenSave}>Save</ButtonSave>
         </ImageViewWrapper>
         <AlertDialog
             open={openSave}
             handleClose={handleCloseSave}
+            handleSaveAttributes={handleSaveAttributes}
         />
+        {
+          isLoading && <Loading />
+        }
       </div>
     </Modal>
   )
@@ -368,16 +402,6 @@ const ButtonClose = styled(IconButton)({
   background: 'rgba(255,255,255,0.4)',
 })
 
-const ButtonSave = styled('button')({
-  position: 'absolute',
-  padding: '10px 20px',
-  bottom: '5%',
-  left: '50%',
-  '&:hover': {
-    cursor: 'pointer'
-  }
-})
-
 const ButtonNext = styled(ButtonClose)({
   width: 50,
   height: 50,
@@ -398,7 +422,6 @@ const ButtonPrevious = styled(ButtonClose)({
 
 const ImageViewWrapper = styled(Box)({
   marginTop: 48,
-  overflow: 'auto',
   margin: 'auto',
   display: 'flex',
   alignItems: 'center',
@@ -416,12 +439,14 @@ const WrapperJson = styled(Box)({
   background: '#ffffff',
 })
 
+const WrapArea = styled(Box)({
+  height: 'calc(100% - 120px)',
+  borderLeft: '1px solid',
+})
 const TextArea = styled('textarea')({
-  height: 'calc(100% - 7px)',
-  width: '100%',
+  width: '98%',
   outline: 'none !important',
   border: 'none',
-  borderLeft: '1px solid',
 })
 
 const CloseIconWrapper = styled(CloseIcon)({
@@ -435,6 +460,29 @@ const ArrowBackIosIconWrapper = styled(ArrowBackIosIcon)({
 
 const ArrowForwardIosIconWrapper = styled(ArrowForwardIosIcon)({
   color: '#ffffff',
+})
+
+const WrapperButton = styled(Box)({
+  display: 'flex',
+  gap: 15,
+  paddingBottom: 20,
+  justifyContent: 'center',
+  marginTop: 60,
+})
+
+const ButtonOk = styled('button')({
+  padding: '10px 20px',
+  border: '2px solid #000',
+  cursor: 'pointer',
+})
+
+const ButtonCanCel = styled('button')({
+  padding: 10,
+  border: '2px solid #000',
+  cursor: 'pointer',
+  background: '#000000c7',
+  color: 'red',
+  marginRight: 10
 })
 
 export default ImageView
