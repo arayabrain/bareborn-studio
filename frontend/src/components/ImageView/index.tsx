@@ -323,6 +323,9 @@ const ImageView: FC<ImageViewProps> = ({
                         onChange={onChangeBrightness}
                     />
                   </BoxContentData>
+                  <WrapperButton sx={{justifyContent: 'flex-end'}}>
+                    <ButtonCanCel onClick={onClose}>Cancel</ButtonCanCel>
+                  </WrapperButton>
                 </Box>
               ) : null}
             </div>
@@ -336,8 +339,7 @@ const ImageView: FC<ImageViewProps> = ({
                 <Typography sx={{color: 'red', paddingLeft: 1, fontSize: 12}}>{errorAttribute}</Typography>
               </WrapArea>
               <WrapperButton>
-                <ButtonCanCel onClick={onClose}>Cancel</ButtonCanCel>
-                <ButtonOk onClick={handleClickOpenSave}>Save</ButtonOk>
+                <ButtonOk onClick={handleClickOpenSave}>Save Attributes</ButtonOk>
               </WrapperButton>
             </WrapperJson>
             {!disabled?.right ? (
@@ -435,11 +437,11 @@ const BoxContentData = styled(Box)({
 const WrapperJson = styled(Box)({
   minWidth: 300,
   background: '#ffffff',
-  borderLeft: '1px solid',
 })
 
 const WrapArea = styled(Box)({
-  height: 'calc(100% - 70px)',
+  height: 'calc(100% - 120px)',
+  borderLeft: '1px solid',
 })
 const TextArea = styled('textarea')({
   width: '98%',
@@ -465,14 +467,12 @@ const WrapperButton = styled(Box)({
   gap: 15,
   paddingBottom: 20,
   justifyContent: 'center',
-  marginTop: 15
+  marginTop: 60,
 })
 
 const ButtonOk = styled('button')({
   padding: '10px 20px',
-  background: '#000000c7',
   border: '2px solid #000',
-  color: '#fff',
   cursor: 'pointer',
 })
 
@@ -480,6 +480,9 @@ const ButtonCanCel = styled('button')({
   padding: 10,
   border: '2px solid #000',
   cursor: 'pointer',
+  background: '#000000c7',
+  color: 'red',
+  marginRight: 10
 })
 
 export default ImageView
