@@ -27,6 +27,7 @@ export type ExperimentDTO = {
   success?: EXPERIMENTS_STATUS
   started_at: string
   finished_at?: string
+  project_id: string
   unique_id: string
   hasNWB: boolean
   edgeDict: EdgeDict

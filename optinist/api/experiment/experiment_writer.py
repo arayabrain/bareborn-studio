@@ -56,6 +56,7 @@ class ExptConfigWriter:
     def create_config(self) -> ExptConfig:
         return (
             self.builder
+            .set_project_id(self.project_id)
             .set_unique_id(self.unique_id)
             .set_name(self.name)
             .set_started_at(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
