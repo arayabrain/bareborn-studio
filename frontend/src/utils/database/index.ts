@@ -5,7 +5,7 @@ import {
   RecordDatabase,
   RecordList,
 } from 'pages/Database'
-import { getRawdb } from "../../api/rawdb";
+import { getRawdb } from "api/rawdb";
 
 export type OrderKey =
   | keyof (RecordDatabase | RecordList)

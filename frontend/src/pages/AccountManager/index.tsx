@@ -11,13 +11,13 @@ import {
 } from 'react'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import InputError from '../../components/common/InputError'
-import SelectError from '../../components/common/SelectError'
+import InputError from 'components/common/InputError'
+import SelectError from 'components/common/SelectError'
 import { createUser, deleteUser, editUser, listUser } from 'api/auth'
 import { useUser } from 'providers'
 import { ProjectType } from 'store/slice/Project/ProjectType'
 import { isAdmin, optionsRole } from 'utils/auth'
-import Loading from '../../components/common/Loading'
+import Loading from 'components/common/Loading'
 
 type ModalComponentProps = {
   onSubmitEdit: (

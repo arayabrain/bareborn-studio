@@ -18,5 +18,6 @@ export const projectSlice = createSlice({
   },
 })
 
+// eslint-disable-next-line no-empty-pattern
 export const {} = projectSlice.actions
 export default projectSlice.reducer

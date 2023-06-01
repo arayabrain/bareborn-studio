@@ -17,7 +17,11 @@ export const getDatasetList = createAsyncThunk<Dataset, void>(
 
 export const createDataset = createAsyncThunk<
   Dataset,
-  { dataset: DatasetType[]; project_id: number; callback?: (isSuccess: boolean) => void }
+  {
+    dataset: DatasetType[]
+    project_id: number
+    callback?: (isSuccess: boolean) => void
+  }
 >(`${PROJECT_SLICE_NAME}/createDataset`, async (param, thunkAPI) => {
   const { rejectWithValue } = thunkAPI
   try {

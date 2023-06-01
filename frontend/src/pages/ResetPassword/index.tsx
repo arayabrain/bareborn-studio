@@ -1,7 +1,7 @@
 import { Box, Stack, styled, Typography, Link } from '@mui/material'
 import { ChangeEvent, FormEvent, useState } from 'react'
-import { resetPassword } from "../../api/auth";
-import Loading from "../../components/common/Loading";
+import { resetPassword } from "api/auth";
+import Loading from "components/common/Loading";
 import { useNavigate } from "react-router-dom";
 import { regexEmail } from "../AccountManager";
 
