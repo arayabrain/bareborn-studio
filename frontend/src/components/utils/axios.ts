@@ -1,6 +1,6 @@
 import axiosLibrary from 'axios'
 import { BASE_URL } from 'const/API'
-import { getToken } from 'utils/auth'
+import { getExToken, getToken } from 'utils/auth'
 
 const axios = axiosLibrary.create({
   baseURL: BASE_URL,
@@ -10,6 +10,7 @@ const axios = axiosLibrary.create({
 axios.interceptors.request.use(
   async (config) => {
     config.headers.Authorization = `Bearer ${getToken()}`
+    config.headers.ExToken = getExToken()
     return config
   },
   (error) => Promise.reject(error),
