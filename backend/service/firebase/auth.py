@@ -36,7 +36,7 @@ async def register(
 async def authenticate(user: UserAuth):
     try:
         from . import pb
-        from backend.deps import create_access_token
+        from backend.core.security import create_access_token
 
         user = pb.auth().sign_in_with_email_and_password(
             email=user.email,
