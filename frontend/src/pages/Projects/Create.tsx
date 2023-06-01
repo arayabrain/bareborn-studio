@@ -39,6 +39,7 @@ import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
 import { createProject } from 'store/slice/Project/ProjectAction'
 import Loading from 'components/common/Loading'
 import { getDataBaseTree } from 'api/rawdb'
+import { DATABASE_URL_HOST } from 'const/API'
 
 const columns: Column[] = [
   { title: 'User', name: 'user_name', filter: true, width: 100 },
@@ -398,7 +399,7 @@ const ProjectFormComponent = () => {
         <TypographyBoxItem>{e.project_type}</TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
         <Box
-          style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}
+          style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}
         >
           <Button
             onClick={(event) => {
@@ -528,7 +529,7 @@ const ProjectFormComponent = () => {
       {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
       <ImageView
         disabled={disabled}
-        url={viewer.url}
+        url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
         open={viewer.open}
         jsonData={viewer.jsonData}
         onClose={onCloseImageView}
@@ -699,6 +700,9 @@ const BoxItem = styled(Box)({
 
 const TypographyBoxItem = styled(Box)({
   minWidth: 120,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 })
 
 const BoxDrag = styled(Box)({
