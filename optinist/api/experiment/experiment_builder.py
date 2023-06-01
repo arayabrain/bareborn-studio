@@ -8,6 +8,7 @@ class ExptConfigBuilder:
         self._finished_at = None
         self._success = None
         self._name = None
+        self._project_id = None
         self._unique_id = None
         self._hasNWB = False
         self._function = {}
@@ -19,6 +20,7 @@ class ExptConfigBuilder:
         self._finished_at = config.finished_at
         self._success = config.success
         self._name = config.name
+        self._project_id = config.project_id
         self._unique_id = config.unique_id
         self._hasNWB = config.hasNWB
         self._function = config.function
@@ -36,6 +38,10 @@ class ExptConfigBuilder:
 
     def set_name(self, name) -> 'ExptConfigBuilder':
         self._name = name
+        return self
+
+    def set_project_id(self, project_id) -> 'ExptConfigBuilder':
+        self._project_id = project_id
         return self
 
     def set_unique_id(self, unique_id) -> 'ExptConfigBuilder':
@@ -64,6 +70,7 @@ class ExptConfigBuilder:
             finished_at=self._finished_at,
             success=self._success,
             name=self._name,
+            project_id=self._project_id,
             unique_id=self._unique_id,
             hasNWB=self._hasNWB,
             function=self._function,

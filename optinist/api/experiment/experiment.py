@@ -22,6 +22,7 @@ class ExptConfig:
     finished_at: Optional[str]
     success: Optional[str]
     name: str
+    project_id: str
     unique_id: str
     hasNWB: bool
     function: Dict[str, ExptFunction]

@@ -22,6 +22,7 @@ class ExptConfigReader:
             config = yaml.safe_load(f)
 
         return ExptConfig(
+            project_id=config["project_id"],
             unique_id=config["unique_id"],
             name=config["name"],
             started_at=config.get("started_at", config.get("timestamp")),
