@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str = Field(default='123456', env="SECRET_KEY")
 
-    USE_FIREBASE_TOKEN: bool = Field(default=False, env="USE_FIREBASE_TOKEN")
+    USE_FIREBASE_TOKEN: bool = Field(default=True, env="USE_FIREBASE_TOKEN")
 
     class Config:
         env_file = '.env'
@@ -18,5 +18,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
-print(settings)

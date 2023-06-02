@@ -6,6 +6,7 @@ from requests.exceptions import HTTPError
 
 from backend.models import Token, UserAuth
 from backend.models.error import AppException, code, make_response
+from backend.core.security import create_refresh_token, validate_refresh_token
 
 
 async def register(
@@ -47,8 +48,26 @@ async def authenticate(user: UserAuth):
             HTTPStatus.INTERNAL_SERVER_ERROR, code.E_FAIL, str(e)
         )
     ex_token = create_access_token(subject=user['localId'])
-    token = Token(access_token=user['idToken'], token_type='bearer', ex_token=ex_token)
+    token = Token(
+        access_token=user['idToken'],
+        refresh_token=create_refresh_token(subject=user['refreshToken']),
+        token_type='bearer',
+        ex_token=ex_token,
+    )
     return token, None
+
+
+async def refresh(refresh_token):
+    from . import pb
+
+    firebase_refresh_token, e = validate_refresh_token(refresh_token)
+    if e:
+        return None, make_response(HTTPStatus.BAD_REQUEST, code.E_FAIL, str(e))
+    try:
+        user = pb.auth().refresh(refresh_token=firebase_refresh_token['sub'])
+    except Exception as err:
+        return None, make_response(HTTPStatus.BAD_REQUEST, code.E_FAIL, str(err))
+    return user['idToken'], None
 
 
 async def send_password_reset_email(email: str):
