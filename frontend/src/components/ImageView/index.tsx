@@ -324,7 +324,7 @@ const ImageView: FC<ImageViewProps> = ({
                     />
                   </BoxContentData>
                   <WrapperButton sx={{justifyContent: 'flex-end'}}>
-                    <ButtonCanCel onClick={onClose}>Cancel</ButtonCanCel>
+                    <ButtonCanCel onClick={onClose}>Close</ButtonCanCel>
                   </WrapperButton>
                 </Box>
               ) : null}

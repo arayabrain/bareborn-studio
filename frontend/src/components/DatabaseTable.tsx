@@ -535,7 +535,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                     onClick={() => onSortHandle(nameCol)}
                     style={{
                       maxWidth: col.width,
-                      width: col.width,
+                      minWidth: col.width,
                       cursor: 'pointer',
                     }}
                     key={col.dataIndex || col.name || iCol}
@@ -546,7 +546,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                         transform: `rotate(${orderBy === 'ASC' ? 180 : 0}deg)`,
                         opacity:
                           orderBy && nameCol === orderKey && col.filter ? 1 : 0,
-                      }}
+                    }}
                     />
                   </Th>
                 )
