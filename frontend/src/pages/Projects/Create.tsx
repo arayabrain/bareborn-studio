@@ -36,10 +36,15 @@ import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { useDispatch } from 'react-redux'
 import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
 import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
-import { createProject } from 'store/slice/Project/ProjectAction'
+import { createProject, getProjectId } from 'store/slice/Project/ProjectAction'
 import Loading from 'components/common/Loading'
 import { getDataBaseTree } from 'api/rawdb'
 import { DATABASE_URL_HOST } from 'const/API'
+import { selectDataset } from 'store/slice/Dataset/DatasetSelector'
+import { useSelector } from 'react-redux'
+import { Dataset } from 'store/slice/Dataset/DatasetType'
+import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
+import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
 
 const columns: Column[] = [
   { title: 'User', name: 'user_name', filter: true, width: 100 },
@@ -95,6 +100,42 @@ type DataFactor = {
 
 const nameDefault = 'DEFAULT'
 
+const defaultFactor = [
+  { name: nameDefault, within: [], id: getNanoId(), data: [] },
+]
+
+const remapDatasetToDataFactor = ({ dataset }: Dataset): DataFactor[] => {
+  if (!dataset) return defaultFactor
+  return dataset.sub_folders.map((sub) => ({
+    id: sub.id,
+    name: sub.folder_name || nameDefault,
+    within: (sub.sub_folders || []).map((sub_within) => ({
+      id: sub_within.id,
+      name: sub_within.folder_name,
+      data: (sub_within.images || []).map((image) => ({
+        project_name: image.attributes.datatype as string,
+        project_type: image.attributes.image_type as string,
+        id: String(image.id),
+        image_count: 1,
+        image_id: image.id,
+        protocol: image.attributes.protocol as string,
+        image_url: image.image_url,
+        jsonData: image.attributes,
+      })),
+    })),
+    data: (sub.images || []).map((image) => ({
+      project_name: image.attributes.datatype as string,
+      project_type: image.attributes.image_type as string,
+      id: String(image.id),
+      image_count: 1,
+      image_id: image.id,
+      protocol: image.attributes.protocol as string,
+      image_url: image.image_url,
+      jsonData: image.attributes,
+    })),
+  }))
+}
+
 const ProjectFormComponent = () => {
   const [searchParams] = useSearchParams()
 
@@ -109,27 +150,64 @@ const ProjectFormComponent = () => {
   const isPendingDrag = useRef(false)
   const dispatch = useDispatch()
 
+  const dataset = useSelector(selectDataset)
+  const currentProject = useSelector(selectCurrentProject)
+
   const [databasese, setDatabases] = useState<DatabaseData>(defaultDatabase)
   const [initDatabase, setInitDatabase] =
     useState<DatabaseData>(defaultDatabase)
-  const [projectName, setProjectName] = useState('Prj Name 1')
+  const [projectName, setProjectName] = useState(
+    currentProject?.project_name || 'Prj Name 1',
+  )
   const [projectType, setProjectType] = useState<ProjectTypeValue>(
-    ProjectTypeValue.WITHIN_FACTOR,
+    currentProject?.project_type || ProjectTypeValue.FACTOR,
   )
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
   const [rowDrag, setRowDrag] = useState<ImagesDatabase | ImagesDatabase[]>()
-  const [dataFactors, setDataFactors] = useState<DataFactor[]>([
-    { name: nameDefault, within: [], id: getNanoId(), data: [] },
-  ])
+  const [dataFactors, setDataFactors] = useState<DataFactor[]>(
+    remapDatasetToDataFactor(dataset),
+  )
+
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
   useEffect(() => {
-    dispatch(getDatasetList())
+    if (!idEdit) return
+    setLoading(true)
+    dispatch(getDatasetList({ project_id: idEdit }))
+    dispatch(
+      getProjectId({
+        project_id: idEdit,
+        callback: () => setLoading(false),
+      }),
+    )
     //eslint-disable-next-line
   }, [])
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetCurrentProject())
+    }
+    //eslint-disable-next-line
+  }, [])
+
+  useEffect(() => {
+    setDataFactors(remapDatasetToDataFactor(dataset))
+  }, [dataset])
+
+  useEffect(() => {
+    if (currentProject?.project_name) {
+      setProjectName(currentProject?.project_name)
+    }
+  }, [currentProject?.project_name])
+
+  useEffect(() => {
+    if (typeof currentProject?.project_type === 'number') {
+      setProjectType(currentProject.project_type)
+    }
+  }, [currentProject?.project_type])
 
   useEffect(() => {
     getDataTree().then()
@@ -398,9 +476,7 @@ const ProjectFormComponent = () => {
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
         <TypographyBoxItem>{e.project_type}</TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
-        <Box
-          style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}
-        >
+        <Box style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}>
           <Button
             onClick={(event) => {
               event.preventDefault()
@@ -485,7 +561,6 @@ const ProjectFormComponent = () => {
   }
 
   const onOk = async () => {
-    setLoading(true)
     if (nodeId) {
       const urls = dataFactors
         .map((el) => {
@@ -495,7 +570,9 @@ const ProjectFormComponent = () => {
         .flat()
         .map((image) => image.image_url)
       dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+      if (routeGoback) navigate(routeGoback)
     } else {
+      setLoading(true)
       const project = {
         project_name: projectName,
         project_type: projectType,

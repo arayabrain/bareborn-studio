@@ -1,23 +1,29 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { PROJECT_SLICE_NAME, Project } from './ProjectType'
-import { getProjectList } from './ProjectAction'
+import { getProjectList, getProjectId } from './ProjectAction'
 
 const initialState: Project = {
   projects: [],
-  currentProject: {},
+  currentProject: undefined,
 }
 
 export const projectSlice = createSlice({
   name: PROJECT_SLICE_NAME,
   initialState,
-  reducers: {},
+  reducers: {
+    resetCurrentProject: (state) => {
+      state.currentProject = undefined
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(getProjectList.fulfilled, (state, action) => {
       state.projects = action.payload.projects
     })
+    builder.addCase(getProjectId.fulfilled, (state, action) => {
+      state.currentProject = action.payload
+    })
   },
 })
 
-// eslint-disable-next-line no-empty-pattern
-export const {} = projectSlice.actions
+export const { resetCurrentProject } = projectSlice.actions
 export default projectSlice.reducer

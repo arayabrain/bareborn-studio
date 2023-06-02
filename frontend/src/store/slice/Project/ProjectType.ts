@@ -5,12 +5,18 @@ export enum ProjectTypeValue {
   WITHIN_FACTOR = 1,
 }
 
+export type CurrentProject = {
+  id: string
+  created_time: string
+  image_count: number
+  project_name: string
+  project_type: ProjectTypeValue
+  updated_time: string
+}
 
 export type Project = {
   projects: ProjectType[]
-  currentProject?: {
-    id?: string
-  }
+  currentProject?: CurrentProject
 }
 
 export type ProjectCreate = {
