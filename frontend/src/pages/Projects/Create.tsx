@@ -428,7 +428,9 @@ const ProjectFormComponent = () => {
   }
 
   const onCancle = () => {
-    navigate(!routeGoback ? '/projects' : `${routeGoback}&id=${idEdit}`)
+    !routeGoback
+      ? navigate('/projects')
+      : navigate(`${routeGoback}&id=${idEdit}`, { state: { edited: true } })
   }
 
   const onOk = () => {
