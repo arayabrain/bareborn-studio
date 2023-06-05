@@ -309,12 +309,7 @@ const Database = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
   const [ searchParams, setParams ] = useSearchParams()
-  const defaultValue= {
-    session_label: searchParams.get('session_label') || '',
-    datatypes_label: searchParams.get('datatypes_label') || '',
-    type: searchParams.get('type') || '',
-    protocol: searchParams.get('protocol') || '',
-  }
+  const [ defaultValue, setDefaultValue ] = useState({})
 
   const onCloseImageView = () => {
     setViewer({ open: false, url: '' })
@@ -330,11 +325,20 @@ const Database = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [type])
+  }, [type, defaultValue])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  useEffect(() => {
+    setDefaultValue({
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    })
+  }, [searchParams])
 
   const rowClick = async (row: ImagesDatabase | RecordList) => {
     if (!databases) return
@@ -431,7 +435,7 @@ const Database = () => {
       {openPopup &&
           <PopupSearch
               onClose={() => setOpenPopup(false)}
-              defaultValue={defaultValue ? defaultValue : {}}
+              defaultValue={defaultValue}
               onFilter={onFilter}
           />}
       <DatabaseTableComponent
