@@ -561,6 +561,20 @@ const ProjectFormComponent = () => {
   }
 
   const onOk = async () => {
+    setLoading(true)
+    const project = {
+      project_name: projectName,
+      project_type: projectType,
+      image_count: imageIDs.length,
+    }
+    const dataset = dataFactors.map((factor, index) => ({
+      folder_name: generateName(factor.name, index, 'Between'),
+      source_image_ids: factor.data.map((d) => d.image_id),
+      sub_folders: factor.within.map((within, iWithin) => ({
+        folder_name: generateName(within.name, iWithin, 'Within'),
+        source_image_ids: within.data.map((d) => d.image_id),
+      })),
+    }))
     if (nodeId) {
       const urls = dataFactors
         .map((el) => {
@@ -572,20 +586,6 @@ const ProjectFormComponent = () => {
       dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
       if (routeGoback) navigate(routeGoback)
     } else {
-      setLoading(true)
-      const project = {
-        project_name: projectName,
-        project_type: projectType,
-        image_count: imageIDs.length,
-      }
-      const dataset = dataFactors.map((factor, index) => ({
-        folder_name: generateName(factor.name, index, 'Between'),
-        source_image_ids: factor.data.map((d) => d.image_id),
-        sub_folders: factor.within.map((within, iWithin) => ({
-          folder_name: generateName(within.name, iWithin, 'Within'),
-          source_image_ids: within.data.map((d) => d.image_id),
-        })),
-      }))
       dispatch(
         createProject({
           project,

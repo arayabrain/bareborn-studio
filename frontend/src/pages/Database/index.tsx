@@ -236,6 +236,7 @@ export const columns = (
     name:
       type === 'tree' ? 'image_attributes.image_type' : 'image_attributes.type',
     filter: true,
+    width: 70,
   },
   {
     title: 'Protocol',
