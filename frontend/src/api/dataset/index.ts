@@ -1,4 +1,4 @@
-import axios from 'components/utils/axios'
+import axios from 'utils/axios'
 import { DATABASE_URL_HOST } from '../../const/API'
 import { DatasetPostType } from 'store/slice/Dataset/DatasetType'
 
