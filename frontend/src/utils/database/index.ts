@@ -1,11 +1,14 @@
 import {
   DatabaseData,
-  DatabaseListData, DatatypesDatabase,
+  DatabaseListData,
+  DatatypesDatabase,
   ImagesDatabase,
   RecordDatabase,
-  RecordList, SessionsDatabase, SubjectDatabase,
+  RecordList,
+  SessionsDatabase,
+  SubjectDatabase,
 } from 'pages/Database'
-import { getRawdb } from "api/rawdb";
+import { getRawdb } from 'api/rawdb'
 
 export type OrderKey =
   | keyof (RecordDatabase | RecordList)
@@ -15,6 +18,7 @@ export type OrderKey =
   | 'image_attributes.image_type'
   | 'image_attributes.protocol'
   | 'image_attributes.scale'
+  | 'image_attributes.voxel'
 
 export const onRowClick = async (
   datas: DatabaseData | DatabaseListData,
@@ -365,11 +369,13 @@ const sortAttributesTypeTree = (
                 .map((type) => {
                   return type.images.sort((imageA, imageB) => {
                     if (typeOrder === 'DESC') {
-                      return imageA.image_attributes[key] > imageB.image_attributes[key]
+                      return imageA.image_attributes[key]?.toString?.() >
+                        imageB.image_attributes[key]?.toString?.()
                         ? -1
                         : 1
                     }
-                    return imageA.image_attributes[key] < imageB.image_attributes[key]
+                    return imageA.image_attributes[key]?.toString?.() <
+                      imageB.image_attributes[key]?.toString?.()
                       ? -1
                       : 1
                   })
@@ -381,9 +387,15 @@ const sortAttributesTypeTree = (
         .flat()
         .sort((dataA, dataB) => {
           if (typeOrder === 'DESC') {
-            return dataA.image_attributes[key] > dataB.image_attributes[key] ? -1 : 1
+            return dataA.image_attributes[key]?.toString?.() >
+              dataB.image_attributes[key]?.toString?.()
+              ? -1
+              : 1
           }
-          return dataA.image_attributes[key] < dataB.image_attributes[key] ? -1 : 1
+          return dataA.image_attributes[key]?.toString?.() <
+            dataB.image_attributes[key]?.toString?.()
+            ? -1
+            : 1
         })
       const typeB = dataB.subjects
         .map((sub) => {
@@ -393,11 +405,13 @@ const sortAttributesTypeTree = (
                 .map((type) => {
                   return type.images.sort((imageA, imageB) => {
                     if (typeOrder === 'DESC') {
-                      return imageA.image_attributes[key] > imageB.image_attributes[key]
+                      return imageA.image_attributes[key]?.toString?.() >
+                        imageB.image_attributes[key]?.toString?.()
                         ? -1
                         : 1
                     }
-                    return imageA.image_attributes[key] < imageB.image_attributes[key]
+                    return imageA.image_attributes[key]?.toString?.() <
+                      imageB.image_attributes[key]?.toString?.()
                       ? -1
                       : 1
                   })
@@ -407,23 +421,41 @@ const sortAttributesTypeTree = (
             .flat()
             .sort((dataA, dataB) => {
               if (typeOrder === 'DESC') {
-                return dataA.image_attributes[key] > dataB.image_attributes[key] ? -1 : 1
+                return dataA.image_attributes[key]?.toString?.() >
+                  dataB.image_attributes[key]?.toString?.()
+                  ? -1
+                  : 1
               }
-              return dataA.image_attributes[key] < dataB.image_attributes[key] ? -1 : 1
+              return dataA.image_attributes[key]?.toString?.() <
+                dataB.image_attributes[key]?.toString?.()
+                ? -1
+                : 1
             })
         })
         .flat()
         .sort((dataA, dataB) => {
           if (typeOrder === 'DESC') {
-            return dataA.image_attributes[key] > dataB.image_attributes[key] ? -1 : 1
+            return dataA.image_attributes[key]?.toString?.() >
+              dataB.image_attributes[key]?.toString?.()
+              ? -1
+              : 1
           }
-          return dataA.image_attributes[key] < dataB.image_attributes[key] ? -1 : 1
+          return dataA.image_attributes[key]?.toString?.() <
+            dataB.image_attributes[key]?.toString?.()
+            ? -1
+            : 1
         })
 
       if (typeOrder === 'DESC') {
-        return typeA[0]?.image_attributes[key] > typeB[0]?.image_attributes[key] ? -1 : 1
+        return typeA[0]?.image_attributes[key]?.toString?.() >
+          typeB[0]?.image_attributes[key]?.toString?.()
+          ? -1
+          : 1
       }
-      return typeA[0]?.image_attributes[key] < typeB[0]?.image_attributes[key] ? -1 : 1
+      return typeA[0]?.image_attributes[key]?.toString?.() <
+        typeB[0]?.image_attributes[key]?.toString?.()
+        ? -1
+        : 1
     })
     .map((element) => ({
       ...element,
@@ -435,9 +467,15 @@ const sortAttributesTypeTree = (
                 .map((type) => {
                   return type.images.sort((sA, sB) => {
                     if (typeOrder === 'DESC') {
-                      return sA.image_attributes[key] > sB.image_attributes[key] ? -1 : 1
+                      return sA.image_attributes[key]?.toString?.() >
+                        sB.image_attributes[key]?.toString?.()
+                        ? -1
+                        : 1
                     }
-                    return sA.image_attributes[key] < sB.image_attributes[key] ? -1 : 1
+                    return sA.image_attributes[key]?.toString?.() <
+                      sB.image_attributes[key]?.toString?.()
+                      ? -1
+                      : 1
                   })
                 })
                 .flat()
@@ -445,9 +483,15 @@ const sortAttributesTypeTree = (
             .flat()
             .sort((dataA, dataB) => {
               if (typeOrder === 'DESC') {
-                return dataA.image_attributes[key] > dataB.image_attributes[key] ? -1 : 1
+                return dataA.image_attributes[key]?.toString?.() >
+                  dataB.image_attributes[key]?.toString?.()
+                  ? -1
+                  : 1
               }
-              return dataA.image_attributes[key] < dataB.image_attributes[key] ? -1 : 1
+              return dataA.image_attributes[key]?.toString?.() <
+                dataB.image_attributes[key]?.toString?.()
+                ? -1
+                : 1
             })
           const subSessB = subB.sessions
             .map((ss) => {
@@ -455,9 +499,15 @@ const sortAttributesTypeTree = (
                 .map((type) => {
                   return type.images.sort((sA, sB) => {
                     if (typeOrder === 'DESC') {
-                      return sA.image_attributes[key] > sB.image_attributes[key] ? -1 : 1
+                      return sA.image_attributes[key]?.toString?.() >
+                        sB.image_attributes[key]?.toString?.()
+                        ? -1
+                        : 1
                     }
-                    return sA.image_attributes[key] < sB.image_attributes[key] ? -1 : 1
+                    return sA.image_attributes[key]?.toString?.() <
+                      sB.image_attributes[key]?.toString?.()
+                      ? -1
+                      : 1
                   })
                 })
                 .flat()
@@ -465,16 +515,24 @@ const sortAttributesTypeTree = (
             .flat()
             .sort((dataA, dataB) => {
               if (typeOrder === 'DESC') {
-                return dataA.image_attributes[key] > dataB.image_attributes[key] ? -1 : 1
+                return dataA.image_attributes[key]?.toString?.() >
+                  dataB.image_attributes[key]?.toString?.()
+                  ? -1
+                  : 1
               }
-              return dataA.image_attributes[key] < dataB.image_attributes[key] ? -1 : 1
+              return dataA.image_attributes[key]?.toString?.() <
+                dataB.image_attributes[key]?.toString?.()
+                ? -1
+                : 1
             })
           if (typeOrder === 'DESC') {
-            return subSessA[0]?.image_attributes[key] > subSessB[0]?.image_attributes[key]
+            return subSessA[0]?.image_attributes[key]?.toString?.() >
+              subSessB[0]?.image_attributes[key]?.toString?.()
               ? -1
               : 1
           }
-          return subSessA[0]?.image_attributes[key] < subSessB[0]?.image_attributes[key]
+          return subSessA[0]?.image_attributes[key]?.toString?.() <
+            subSessB[0]?.image_attributes[key]?.toString?.()
             ? -1
             : 1
         })
@@ -486,9 +544,15 @@ const sortAttributesTypeTree = (
                 .map((type) => {
                   return type.images.sort((sA, sB) => {
                     if (typeOrder === 'DESC') {
-                      return sA.image_attributes[key] > sB.image_attributes[key] ? -1 : 1
+                      return sA.image_attributes[key]?.toString?.() >
+                        sB.image_attributes[key]?.toString?.()
+                        ? -1
+                        : 1
                     }
-                    return sA.image_attributes[key] < sB.image_attributes[key] ? -1 : 1
+                    return sA.image_attributes[key]?.toString?.() <
+                      sB.image_attributes[key]?.toString?.()
+                      ? -1
+                      : 1
                   })
                 })
                 .flat()
@@ -496,20 +560,26 @@ const sortAttributesTypeTree = (
                 .map((type) => {
                   return type.images.sort((sA, sB) => {
                     if (typeOrder === 'DESC') {
-                      return sA.image_attributes[key] > sB.image_attributes[key] ? -1 : 1
+                      return sA.image_attributes[key]?.toString?.() >
+                        sB.image_attributes[key]?.toString?.()
+                        ? -1
+                        : 1
                     }
-                    return sA.image_attributes[key] < sB.image_attributes[key] ? -1 : 1
+                    return sA.image_attributes[key]?.toString?.() <
+                      sB.image_attributes[key]?.toString?.()
+                      ? -1
+                      : 1
                   })
                 })
                 .flat()
               if (typeOrder === 'DESC') {
-                return dataTypeA[0]?.image_attributes[key] >
-                  dataTypeB[0]?.image_attributes[key]
+                return dataTypeA[0]?.image_attributes[key]?.toString?.() >
+                  dataTypeB[0]?.image_attributes[key]?.toString?.()
                   ? -1
                   : 1
               }
-              return dataTypeA[0]?.image_attributes[key] <
-                dataTypeB[0]?.image_attributes[key]
+              return dataTypeA[0]?.image_attributes[key]?.toString?.() <
+                dataTypeB[0]?.image_attributes[key]?.toString?.()
                 ? -1
                 : 1
             })
@@ -519,23 +589,36 @@ const sortAttributesTypeTree = (
                 .sort((typeA, typeB) => {
                   const imageA = typeA.images.sort((sA, sB) => {
                     if (typeOrder === 'DESC') {
-                      return sA.image_attributes[key] > sB.image_attributes[key] ? -1 : 1
+                      return sA.image_attributes[key]?.toString?.() >
+                        sB.image_attributes[key]?.toString?.()
+                        ? -1
+                        : 1
                     }
-                    return sA.image_attributes[key] < sB.image_attributes[key] ? -1 : 1
+                    return sA.image_attributes[key]?.toString?.() <
+                      sB.image_attributes[key]?.toString?.()
+                      ? -1
+                      : 1
                   })
                   const imageB = typeB.images.sort((sA, sB) => {
                     if (typeOrder === 'DESC') {
-                      return sA.image_attributes[key] > sB.image_attributes[key] ? -1 : 1
+                      return sA.image_attributes[key]?.toString?.() >
+                        sB.image_attributes[key]?.toString?.()
+                        ? -1
+                        : 1
                     }
-                    return sA.image_attributes[key] < sB.image_attributes[key] ? -1 : 1
+                    return sA.image_attributes[key]?.toString?.() <
+                      sB.image_attributes[key]?.toString?.()
+                      ? -1
+                      : 1
                   })
                   if (typeOrder === 'DESC') {
-                    return imageA[0]?.image_attributes[key] >
-                      imageB[0]?.image_attributes[key]
+                    return imageA[0]?.image_attributes[key]?.toString?.() >
+                      imageB[0]?.image_attributes[key]?.toString?.()
                       ? -1
                       : 1
                   }
-                  return imageA[0]?.image_attributes[key] < imageB[0]?.image_attributes[key]
+                  return imageA[0]?.image_attributes[key]?.toString?.() <
+                    imageB[0]?.image_attributes[key]?.toString?.()
                     ? -1
                     : 1
                 })
@@ -543,9 +626,15 @@ const sortAttributesTypeTree = (
                   ...type,
                   images: type.images.sort((sA, sB) => {
                     if (typeOrder === 'DESC') {
-                      return sA.image_attributes[key] > sB.image_attributes[key] ? -1 : 1
+                      return sA.image_attributes[key]?.toString?.() >
+                        sB.image_attributes[key]?.toString?.()
+                        ? -1
+                        : 1
                     }
-                    return sA.image_attributes[key] < sB.image_attributes[key] ? -1 : 1
+                    return sA.image_attributes[key]?.toString?.() <
+                      sB.image_attributes[key]?.toString?.()
+                      ? -1
+                      : 1
                   }),
                 })),
             })),
@@ -635,6 +724,12 @@ export const onSort = (
         typeOrder,
         'protocol',
       )
+    } else if (orderKey === 'image_attributes.voxel' && type === 'tree') {
+      newDatas = sortAttributesTypeTree(
+        datasTable as RecordDatabase[],
+        typeOrder,
+        'voxel',
+      )
     } else if (orderKey === 'image_attributes.scale' && type === 'tree') {
       newDatas = sortAttributesTypeTree(
         datasTable as RecordDatabase[],
@@ -653,23 +748,25 @@ export const onSort = (
 }
 
 export const onFilterValue = (
-    value: { [key: string]: string },
-    setDatabases: (value: any) => void,
-    initDataTable: DatabaseData,
-    type: 'tree' | 'list'
+  value: { [key: string]: string },
+  setDatabases: (value: any) => void,
+  initDataTable: DatabaseData,
+  type: 'tree' | 'list',
 ) => {
-  if(!Object.keys(value).some((key) => value[key])) {
+  if (!Object.keys(value).some((key) => value[key])) {
     setDatabases(initDataTable)
     return
   }
-  if(type === 'list') {
+  if (type === 'list') {
     const arrFilter = initDataTable.records.filter((item: any) => {
       return !Object.keys(value).some((key: string) => {
-        if(!value[key]) return false
-        if(key === 'protocol') {
-          return !item.image_attributes[key]?.toLowerCase().includes((value[key]).toLowerCase?.())
+        if (!value[key]) return false
+        if (key === 'protocol') {
+          return !item.image_attributes[key]
+            ?.toLowerCase()
+            .includes(value[key].toLowerCase?.())
         }
-        return !item[key]?.includes((value[key]).toLowerCase?.())
+        return !item[key]?.includes(value[key].toLowerCase?.())
       })
     })
     setDatabases({
@@ -683,38 +780,65 @@ export const onFilterValue = (
     })
     return
   }
-  const newRecords = initDataTable.records.reduce((arrRecord: RecordDatabase[], record) => {
-    const subjects = record.subjects.reduce((arrSub: SubjectDatabase[], subject) => {
-      const sessions = subject.sessions.reduce((arrSess: SessionsDatabase[], session) => {
-        if(session.label?.toLowerCase()?.includes((value.session_label || '')?.toLowerCase())) {
-          const datatypes = session.datatypes.reduce((arrDt: DatatypesDatabase[], dt) => {
-            if(dt.label?.toLowerCase()?.includes((value.datatypes_label || '')?.toLowerCase())) {
-              const images = dt.images.filter(image => {
-                const {image_type, protocol} = image.image_attributes;
-                return (image_type as string)?.toLowerCase().includes((value.type || '').toLowerCase()) && (protocol as string)?.toLowerCase().includes((value.protocol || '').toLowerCase())
-              })
-              if(images.length) {
-                arrDt.push({...dt, images})
+  const newRecords = initDataTable.records.reduce(
+    (arrRecord: RecordDatabase[], record) => {
+      const subjects = record.subjects.reduce(
+        (arrSub: SubjectDatabase[], subject) => {
+          const sessions = subject.sessions.reduce(
+            (arrSess: SessionsDatabase[], session) => {
+              if (
+                session.label
+                  ?.toLowerCase()
+                  ?.includes((value.session_label || '')?.toLowerCase())
+              ) {
+                const datatypes = session.datatypes.reduce(
+                  (arrDt: DatatypesDatabase[], dt) => {
+                    if (
+                      dt.label
+                        ?.toLowerCase()
+                        ?.includes((value.datatypes_label || '')?.toLowerCase())
+                    ) {
+                      const images = dt.images.filter((image) => {
+                        const { image_type, protocol } = image.image_attributes
+                        return (
+                          (image_type as string)
+                            ?.toLowerCase()
+                            .includes((value.type || '').toLowerCase()) &&
+                          (protocol as string)
+                            ?.toLowerCase()
+                            .includes((value.protocol || '').toLowerCase())
+                        )
+                      })
+                      if (images.length) {
+                        arrDt.push({ ...dt, images })
+                      }
+                    }
+                    return arrDt
+                  },
+                  [],
+                )
+                if (datatypes.length) {
+                  arrSess.push({ ...session, datatypes })
+                }
               }
-            }
-            return arrDt
-          }, [])
-          if(datatypes.length) {
-            arrSess.push({...session, datatypes})
+              return arrSess
+            },
+            [],
+          )
+          if (sessions.length) {
+            arrSub.push({ ...subject, sessions })
           }
-        }
-        return arrSess
-      }, [])
-      if(sessions.length) {
-        arrSub.push({...subject, sessions})
+          return arrSub
+        },
+        [],
+      )
+      if (subjects.length) {
+        arrRecord.push({ ...record, subjects })
       }
-      return arrSub
-    }, [])
-    if(subjects.length) {
-      arrRecord.push({...record, subjects})
-    }
-    return arrRecord;
-  }, [])
+      return arrRecord
+    },
+    [],
+  )
   setDatabases({
     pagenation: {
       page: 0,

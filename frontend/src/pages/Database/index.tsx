@@ -244,29 +244,26 @@ export const columns = (
   },
   {
     title: 'Type',
-    name:
-      type === 'tree' ? 'image_attributes.image_type' : 'image_attributes.type',
+    name: 'image_attributes.image_type',
     filter: true,
     width: 70,
   },
   {
     title: 'Protocol',
-    name:
-      type === 'tree'
-        ? 'image_attributes.protocol'
-        : 'image_attributes.protocol',
+    name: 'image_attributes.protocol',
     filter: true,
   },
   {
     title: 'Size',
-    name: type === 'tree' ? 'image_attributes.scale' : 'image_attributes.scale',
+    name: 'image_attributes.scale',
     filter: true,
     render: (_, v) => JSON.stringify(v),
   },
   {
     title: 'Voxel size',
-    name: type === 'tree' ? 'image_attributes.voxel' : 'image_attributes.voxel',
+    name: 'image_attributes.voxel',
     filter: true,
+    width: 130,
     render: (_, v) => JSON.stringify(v),
   },
   {
@@ -347,7 +344,10 @@ const Database = () => {
     if (!databases) return
     const { view, checkNext, checkPre } = await onRowClick(databases, row, type)
     setViewer(view)
-    setDisabled({ left: type === 'list' || !checkPre, right: type === 'list' || !checkNext })
+    setDisabled({
+      left: type === 'list' || !checkPre,
+      right: type === 'list' || !checkNext,
+    })
   }
 
   const handleCloseDelete = () => {
