@@ -15,7 +15,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import ChangeDrag from './ChangeSize'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
-import { Object } from 'pages/Database'
+import { ObjectType } from 'pages/Database'
 import { editAttributes } from "api/rawdb";
 import Loading from "../common/Loading";
 
@@ -25,7 +25,7 @@ type ImageViewProps = {
   onNext?: () => void
   onPrevious?: () => void
   url?: string
-  jsonData?: Object
+  jsonData?: ObjectType
   disabled?: { left: boolean; right: boolean }
   id: number
 }

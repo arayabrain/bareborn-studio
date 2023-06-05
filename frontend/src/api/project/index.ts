@@ -2,15 +2,21 @@ import axios from 'components/utils/axios'
 import { DATABASE_URL_HOST } from '../../const/API'
 import { ProjectCreate } from 'store/slice/Project/ProjectType'
 
-export const getProjectListApi = async () => {
+export const getProjectListApi = async (params?: { [key: string]: string }) => {
   const response = await axios.get(
     `${DATABASE_URL_HOST}/workdb/projects/search`,
+    { params },
   )
   return response.data
 }
 
 export const createProjectApi = async (data: ProjectCreate) => {
   const response = await axios.post(`${DATABASE_URL_HOST}/workdb/project`, data)
+  return response.data
+}
+
+export const updateProjectApi = async (id: string, data: ProjectCreate) => {
+  const response = await axios.put(`${DATABASE_URL_HOST}/workdb/project/${id}`, data)
   return response.data
 }
 

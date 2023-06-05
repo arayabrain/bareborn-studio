@@ -6,13 +6,19 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import { onFilterValue, onGet, onRowClick, onSort, OrderKey } from 'utils/database'
+import {
+  onFilterValue,
+  onGet,
+  onRowClick,
+  onSort,
+  OrderKey,
+} from 'utils/database'
 import { User, useUser } from 'providers'
 import { isReseacher } from 'utils/auth'
 import { getDataBaseList, getDataBaseTree } from 'api/rawdb'
 import { DATABASE_URL_HOST } from 'const/API'
 import Loading from 'components/common/Loading'
-import {useSearchParams} from "react-router-dom";
+import { useSearchParams } from 'react-router-dom'
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -83,8 +89,8 @@ export const PopupSearch = ({
   )
 }
 
-export type Object = {
-  [key: string]: Object | string | number | number[]
+export type ObjectType = {
+  [key: string]: ObjectType | string | number | number[]
 }
 
 export type Image = {
@@ -96,14 +102,14 @@ export type Image = {
     id: number
     parent_id: number
     image_url: string
-    image_attributes: Object
+    image_attributes: ObjectType
   }
 }
 
 export type Viewer = {
   open: boolean
   url: string
-  jsonData?: Object
+  jsonData?: ObjectType
   id?: number | string
   session_id?: number
   parent_id?: string
@@ -116,7 +122,7 @@ export type ImagesDatabase = {
   image_url: string
   datatype_label?: string
   type?: string
-  image_attributes: Object
+  image_attributes: ObjectType
   session_id?: number
   record_index?: number
   subject_index?: number
@@ -241,7 +247,7 @@ export const columns = (
     name:
       type === 'tree' ? 'image_attributes.image_type' : 'image_attributes.type',
     filter: true,
-    width: 100,
+    width: 70,
   },
   {
     title: 'Protocol',
@@ -304,18 +310,24 @@ const Database = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [type, setType] = useState<'tree' | 'list'>('tree')
-  const [initDataTable, setInitDataTable] = useState<DatabaseData>(defaultDatabase)
+  const [initDataTable, setInitDataTable] =
+    useState<DatabaseData>(defaultDatabase)
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
-  const [ searchParams, setParams ] = useSearchParams()
-  const [ defaultValue, setDefaultValue ] = useState({})
+  const [searchParams, setParams] = useSearchParams()
 
   const onCloseImageView = () => {
     setViewer({ open: false, url: '' })
   }
 
   const fetchData = useCallback(async () => {
+    const defaultValue = {
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    }
     setIsLoading(true)
     let data
     try {
@@ -325,20 +337,11 @@ const Database = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [type, defaultValue])
+  }, [type, searchParams])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
-
-  useEffect(() => {
-    setDefaultValue({
-      session_label: searchParams.get('session_label') || '',
-      datatypes_label: searchParams.get('datatypes_label') || '',
-      type: searchParams.get('type') || '',
-      protocol: searchParams.get('protocol') || '',
-    })
-  }, [searchParams])
 
   const rowClick = async (row: ImagesDatabase | RecordList) => {
     if (!databases) return
@@ -382,10 +385,12 @@ const Database = () => {
   }
 
   const onFilter = (value: { [key: string]: string }) => {
-    if(!databases) return
+    if (!databases) return
     onFilterValue(value, setDatabases, initDataTable, type)
-    if(!Object.keys(value).length) return
-    const newParams = Object.keys(value).map((key) => value[key] && `${key}=${value[key]}`).join('&')
+    if (!Object.keys(value).length) return
+    const newParams = Object.keys(value)
+      .map((key) => value[key] && `${key}=${value[key]}`)
+      .join('&')
     setParams(newParams)
   }
 
@@ -432,12 +437,18 @@ const Database = () => {
           List
         </Box>
       </BoxSelectTypeView>
-      {openPopup &&
-          <PopupSearch
-              onClose={() => setOpenPopup(false)}
-              defaultValue={defaultValue}
-              onFilter={onFilter}
-          />}
+      {openPopup && (
+        <PopupSearch
+          onClose={() => setOpenPopup(false)}
+          defaultValue={{
+            session_label: searchParams.get('session_label') || '',
+            datatypes_label: searchParams.get('datatypes_label') || '',
+            type: searchParams.get('type') || '',
+            protocol: searchParams.get('protocol') || '',
+          }}
+          onFilter={onFilter}
+        />
+      )}
       <DatabaseTableComponent
         defaultExpand
         onSort={handleSort}

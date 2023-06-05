@@ -28,18 +28,33 @@ import {
   Viewer,
 } from '../Database'
 import ImageView from 'components/ImageView'
-import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
-import { Object } from '../Database'
+import {
+  onFilterValue,
+  onGet,
+  onRowClick,
+  onSort,
+  OrderKey,
+} from 'utils/database'
+import { ObjectType } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
 import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { useDispatch } from 'react-redux'
 import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
 import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
-import { createProject } from 'store/slice/Project/ProjectAction'
+import {
+  createProject,
+  editProject,
+  getProjectId,
+} from 'store/slice/Project/ProjectAction'
 import Loading from 'components/common/Loading'
 import { getDataBaseTree } from 'api/rawdb'
 import { DATABASE_URL_HOST } from 'const/API'
+import { selectDataset } from 'store/slice/Dataset/DatasetSelector'
+import { useSelector } from 'react-redux'
+import { Dataset } from 'store/slice/Dataset/DatasetType'
+import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
+import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
 
 const columns: Column[] = [
   { title: 'User', name: 'user_name', filter: true, width: 100 },
@@ -80,7 +95,7 @@ type ProjectAdd = {
   protocol: string
   id: string
   image_id: number
-  jsonData: Object
+  jsonData: ObjectType
 }
 
 type DataWithin = {
@@ -95,9 +110,44 @@ type DataFactor = {
 
 const nameDefault = 'DEFAULT'
 
-const ProjectFormComponent = () => {
-  const [searchParams] = useSearchParams()
+const defaultFactor = [
+  { name: nameDefault, within: [], id: getNanoId(), data: [] },
+]
 
+const remapDatasetToDataFactor = ({ dataset }: Dataset): DataFactor[] => {
+  if (!dataset) return defaultFactor
+  return dataset.sub_folders.map((sub) => ({
+    id: sub.id,
+    name: sub.folder_name || nameDefault,
+    within: (sub.sub_folders || []).map((sub_within) => ({
+      id: sub_within.id,
+      name: sub_within.folder_name,
+      data: (sub_within.images || []).map((image) => ({
+        project_name: image.attributes.datatype as string,
+        project_type: image.attributes.image_type as string,
+        id: String(image.id),
+        image_count: 1,
+        image_id: image.id,
+        protocol: image.attributes.protocol as string,
+        image_url: image.image_url,
+        jsonData: image.attributes,
+      })),
+    })),
+    data: (sub.images || []).map((image) => ({
+      project_name: image.attributes.datatype as string,
+      project_type: image.attributes.image_type as string,
+      id: String(image.id),
+      image_count: 1,
+      image_id: image.id,
+      protocol: image.attributes.protocol as string,
+      image_url: image.image_url,
+      jsonData: image.attributes,
+    })),
+  }))
+}
+
+const ProjectFormComponent = () => {
+  const [searchParams, setParams] = useSearchParams()
   const idEdit = searchParams.get('id')
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
@@ -109,32 +159,79 @@ const ProjectFormComponent = () => {
   const isPendingDrag = useRef(false)
   const dispatch = useDispatch()
 
+  const dataset = useSelector(selectDataset)
+  const currentProject = useSelector(selectCurrentProject)
+
   const [databasese, setDatabases] = useState<DatabaseData>(defaultDatabase)
   const [initDatabase, setInitDatabase] =
     useState<DatabaseData>(defaultDatabase)
-  const [projectName, setProjectName] = useState('Prj Name 1')
+  const [projectName, setProjectName] = useState(
+    currentProject?.project_name || 'Prj Name 1',
+  )
   const [projectType, setProjectType] = useState<ProjectTypeValue>(
-    ProjectTypeValue.WITHIN_FACTOR,
+    currentProject?.project_type || ProjectTypeValue.FACTOR,
   )
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
   const [rowDrag, setRowDrag] = useState<ImagesDatabase | ImagesDatabase[]>()
-  const [dataFactors, setDataFactors] = useState<DataFactor[]>([
-    { name: nameDefault, within: [], id: getNanoId(), data: [] },
-  ])
+  const [dataFactors, setDataFactors] = useState<DataFactor[]>(
+    remapDatasetToDataFactor(dataset),
+  )
+
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
   useEffect(() => {
-    dispatch(getDatasetList())
+    if (!idEdit) return
+    setLoading(true)
+    dispatch(getDatasetList({ project_id: idEdit }))
+    dispatch(
+      getProjectId({
+        project_id: idEdit,
+        callback: () => setLoading(false),
+      }),
+    )
     //eslint-disable-next-line
   }, [])
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetCurrentProject())
+    }
+    //eslint-disable-next-line
+  }, [])
+
+  useEffect(() => {
+    setDataFactors(remapDatasetToDataFactor(dataset))
+  }, [dataset])
+
+  useEffect(() => {
+    if (currentProject?.project_name) {
+      setProjectName(currentProject?.project_name)
+    }
+  }, [currentProject?.project_name])
+
+  useEffect(() => {
+    if (typeof currentProject?.project_type === 'number') {
+      setProjectType(currentProject.project_type)
+    }
+  }, [currentProject?.project_type])
 
   useEffect(() => {
     getDataTree().then()
     //eslint-disable-next-line
   }, [])
+
+  const onFilter = (value: { [key: string]: string }) => {
+    if (!initDatabase) return
+    onFilterValue(value, setDatabases, initDatabase, 'tree')
+    if (!Object.keys(value).length) return
+    const newParams = Object.keys(value)
+      .map((key) => value[key] && `${key}=${value[key]}`)
+      .join('&')
+    setParams(newParams)
+  }
 
   const getDataTree = async () => {
     try {
@@ -398,9 +495,7 @@ const ProjectFormComponent = () => {
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
         <TypographyBoxItem>{e.project_type}</TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
-        <Box
-          style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}
-        >
+        <Box style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}>
           <Button
             onClick={(event) => {
               event.preventDefault()
@@ -488,29 +583,42 @@ const ProjectFormComponent = () => {
 
   const onOk = async () => {
     setLoading(true)
+    const project = {
+      project_name: projectName,
+      project_type: projectType,
+      image_count: imageIDs.length,
+    }
+    const dataset = dataFactors.map((factor, index) => ({
+      folder_name: generateName(factor.name, index, 'Between'),
+      source_image_ids: factor.data.map((d) => d.image_id),
+      sub_folders: factor.within.map((within, iWithin) => ({
+        folder_name: generateName(within.name, iWithin, 'Within'),
+        source_image_ids: within.data.map((d) => d.image_id),
+      })),
+    }))
     if (nodeId) {
-      const urls = dataFactors
-        .map((el) => {
-          if (el.data.length) return el.data
-          return el.within.map((w) => w.data).flat()
-        })
-        .flat()
-        .map((image) => image.image_url)
-      dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+      dispatch(
+        editProject({
+          project,
+          project_id: nodeId,
+          dataset,
+          callback: (isSuccess: boolean) => {
+            if (isSuccess) {
+              const urls = dataFactors
+                .map((el) => {
+                  if (el.data.length) return el.data
+                  return el.within.map((w) => w.data).flat()
+                })
+                .flat()
+                .map((image) => image.image_url)
+              dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+              if (routeGoback) navigate(routeGoback)
+            }
+            setLoading(false)
+          },
+        }),
+      )
     } else {
-      const project = {
-        project_name: projectName,
-        project_type: projectType,
-        image_count: imageIDs.length,
-      }
-      const dataset = dataFactors.map((factor, index) => ({
-        folder_name: generateName(factor.name, index, 'Between'),
-        source_image_ids: factor.data.map((d) => d.image_id),
-        sub_folders: factor.within.map((within, iWithin) => ({
-          folder_name: generateName(within.name, iWithin, 'Within'),
-          source_image_ids: within.data.map((d) => d.image_id),
-        })),
-      }))
       dispatch(
         createProject({
           project,
@@ -528,7 +636,18 @@ const ProjectFormComponent = () => {
 
   return (
     <ProjectsWrapper>
-      {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
+      {openFilter && (
+        <PopupSearch
+          defaultValue={{
+            session_label: searchParams.get('session_label') || '',
+            datatypes_label: searchParams.get('datatypes_label') || '',
+            type: searchParams.get('type') || '',
+            protocol: searchParams.get('protocol') || '',
+          }}
+          onFilter={onFilter}
+          onClose={() => setOpenFilter(false)}
+        />
+      )}
       <ImageView
         disabled={disabled}
         url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}

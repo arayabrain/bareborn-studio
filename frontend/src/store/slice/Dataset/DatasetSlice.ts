@@ -3,7 +3,8 @@ import { PROJECT_SLICE_NAME, Dataset } from './DatasetType'
 import { getDatasetList } from './DatasetAction'
 
 const initialState: Dataset = {
-  datasets: [],
+  dataset: undefined,
+  project_id: null,
 }
 
 export const datasetSlice = createSlice({
@@ -12,8 +13,8 @@ export const datasetSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(getDatasetList.fulfilled, (state, action) => {
-      console.log('action.payload.datasets', action.payload.datasets)
-      state.datasets = action.payload.datasets
+      state.dataset = action.payload.dataset
+      state.project_id = action.payload.project_id
     })
   },
 })

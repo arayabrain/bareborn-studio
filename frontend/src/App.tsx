@@ -3,7 +3,7 @@ import IconButton from '@mui/material/IconButton'
 import Close from '@mui/icons-material/Close'
 import { SnackbarProvider, SnackbarKey, useSnackbar } from 'notistack'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Project from './components/Project'
+import Workflow from './components/Project'
 import Layout from 'components/Layout'
 import Dashboard from 'pages/Dashboard'
 import AccountManager from 'pages/AccountManager'
@@ -27,7 +27,7 @@ const App: React.FC = () => {
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/projects/workflow" element={<Project />} />
+            <Route path="/projects/workflow" element={<Workflow />} />
             <Route path="/account-manager" element={<AccountManager />} />
             <Route path="/account" element={<Account />} />
             <Route path="/projects" element={<Projects />} />

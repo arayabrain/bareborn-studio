@@ -656,7 +656,7 @@ export const onFilterValue = (
     value: { [key: string]: string },
     setDatabases: (value: any) => void,
     initDataTable: DatabaseData,
-    type: string
+    type: 'tree' | 'list'
 ) => {
   if(!Object.keys(value).some((key) => value[key])) {
     setDatabases(initDataTable)

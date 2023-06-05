@@ -1,14 +1,14 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { PROJECT_SLICE_NAME, Dataset, DatasetType } from './DatasetType'
+import { PROJECT_SLICE_NAME, Dataset, DatasetPostType } from './DatasetType'
 import { createDatasetApi, getDatasetListApi } from 'api/dataset'
 
-export const getDatasetList = createAsyncThunk<Dataset, void>(
+export const getDatasetList = createAsyncThunk<Dataset, { project_id: string }>(
   `${PROJECT_SLICE_NAME}/getDatasets`,
-  async (_, thunkAPI) => {
+  async (param, thunkAPI) => {
     const { rejectWithValue } = thunkAPI
     try {
-      const response = await getDatasetListApi()
-      return response
+      const response = await getDatasetListApi(param.project_id)
+      return { dataset: response?.[0], project_id: param.project_id }
     } catch (e) {
       return rejectWithValue(e)
     }
@@ -18,7 +18,7 @@ export const getDatasetList = createAsyncThunk<Dataset, void>(
 export const createDataset = createAsyncThunk<
   Dataset,
   {
-    dataset: DatasetType[]
+    dataset: DatasetPostType[]
     project_id: number
     callback?: (isSuccess: boolean) => void
   }
