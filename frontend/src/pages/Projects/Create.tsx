@@ -649,6 +649,7 @@ const ProjectFormComponent = () => {
         />
       )}
       <ImageView
+        editAttribute={false}
         disabled={disabled}
         url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
         open={viewer.open}

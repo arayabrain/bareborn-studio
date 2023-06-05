@@ -28,6 +28,7 @@ type ImageViewProps = {
   jsonData?: ObjectType
   disabled?: { left: boolean; right: boolean }
   id: number
+  editAttribute?: boolean
 }
 
 type AlertDialogProps = {
@@ -62,6 +63,7 @@ const AlertDialog = ({ open, handleClose, handleSaveAttributes }: AlertDialogPro
 }
 
 const ImageView: FC<ImageViewProps> = ({
+  editAttribute= true,
   open,
   onClose,
   url,
@@ -329,23 +331,23 @@ const ImageView: FC<ImageViewProps> = ({
                 </Box>
               ) : null}
             </div>
-            <WrapperJson>
-              <WrapArea onClick={() => refTextArea.current?.focus?.()}>
-                <TextArea
-                    ref={refTextArea}
-                    onChange={(event) => onChangeJson(event)}
-                    value={textAttribute}
-                    readOnly={window.location.pathname === '/projects/new-project'}
-                />
-                <Typography sx={{color: 'red', paddingLeft: 1, fontSize: 12}}>{errorAttribute}</Typography>
-              </WrapArea>
-              <WrapperButton>
-                {
-                  window.location.pathname !== '/projects/new-project' &&
-                    <ButtonOk onClick={handleClickOpenSave}>Save Attributes</ButtonOk>
-                }
-              </WrapperButton>
-            </WrapperJson>
+            {
+              editAttribute &&
+                <WrapperJson>
+                    <WrapArea onClick={() => refTextArea.current?.focus?.()}>
+                        <TextArea
+                            ref={refTextArea}
+                            onChange={(event) => onChangeJson(event)}
+                            value={textAttribute}
+                            readOnly={window.location.pathname === '/projects/new-project'}
+                        />
+                        <Typography sx={{color: 'red', paddingLeft: 1, fontSize: 12}}>{errorAttribute}</Typography>
+                    </WrapArea>
+                    <WrapperButton>
+                        <ButtonOk onClick={handleClickOpenSave}>Save Attributes</ButtonOk>
+                    </WrapperButton>
+                </WrapperJson>
+            }
             {!disabled?.right ? (
               <ButtonNext onClick={onNext}>
                 <ArrowForwardIosIconWrapper />
@@ -478,6 +480,9 @@ const ButtonOk = styled('button')({
   padding: '10px 20px',
   border: '2px solid #000',
   cursor: 'pointer',
+  '&:hover': {
+    background: 'rgba(0, 0, 0, 0.2)',
+  }
 })
 
 const ButtonCanCel = styled('button')({
