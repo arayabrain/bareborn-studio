@@ -536,6 +536,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                     style={{
                       maxWidth: col.width,
                       minWidth: col.width,
+                      width: col.width,
                       cursor: 'pointer',
                     }}
                     key={col.dataIndex || col.name || iCol}
