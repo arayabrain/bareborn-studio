@@ -3,7 +3,7 @@ import { getMe, login } from 'api/auth'
 import { useUser } from 'providers'
 import { ChangeEvent, FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { saveExToken, saveToken } from 'utils/auth'
+import { saveExToken, saveRefreshToken, saveToken } from 'utils/auth'
 import Loading from '../../components/common/Loading'
 
 const Login = () => {
@@ -26,8 +26,9 @@ const Login = () => {
     if (errorCheck) return
     setIsLoading(true)
     try {
-      const { access_token, ex_token } = await login(values)
+      const { access_token, ex_token, refresh_token } = await login(values)
       saveToken(access_token)
+      saveRefreshToken(refresh_token)
       saveExToken(ex_token)
       getUser()
     } catch (e) {
