@@ -20,7 +20,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   async (res) => res,
   async (error) => {
-    if (error.response.status === 401) {
+    if (error?.response?.status === 401) {
       const { access_token } = await refreshToken()
       saveToken(access_token)
       error.config.headers.Authorization = `Bearer ${access_token}`
