@@ -324,7 +324,7 @@ const ImageView: FC<ImageViewProps> = ({
                     />
                   </BoxContentData>
                   <WrapperButton sx={{justifyContent: 'flex-end'}}>
-                    <ButtonCanCel onClick={onClose}>Cancel</ButtonCanCel>
+                    <ButtonCanCel onClick={onClose}>Close</ButtonCanCel>
                   </WrapperButton>
                 </Box>
               ) : null}
@@ -335,11 +335,15 @@ const ImageView: FC<ImageViewProps> = ({
                     ref={refTextArea}
                     onChange={(event) => onChangeJson(event)}
                     value={textAttribute}
+                    readOnly={window.location.pathname === '/projects/new-project'}
                 />
                 <Typography sx={{color: 'red', paddingLeft: 1, fontSize: 12}}>{errorAttribute}</Typography>
               </WrapArea>
               <WrapperButton>
-                <ButtonOk onClick={handleClickOpenSave}>Save Attributes</ButtonOk>
+                {
+                  window.location.pathname !== '/projects/new-project' &&
+                    <ButtonOk onClick={handleClickOpenSave}>Save Attributes</ButtonOk>
+                }
               </WrapperButton>
             </WrapperJson>
             {!disabled?.right ? (

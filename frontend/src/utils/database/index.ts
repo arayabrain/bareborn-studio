@@ -1,9 +1,9 @@
 import {
   DatabaseData,
-  DatabaseListData,
+  DatabaseListData, DatatypesDatabase,
   ImagesDatabase,
   RecordDatabase,
-  RecordList,
+  RecordList, SessionsDatabase, SubjectDatabase,
 } from 'pages/Database'
 import { getRawdb } from "api/rawdb";
 
@@ -650,4 +650,79 @@ export const onSort = (
     )
   }
   return newDatas
+}
+
+export const onFilterValue = (
+    value: { [key: string]: string },
+    setDatabases: (value: any) => void,
+    initDataTable: DatabaseData,
+    type: string
+) => {
+  if(!Object.keys(value).some((key) => value[key])) {
+    setDatabases(initDataTable)
+    return
+  }
+  if(type === 'list') {
+    const arrFilter = initDataTable.records.filter((item: any) => {
+      return !Object.keys(value).some((key: string) => {
+        if(!value[key]) return false
+        if(key === 'protocol') {
+          return !item.image_attributes[key]?.toLowerCase().includes((value[key]).toLowerCase?.())
+        }
+        return !item[key]?.includes((value[key]).toLowerCase?.())
+      })
+    })
+    setDatabases({
+      pagenation: {
+        page: 0,
+        limit: 0,
+        total: 0,
+        total_pages: 0,
+      },
+      records: arrFilter,
+    })
+    return
+  }
+  const newRecords = initDataTable.records.reduce((arrRecord: RecordDatabase[], record) => {
+    const subjects = record.subjects.reduce((arrSub: SubjectDatabase[], subject) => {
+      const sessions = subject.sessions.reduce((arrSess: SessionsDatabase[], session) => {
+        if(session.label?.toLowerCase()?.includes((value.session_label || '')?.toLowerCase())) {
+          const datatypes = session.datatypes.reduce((arrDt: DatatypesDatabase[], dt) => {
+            if(dt.label?.toLowerCase()?.includes((value.datatypes_label || '')?.toLowerCase())) {
+              const images = dt.images.filter(image => {
+                const {image_type, protocol} = image.image_attributes;
+                return (image_type as string)?.toLowerCase().includes((value.type || '').toLowerCase()) && (protocol as string)?.toLowerCase().includes((value.protocol || '').toLowerCase())
+              })
+              if(images.length) {
+                arrDt.push({...dt, images})
+              }
+            }
+            return arrDt
+          }, [])
+          if(datatypes.length) {
+            arrSess.push({...session, datatypes})
+          }
+        }
+        return arrSess
+      }, [])
+      if(sessions.length) {
+        arrSub.push({...subject, sessions})
+      }
+      return arrSub
+    }, [])
+    if(subjects.length) {
+      arrRecord.push({...record, subjects})
+    }
+    return arrRecord;
+  }, [])
+  setDatabases({
+    pagenation: {
+      page: 0,
+      limit: 0,
+      total: 0,
+      total_pages: 0,
+    },
+    records: newRecords,
+  })
+  return
 }
