@@ -4,6 +4,12 @@ export const saveToken = (access_token: string) => {
 export const getToken = () => {
   return localStorage.getItem('access_token')
 }
+export const saveRefreshToken = (refresh_token: string) => {
+  localStorage.setItem('refresh_token', refresh_token)
+}
+export const getRefreshToken = () => {
+  return localStorage.getItem('refresh_token')
+}
 export const removeToken = () => {
   return localStorage.removeItem('access_token')
 }
@@ -28,14 +34,14 @@ export const isReseacher = (role?: string | number) => {
 export const optionsRole = [
   {
     code: 1,
-    name: "Admin"
+    name: 'Admin',
   },
   {
     code: 10,
-    name: "Data Manager"
+    name: 'Data Manager',
   },
   {
     code: 20,
-    name: "User"
-  }
+    name: 'User',
+  },
 ]

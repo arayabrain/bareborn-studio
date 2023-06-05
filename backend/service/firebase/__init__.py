@@ -8,6 +8,7 @@ from .auth import (
     register,
     send_password_reset_email,
     verify_password_reset_code,
+    refresh,
 )
 from .crud_user import (
     create_user,
