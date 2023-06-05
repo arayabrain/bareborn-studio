@@ -1,7 +1,15 @@
-import axios from 'components/utils/axios'
+import { getRefreshToken } from 'utils/auth'
+import axios from 'utils/axios'
 
 export const login = async (data: { email: string; password: string }) => {
   const response = await axios.post('/auth/login', data)
+  return response.data
+}
+
+export const refreshToken = async () => {
+  const response = await axios.post('/auth/refresh', {
+    refresh_token: getRefreshToken(),
+  })
   return response.data
 }
 
@@ -56,6 +64,9 @@ export const loadParams = async () => {
 }
 
 export const resetPassword = async (email: string) => {
-  const response = await axios.post(`/admin/user/send_reset_password?email=${email}`, email)
+  const response = await axios.post(
+    `/admin/user/send_reset_password?email=${email}`,
+    email,
+  )
   return response.data
 }
