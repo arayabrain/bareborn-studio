@@ -1,4 +1,4 @@
-import { Object } from 'pages/Database'
+import { ObjectType } from 'pages/Database'
 
 export const PROJECT_SLICE_NAME = 'project'
 
@@ -18,7 +18,7 @@ export type SubFolder = {
   folder_name: string
   id: string
   images?: {
-    attributes: Object
+    attributes: ObjectType
     id: number
     image_url: string
     parent_id: string

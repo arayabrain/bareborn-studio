@@ -28,15 +28,25 @@ import {
   Viewer,
 } from '../Database'
 import ImageView from 'components/ImageView'
-import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
-import { Object } from '../Database'
+import {
+  onFilterValue,
+  onGet,
+  onRowClick,
+  onSort,
+  OrderKey,
+} from 'utils/database'
+import { ObjectType } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
 import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { useDispatch } from 'react-redux'
 import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
 import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
-import { createProject, getProjectId } from 'store/slice/Project/ProjectAction'
+import {
+  createProject,
+  editProject,
+  getProjectId,
+} from 'store/slice/Project/ProjectAction'
 import Loading from 'components/common/Loading'
 import { getDataBaseTree } from 'api/rawdb'
 import { DATABASE_URL_HOST } from 'const/API'
@@ -85,7 +95,7 @@ type ProjectAdd = {
   protocol: string
   id: string
   image_id: number
-  jsonData: Object
+  jsonData: ObjectType
 }
 
 type DataWithin = {
@@ -137,8 +147,7 @@ const remapDatasetToDataFactor = ({ dataset }: Dataset): DataFactor[] => {
 }
 
 const ProjectFormComponent = () => {
-  const [searchParams] = useSearchParams()
-
+  const [searchParams, setParams] = useSearchParams()
   const idEdit = searchParams.get('id')
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
@@ -213,6 +222,16 @@ const ProjectFormComponent = () => {
     getDataTree().then()
     //eslint-disable-next-line
   }, [])
+
+  const onFilter = (value: { [key: string]: string }) => {
+    if (!initDatabase) return
+    onFilterValue(value, setDatabases, initDatabase, 'tree')
+    if (!Object.keys(value).length) return
+    const newParams = Object.keys(value)
+      .map((key) => value[key] && `${key}=${value[key]}`)
+      .join('&')
+    setParams(newParams)
+  }
 
   const getDataTree = async () => {
     try {
@@ -576,15 +595,27 @@ const ProjectFormComponent = () => {
       })),
     }))
     if (nodeId) {
-      const urls = dataFactors
-        .map((el) => {
-          if (el.data.length) return el.data
-          return el.within.map((w) => w.data).flat()
-        })
-        .flat()
-        .map((image) => image.image_url)
-      dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
-      if (routeGoback) navigate(routeGoback)
+      dispatch(
+        editProject({
+          project,
+          project_id: nodeId,
+          dataset,
+          callback: (isSuccess: boolean) => {
+            if (isSuccess) {
+              const urls = dataFactors
+                .map((el) => {
+                  if (el.data.length) return el.data
+                  return el.within.map((w) => w.data).flat()
+                })
+                .flat()
+                .map((image) => image.image_url)
+              dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+              if (routeGoback) navigate(routeGoback)
+            }
+            setLoading(false)
+          },
+        }),
+      )
     } else {
       dispatch(
         createProject({
@@ -603,7 +634,18 @@ const ProjectFormComponent = () => {
 
   return (
     <ProjectsWrapper>
-      {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
+      {openFilter && (
+        <PopupSearch
+          defaultValue={{
+            session_label: searchParams.get('session_label') || '',
+            datatypes_label: searchParams.get('datatypes_label') || '',
+            type: searchParams.get('type') || '',
+            protocol: searchParams.get('protocol') || '',
+          }}
+          onFilter={onFilter}
+          onClose={() => setOpenFilter(false)}
+        />
+      )}
       <ImageView
         disabled={disabled}
         url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}

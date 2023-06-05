@@ -15,6 +15,11 @@ export const createProjectApi = async (data: ProjectCreate) => {
   return response.data
 }
 
+export const updateProjectApi = async (id: string, data: ProjectCreate) => {
+  const response = await axios.put(`${DATABASE_URL_HOST}/workdb/project/${id}`, data)
+  return response.data
+}
+
 export const deleteProjectApi = async (project_id: number) => {
   const response = await axios.delete(
     `${DATABASE_URL_HOST}/workdb/project/${project_id}`,

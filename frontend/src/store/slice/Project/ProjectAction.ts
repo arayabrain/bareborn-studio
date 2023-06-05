@@ -10,6 +10,7 @@ import {
   createProjectApi,
   deleteProjectApi,
   getProjectListApi,
+  updateProjectApi,
 } from 'api/project'
 import { DatasetPostType } from '../Dataset/DatasetType'
 import { createDataset } from '../Dataset/DatasetAction'
@@ -67,6 +68,36 @@ export const createProject = createAsyncThunk<
       }),
     )
     return response
+  } catch (e) {
+    param.callback?.(false)
+    return rejectWithValue(e)
+  }
+})
+
+export const editProject = createAsyncThunk<
+  // ProjectType,
+  boolean,
+  {
+    project: ProjectCreate
+    project_id: string
+    dataset: DatasetPostType[]
+    callback?: (isSuccess: boolean) => void
+  }
+>(`${PROJECT_SLICE_NAME}/editProject`, async (param, thunkAPI) => {
+  const { rejectWithValue } = thunkAPI
+  try {
+    // const response = await updateProjectApi(param.project_id, param.project)
+    // thunkAPI.dispatch(
+    //   createDataset({
+    //     project_id: response.id,
+    //     dataset: param.dataset,
+    //     callback: param.callback,
+    //   }),
+    // )
+    // return response
+    //todo
+    param.callback?.(true)
+    return true
   } catch (e) {
     param.callback?.(false)
     return rejectWithValue(e)
