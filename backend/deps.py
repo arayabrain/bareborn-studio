@@ -1,77 +1,20 @@
-import os
-from datetime import datetime, timedelta
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Optional
 
-from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, Response, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 from firebase_admin import auth
-from jose import JWTError, jwt
-from pydantic import ValidationError
 
+from backend.core import settings
+from backend.core.security import validate_access_token
 from backend.service.firebase.crud_user import read_user
-
-load_dotenv()
-
-ALGORITHM = 'HS256'
-
-SECRET_KEY = os.getenv('SECRET_KEY', '123456')
-USE_FIREBASE_TOKEN = os.getenv('USE_FIREBASE_TOKEN', 'False') == 'True'
-
-
-def create_access_token(
-    subject: Union[str, Any],
-    expires_delta: timedelta = None,
-    user_claims: Dict[str, Any] = None,
-) -> str:
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(
-            minutes=3600,
-        )
-
-    token_data = {
-        'exp': expire,
-        'sub': subject,
-        'token_type': 'access_token',
-    }
-
-    if user_claims:
-        token_data.update(user_claims)
-
-    encoded_jwt = jwt.encode(
-        token_data,
-        SECRET_KEY,
-        algorithm=ALGORITHM,
-    )
-
-    return encoded_jwt
-
-
-def validate_token(
-    token: str,
-    token_type: str,
-) -> Tuple[Dict[str, Any], Optional[str]]:
-    payload = e = None
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if payload.get('token_type') != token_type:
-            e = "Invalid token type"
-    except (JWTError, ValidationError):
-        e = "Could not validate credentials"
-    except:
-        e = "Bad token"
-
-    return payload, e
 
 
 async def get_current_user(
     res: Response,
-    ExToken: Optional[str] = Depends(APIKeyHeader(name='ExToken', auto_error=False)),
+    ex_token: Optional[str] = Depends(APIKeyHeader(name='ex_token', auto_error=False)),
     credential: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
 ):
-    if USE_FIREBASE_TOKEN:
+    if settings.USE_FIREBASE_TOKEN:
         if credential is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -87,15 +30,13 @@ async def get_current_user(
                 detail=f"Could not validate credentials",
                 headers={'WWW-Authenticate': 'Bearer error="invalid_token"'},
             )
-    if ExToken is None:
+
+    if ex_token is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={'WWW-Authenticate': 'Bearer realm="auth_required"'},
         )
-    payload, e = validate_token(
-        ExToken,
-        token_type='access_token',
-    )
+    payload, e = validate_access_token(ex_token)
     if e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e)
     res.headers['WWW-Authenticate'] = 'Bearer realm="auth_required"'

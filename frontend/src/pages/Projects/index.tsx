@@ -1,17 +1,37 @@
 import { Box, Button, styled } from '@mui/material'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import TableComponent, { Column } from '../../components/Table'
+import TableComponent, { Column } from 'components/Table'
 import { useNavigate } from 'react-router-dom'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { selectProjectList } from 'store/slice/Project/ProjectSelector'
-import { deleteProject } from 'store/slice/Project/ProjectSlice'
+import {
+  deleteProject,
+  getProjectList,
+} from 'store/slice/Project/ProjectAction'
+
+export type DataProject = {
+  id: number | string
+  uid?: number | string
+  name: string
+  project_type: number
+  image_count: number
+  created_time: string
+  updated_time: string
+  role?: string | number
+}
 
 const Projects = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const projects = useSelector(selectProjectList)
   const [idDelete, setIdDelete] = useState<number | string | undefined>()
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    dispatch(getProjectList())
+    //eslint-disable-next-line
+  }, [])
 
   const onEdit = useCallback((id: number | string) => {
     navigate(`/projects/new-project?id=${id}`)
@@ -19,13 +39,11 @@ const Projects = () => {
   }, [])
 
   const onWorkflow = useCallback((id: number | string) => {
-    console.log('Workflow: ', id)
     navigate(`/projects/workflow?tab=0&id=${id}`)
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const onResults = useCallback((id: number | string) => {
-    console.log('Result: ', id)
     navigate(`/projects/workflow?tab=1&id=${id}`)
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -41,8 +59,9 @@ const Projects = () => {
 
   const onDeleteSubmit = () => {
     const id = idDelete
+    if (!id) return
     setIdDelete(undefined)
-    dispatch(deleteProject(id))
+    dispatch(deleteProject({ project_id: Number(id) }))
   }
 
   const handleCloseDelete = () => {
@@ -51,7 +70,7 @@ const Projects = () => {
 
   const columns = useMemo(
     (): Column[] => [
-      { title: 'Project Name', name: 'name' },
+      { title: 'Project Name', name: 'project_name' },
       { title: 'Created', name: 'created_time' },
       { title: 'Updated', name: 'updated_time' },
       { title: 'Images', name: 'image_count', align: 'center' },
@@ -61,7 +80,7 @@ const Projects = () => {
         width: 400,
         render: (data) => {
           return (
-            <BoxButton>
+            <BoxAction>
               <ButtonAdd variant="contained" onClick={() => onEdit(data.id)}>
                 Edit
               </ButtonAdd>
@@ -81,7 +100,7 @@ const Projects = () => {
               >
                 Del
               </ButtonAdd>
-            </BoxButton>
+            </BoxAction>
           )
         },
       },
@@ -108,7 +127,12 @@ const Projects = () => {
         </ButtonAdd>
       </BoxButton>
       <TableComponent
-        paginate={{ total: 100, page: 1, page_size: 10 }}
+        paginate={{
+          total: projects.length,
+          page,
+          page_size: 10,
+          onPageChange: ({ selected }) => setPage(selected),
+        }}
         data={projects}
         columns={columns}
       />
@@ -128,6 +152,10 @@ const BoxButton = styled(Box)(({ theme }) => ({
   justifyContent: 'flex-end',
   gap: theme.spacing(1),
 }))
+
+const BoxAction = styled(BoxButton)({
+  justifyContent: 'flex-start',
+})
 
 const ButtonAdd = styled(Button)(({ theme }) => ({
   minWidth: 80,

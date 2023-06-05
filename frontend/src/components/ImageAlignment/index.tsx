@@ -1,7 +1,7 @@
 import { Box, IconButton, Modal, styled } from '@mui/material'
 import { ChangeEvent, FC, useEffect, useMemo, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
-import { Object } from 'pages/Database'
+import { ObjectType } from 'pages/Database'
 import { useDispatch } from 'react-redux'
 import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
@@ -13,7 +13,7 @@ type ImageViewProps = {
   onNext?: () => void
   onPrevious?: () => void
   urls: string[]
-  jsonData?: Object
+  jsonData?: ObjectType
   disabled?: { left: boolean; right: boolean }
   params?: { nodeId: string; alignments: Params[] }
   readOnly?: boolean
@@ -242,7 +242,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
                   viewer_insert_className: 'overlay-viewer-display',
                 },
               },
-              complete: function () {},
+              complete: function () {
+                setIsLoadFile(false)
+              },
             },
           ],
         })

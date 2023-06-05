@@ -1,4 +1,4 @@
-import React, { DragEvent, MouseEvent, useState } from 'react'
+import React, { DragEvent, MouseEvent, useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import ReactFlow, {
   ReactFlowProvider,
@@ -46,6 +46,12 @@ import { FileSelectDialog } from 'components/common/FileSelectDialog'
 import { FormHelperText, Popover } from '@mui/material'
 import ImageAlignment from '../ImageAlignment'
 import { Params } from 'store/slice/InputNode/InputNodeType'
+import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
+import { selectListImageUrl } from 'store/slice/Dataset/DatasetSelector'
+import { useSearchParams } from 'react-router-dom'
+import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
+import { REACT_FLOW_NODE_TYPE_KEY } from 'const/flowchart'
+import { reset } from 'store/slice/Dataset/DatasetSlice'
 
 const initDialogFile = {
   filePath: '',
@@ -59,6 +65,10 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
   (props) => {
     const flowElements = useSelector(selectFlowElements)
     const dispatch = useDispatch()
+    const [searchParams] = useSearchParams()
+    const projectID = searchParams.get('id')
+    const urls = useSelector(selectListImageUrl)
+
     const [openPopupAlignment, setOpenPopupAlignment] = useState<{
       open: boolean
       params?: { nodeId: string; alignments: Params[] }
@@ -73,6 +83,41 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
       anchorElRef: { current: null },
       message: '',
     })
+
+    useEffect(() => {
+      if (!projectID) return
+      dispatch(getDatasetList({ project_id: projectID }))
+      return () => {
+        dispatch(reset())
+      }
+      //eslint-disable-next-line
+    }, [])
+
+    useEffect(() => {
+      const flowElementInput = flowElements[0]
+      if (
+        flowElementInput?.type &&
+        Object.keys(REACT_FLOW_NODE_TYPE_KEY).includes(flowElementInput.type)
+      ) {
+        dispatch(
+          setInputNodeFilePath({ nodeId: flowElementInput.id, filePath: urls }),
+        )
+      }
+      //eslint-disable-next-line
+    }, [])
+
+    useEffect(() => {
+      const flowElementInput = flowElements[0]
+      if (
+        flowElementInput?.type &&
+        Object.keys(REACT_FLOW_NODE_TYPE_KEY).includes(flowElementInput.type)
+      ) {
+        dispatch(
+          setInputNodeFilePath({ nodeId: flowElementInput.id, filePath: urls }),
+        )
+      }
+      //eslint-disable-next-line
+    }, [flowElements[0]])
 
     const onConnect = (params: Connection | Edge) => {
       dispatch(

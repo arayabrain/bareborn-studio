@@ -19,4 +19,3 @@ pydantic[email]
 pyrebase4==4.6.0
 requests-toolbelt==0.10.1
 python-jose[cryptography]
-python-dotenv
