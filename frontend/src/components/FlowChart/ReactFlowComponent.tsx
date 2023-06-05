@@ -51,6 +51,7 @@ import { selectListImageUrl } from 'store/slice/Dataset/DatasetSelector'
 import { useSearchParams } from 'react-router-dom'
 import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { REACT_FLOW_NODE_TYPE_KEY } from 'const/flowchart'
+import { reset } from 'store/slice/Dataset/DatasetSlice'
 
 const initDialogFile = {
   filePath: '',
@@ -86,6 +87,9 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
     useEffect(() => {
       if (!projectID) return
       dispatch(getDatasetList({ project_id: projectID }))
+      return () => {
+        dispatch(reset())
+      }
       //eslint-disable-next-line
     }, [])
 

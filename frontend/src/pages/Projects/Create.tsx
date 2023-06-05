@@ -193,10 +193,6 @@ const ProjectFormComponent = () => {
         callback: () => setLoading(false),
       }),
     )
-    //eslint-disable-next-line
-  }, [])
-
-  useEffect(() => {
     return () => {
       dispatch(resetCurrentProject())
       dispatch(reset())
