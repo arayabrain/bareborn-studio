@@ -10,7 +10,12 @@ const initialState: Dataset = {
 export const datasetSlice = createSlice({
   name: PROJECT_SLICE_NAME,
   initialState,
-  reducers: {},
+  reducers: {
+    reset: (state) => {
+      state.project_id = null
+      state.dataset = undefined
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(getDatasetList.fulfilled, (state, action) => {
       state.dataset = action.payload.dataset
@@ -19,6 +24,5 @@ export const datasetSlice = createSlice({
   },
 })
 
-// eslint-disable-next-line no-empty-pattern
-export const {} = datasetSlice.actions
+export const { reset } = datasetSlice.actions
 export default datasetSlice.reducer

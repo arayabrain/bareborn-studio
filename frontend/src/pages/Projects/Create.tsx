@@ -55,6 +55,7 @@ import { useSelector } from 'react-redux'
 import { Dataset } from 'store/slice/Dataset/DatasetType'
 import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
 import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
+import { reset } from 'store/slice/Dataset/DatasetSlice'
 
 const columns: Column[] = [
   { title: 'User', name: 'user_name', filter: true, width: 100 },
@@ -198,6 +199,7 @@ const ProjectFormComponent = () => {
   useEffect(() => {
     return () => {
       dispatch(resetCurrentProject())
+      dispatch(reset())
     }
     //eslint-disable-next-line
   }, [])
