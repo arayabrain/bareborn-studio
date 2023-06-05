@@ -1,14 +1,18 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import DatabaseTableComponent, { Column } from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
 import ImageView from 'components/ImageView'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
+import { onFilterValue, onGet, onRowClick, onSort, OrderKey } from 'utils/database'
 import { User, useUser } from 'providers'
-import { isReseacher } from "../../utils/auth";
+import { isReseacher } from 'utils/auth'
+import { getDataBaseList, getDataBaseTree } from 'api/rawdb'
+import { DATABASE_URL_HOST } from 'const/API'
+import Loading from 'components/common/Loading'
+import {useSearchParams} from "react-router-dom";
 
 type PopupSearchProps = {
   onClose?: () => any
@@ -45,27 +49,31 @@ export const PopupSearch = ({
         </HeaderTitle>
         <InputSearch
           onChange={onChange}
-          name={'session'}
+          name={'session_label'}
           label="Session"
           variant="outlined"
+          value={values.session_label}
         />
         <InputSearch
           onChange={onChange}
-          name={'dataset'}
-          label="Dataset"
+          name={'datatypes_label'}
+          label="Datatype"
           variant="outlined"
+          value={values.datatypes_label}
         />
         <InputSearch
           onChange={onChange}
           name={'type'}
           label="Type"
           variant="outlined"
+          value={values.type}
         />
         <InputSearch
           onChange={onChange}
           name={'protocol'}
           label="Protocol"
           variant="outlined"
+          value={values.protocol}
         />
         <Button variant="contained" onClick={handleFilter}>
           Filter
@@ -88,7 +96,7 @@ export type Image = {
     id: number
     parent_id: number
     image_url: string
-    attributes: Object
+    image_attributes: Object
   }
 }
 
@@ -108,7 +116,7 @@ export type ImagesDatabase = {
   image_url: string
   datatype_label?: string
   type?: string
-  attributes: Object
+  image_attributes: Object
   session_id?: number
   record_index?: number
   subject_index?: number
@@ -198,293 +206,7 @@ export const defaultDatabase: DatabaseData = {
     total: 0,
     total_pages: 0,
   },
-  records: [
-    {
-      id: 0,
-      lab_name: 'string',
-      user_name: 'string',
-      recording_time: '2023-04-07',
-      subjects: [
-        {
-          id: '0',
-          parent_id: '0',
-          label: 'new subject',
-          sessions: [
-            {
-              id: '0',
-              parent_id: '0',
-              label: 'new session',
-              datatypes: [
-                {
-                  id: '0',
-                  parent_id: '0',
-                  label: 'anat',
-                  images: [
-                    {
-                      id: 0,
-                      parent_id: '0',
-                      image_url: window.location.origin + '/lib/test.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'TYPE_1',
-                        protocol: 'Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                  ],
-                },
-                {
-                  id: '1',
-                  parent_id: '0',
-                  label: 'func',
-                  images: [
-                    {
-                      id: 1,
-                      parent_id: '0',
-                      image_url: window.location.origin + '/lib/test0.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'TYPE_1',
-                        protocol: 'Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '1',
-          parent_id: '0',
-          label: 'project subject',
-          sessions: [
-            {
-              id: '1',
-              parent_id: '1',
-              label: 'zsession',
-              datatypes: [
-                {
-                  id: '2',
-                  parent_id: '1',
-                  label: 'anat',
-                  images: [
-                    {
-                      id: 2,
-                      parent_id: '2',
-                      image_url: window.location.origin + '/lib/test1.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'TYPE_1',
-                        protocol: 'Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                  ],
-                },
-                {
-                  id: '3',
-                  parent_id: '1',
-                  label: 'zunc',
-                  images: [
-                    {
-                      id: 3,
-                      parent_id: '3',
-                      image_url: window.location.origin + '/lib/test2.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'T2_RATE',
-                        protocol: 'X Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                    {
-                      id: 4,
-                      parent_id: '3',
-                      image_url: window.location.origin + '/lib/test3.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'TYPE_1',
-                        protocol: 'Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                    {
-                      id: 5,
-                      parent_id: '3',
-                      image_url: window.location.origin + '/lib/test4.nii',
-                      attributes: {
-                        size: [15.0, 15.0, 15.0],
-                        type: 'T3_RATE',
-                        protocol: 'Z Protocol',
-                        voxel_size: [100, 100, 100],
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-      created_time: '2023-04-07T04:28:09.686Z',
-      updated_time: '2023-04-07T04:28:09.686Z',
-    },
-    {
-      id: 1,
-      lab_name: 'lab name',
-      user_name: 'user name',
-      recording_time: '2023-04-06',
-      subjects: [
-        {
-          id: '3',
-          parent_id: '1',
-          label: 'subject name',
-          sessions: [],
-        },
-        {
-          id: '4',
-          parent_id: '1',
-          label: 'zubject name',
-          sessions: [],
-        },
-        {
-          id: '5',
-          parent_id: '1',
-          label: 'lubject name',
-          sessions: [],
-        },
-      ],
-      created_time: '2023-04-07T04:28:09.686Z',
-      updated_time: '2023-04-07T04:28:09.686Z',
-    },
-  ],
-}
-
-const dataImages: DatabaseListData = {
-  pagenation: {
-    page: 0,
-    limit: 0,
-    total: 0,
-    total_pages: 0,
-  },
-  records: [
-    {
-      id: 0,
-      lab_name: 'lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test.nii',
-      image_attributes: {
-        size: [15.3, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 1,
-      lab_name: 'z lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test0.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 2,
-      lab_name: 'x lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test1.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 3,
-      lab_name: 'c lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test2.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 4,
-      lab_name: '4 lab name',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test3.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'Z Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-    {
-      id: 5,
-      lab_name: 'string',
-      user_name: 'string',
-      recording_time: '2023-04-13',
-      subject_label: 'string',
-      session_label: 'string',
-      datatypes_label: 'string',
-      image_id: 0,
-      image_url: '/lib/test4.nii',
-      image_attributes: {
-        size: [15.0, 15.0, 15.0],
-        type: 'TYPE_1',
-        protocol: 'X Protocol',
-        voxel_size: [100, 100, 100],
-      },
-      created_time: '2023-04-13T04:48:01.063Z',
-      updated_time: '2023-04-13T04:48:01.063Z',
-    },
-  ],
+  records: [],
 }
 
 export const columns = (
@@ -495,7 +217,7 @@ export const columns = (
 ): Column[] => [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true },
-  { title: 'Date', name: 'recording_time', filter: true },
+  { title: 'Date', name: 'recording_time', filter: true, width: 60 },
   {
     title: 'Subject',
     name: type === 'tree' ? 'subject' : 'subject_label',
@@ -516,30 +238,36 @@ export const columns = (
   },
   {
     title: 'Type',
-    name: type === 'tree' ? 'attributes.type' : 'image_attributes.type',
+    name:
+      type === 'tree' ? 'image_attributes.image_type' : 'image_attributes.type',
     filter: true,
+    width: 100,
   },
   {
     title: 'Protocol',
-    name: type === 'tree' ? 'attributes.protocol' : 'image_attributes.protocol',
+    name:
+      type === 'tree'
+        ? 'image_attributes.protocol'
+        : 'image_attributes.protocol',
     filter: true,
   },
   {
     title: 'Size',
-    name: type === 'tree' ? 'attributes.size' : 'image_attributes.size',
+    name: type === 'tree' ? 'image_attributes.scale' : 'image_attributes.scale',
     filter: true,
+    render: (_, v) => JSON.stringify(v),
   },
   {
     title: 'Voxel size',
-    name:
-      type === 'tree' ? 'attributes.voxel_size' : 'image_attributes.voxel_size',
+    name: type === 'tree' ? 'image_attributes.voxel' : 'image_attributes.voxel',
     filter: true,
+    render: (_, v) => JSON.stringify(v),
   },
   {
     title: '',
     name: 'action',
     render: (data) => {
-      if(isReseacher(user?.role)) return null
+      if (isReseacher(user?.role)) return null
       return (
         <BoxButton>
           <ButtonControl
@@ -560,7 +288,7 @@ export const columns = (
               setOpenDelete?.(true)
             }}
           >
-              <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+            <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
           </ButtonControl>
         </BoxButton>
       )
@@ -571,35 +299,50 @@ export const columns = (
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
-  const [datasTable, setDatasTable] = useState<DatabaseData | DatabaseListData>(
-    defaultDatabase,
-  )
-  const [initDataTable, setInitDataTable] = useState<
-    DatabaseData | DatabaseListData
-  >(defaultDatabase)
+  const [databases, setDatabases] = useState<DatabaseData | DatabaseListData>()
   const [openDelete, setOpenDelete] = useState(false)
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [type, setType] = useState<'tree' | 'list'>('tree')
+  const [initDataTable, setInitDataTable] = useState<DatabaseData>(defaultDatabase)
   const [disabled, setDisabled] = useState({ left: false, right: false })
+  const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
+  const [ searchParams, setParams ] = useSearchParams()
+  const [ defaultValue, setDefaultValue ] = useState({})
 
   const onCloseImageView = () => {
     setViewer({ open: false, url: '' })
   }
 
-  useEffect(() => {
-    if (type === 'tree') {
-      setDatasTable(defaultDatabase)
-      setInitDataTable(defaultDatabase)
-    } else {
-      setDatasTable(dataImages)
-      setInitDataTable(dataImages)
+  const fetchData = useCallback(async () => {
+    setIsLoading(true)
+    let data
+    try {
+      data = type === 'tree' ? await getDataBaseTree() : await getDataBaseList()
+      onFilterValue(defaultValue, setDatabases, data, type)
+      setInitDataTable(data)
+    } finally {
+      setIsLoading(false)
     }
-  }, [type])
+  }, [type, defaultValue])
 
-  const rowClick = (row: ImagesDatabase | RecordList) => {
-    const { view, checkNext, checkPre } = onRowClick(datasTable, row, type)
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  useEffect(() => {
+    setDefaultValue({
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    })
+  }, [searchParams])
+
+  const rowClick = async (row: ImagesDatabase | RecordList) => {
+    if (!databases) return
+    const { view, checkNext, checkPre } = await onRowClick(databases, row, type)
     setViewer(view)
     setDisabled({ left: !checkPre, right: !checkNext })
   }
@@ -613,27 +356,37 @@ const Database = () => {
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
+    if (!databases) return
+
     const data = onSort(
-      JSON.parse(JSON.stringify(initDataTable.records)),
+      JSON.parse(JSON.stringify(databases.records)),
       orderByValue,
       orderKey as OrderKey,
       type,
     )
-    setDatasTable({ ...datasTable, records: data as any })
+    setDatabases({ ...databases, records: data as any })
     setColumnSort(orderKey)
     setOrdeBy(orderByValue)
   }
 
-  const onNext = () => {
+  const onNext = async () => {
     if (!viewer.image) return
-    const imageNext = onGet(datasTable as any, viewer.image, false, type)
-    if (imageNext) rowClick(imageNext)
+    const imageNext = onGet(databases as any, viewer.image, false, type)
+    if (imageNext) await rowClick(imageNext)
   }
 
-  const onPrevious = () => {
-    if (!viewer.image) return
-    const imagePre = onGet(datasTable, viewer.image, true, type)
-    if (imagePre) rowClick(imagePre)
+  const onPrevious = async () => {
+    if (!viewer.image || !databases) return
+    const imagePre = onGet(databases, viewer.image, true, type)
+    if (imagePre) await rowClick(imagePre)
+  }
+
+  const onFilter = (value: { [key: string]: string }) => {
+    if(!databases) return
+    onFilterValue(value, setDatabases, initDataTable, type)
+    if(!Object.keys(value).length) return
+    const newParams = Object.keys(value).map((key) => value[key] && `${key}=${value[key]}`).join('&')
+    setParams(newParams)
   }
 
   return (
@@ -679,26 +432,33 @@ const Database = () => {
           List
         </Box>
       </BoxSelectTypeView>
-      {openPopup && <PopupSearch onClose={() => setOpenPopup(false)} />}
-        <DatabaseTableComponent
-            defaultExpand
-            onSort={handleSort}
-            rowClick={rowClick}
-            orderKey={columnSort}
-            orderBy={orderBy}
-            data={datasTable.records}
-            columns={columns(rowClick, setOpenDelete, type, user)}
-        />
+      {openPopup &&
+          <PopupSearch
+              onClose={() => setOpenPopup(false)}
+              defaultValue={defaultValue}
+              onFilter={onFilter}
+          />}
+      <DatabaseTableComponent
+        defaultExpand
+        onSort={handleSort}
+        rowClick={rowClick}
+        orderKey={columnSort}
+        orderBy={orderBy}
+        data={databases && databases.records}
+        columns={columns(rowClick, setOpenDelete, type, user)}
+      />
       <ImageView
         disabled={disabled}
-        url={viewer.url}
+        url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
         open={viewer.open}
         jsonData={viewer.jsonData}
         onClose={onCloseImageView}
         onNext={onNext}
         onPrevious={onPrevious}
+        id={Number(viewer.id)}
       />
-      </DatabaseWrapper>
+      {isLoading && <Loading />}
+    </DatabaseWrapper>
   )
 }
 
