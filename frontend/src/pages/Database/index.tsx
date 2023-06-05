@@ -347,7 +347,7 @@ const Database = () => {
     if (!databases) return
     const { view, checkNext, checkPre } = await onRowClick(databases, row, type)
     setViewer(view)
-    setDisabled({ left: !checkPre, right: !checkNext })
+    setDisabled({ left: type === 'list' || !checkPre, right: type === 'list' || !checkNext })
   }
 
   const handleCloseDelete = () => {
