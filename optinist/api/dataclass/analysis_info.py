@@ -103,7 +103,9 @@ class AnalysisInfo(BaseData):
         # project_root_dir = get_project_root_dir(project_id)
         # filemap_path = os.path.join(project_root_dir, 'filemap.json')
         # DEBUG
-        filemap_path = r'../../test_data/cjs/test_project/filemap.json'
+        # filemap_path = r'../../test_data/cjs/test_project/filemap.json'
+        print('cd', os.getcwd())
+        filemap_path = r'./optinist/test_data/cjs/test_project/filemap.json'
         #print(DIRPATH.OPTINIST_DIR)
 
         # Get the between-factor and within-factor from the filemap.json.

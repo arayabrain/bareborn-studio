@@ -99,3 +99,11 @@ class RunItem(BaseModel):
     snakemakeParam: dict = {}
     nwbParam: dict = {}
     forceRunList: List[ForceRun]
+
+
+# CJS-3: Added.
+@dataclass
+class SubjectAnalysisInfo:
+    success: list       # List[str]
+    output_path: list   # List[str]
+    message: list       # List[str]

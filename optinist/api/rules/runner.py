@@ -15,6 +15,10 @@ from optinist.api.pickle.pickle_writer import PickleWriter
 from optinist.api.utils.filepath_creater import join_filepath
 from optinist.api.nwb.nwb_creater import merge_nwbfile, save_nwb
 
+# CJS-3: Imports
+from optinist.api.dataclass.dataclass import AnalysisInfo, AnalysisStatus
+from optinist.api.experiment.experiment import ExptFunction
+
 
 class Runner:
     @classmethod
@@ -39,6 +43,11 @@ class Runner:
                 __rule.params,
                 input_info
             )
+
+            if 'analysis_info_out' in output_info.keys():
+                # CJS-3: The function was added just after the node analysis, which updates experiment.yaml
+                # with the node analysis info such as output file paths and status.
+                cls.set_node_analysis_info(os.path.dirname(__rule.output), output_info['analysis_info_out'])
 
             # nwbfileの設定
             output_info['nwbfile'] = cls.save_func_nwb(
@@ -68,6 +77,78 @@ class Runner:
                 __rule.output,
                 list(traceback.TracebackException.from_exception(e).format())[-2:],
             )
+
+    @classmethod
+    def set_node_analysis_info(cls, output_dirpath: str, analysis_info: AnalysisInfo):
+        """
+        CJS-3: Update the experiment.yaml with the node analysis info such as output file paths and status.
+        """
+
+        # Get the ExptConfig data from the experiment.yaml.
+        workflow_dirpath = os.path.dirname(output_dirpath)
+        node_id = os.path.basename(output_dirpath)
+        expt_file_path = join_filepath([workflow_dirpath, DIRPATH.EXPERIMENT_YML])
+        expt_config = ExptConfigReader.read(expt_file_path)
+
+        # Extract the info about the output files and subjects from the AnalysisInfo object of the node output.
+        output_path_dict = {}
+        subject_dict = {}
+        for wf_input_path in analysis_info.workflow_input_file_path_list:
+            # For "outputPaths".
+            output_file_paths = analysis_info.get_output_file_paths(wf_input_path)
+            for output_file_path in output_file_paths:
+                file_name = os.path.splitext(os.path.basename(output_file_path))[0]
+                output_path_dict[file_name] = {
+                    'path': output_file_path,
+                    'type': 'images',
+                    'max_index': None
+                }
+
+            # For "subjects".
+            # All the data are held in a form of List to support multiple workflow input files for a single subject.
+            subject = analysis_info.get_subject(wf_input_path)
+            if subject in subject_dict.keys():
+                subject_dict[subject]['success'].append(analysis_info.get_unit_analysis_status(wf_input_path))
+                subject_dict[subject]['output_path'].append(output_file_paths)
+                subject_dict[subject]['message'].append(analysis_info.get_message(wf_input_path))
+            else:
+                subject_dict[subject] = {
+                    'success': [analysis_info.get_unit_analysis_status(wf_input_path)],
+                    'output_path': [output_file_paths],
+                    'message': [analysis_info.get_message(wf_input_path)]
+                }
+
+        print('output_path_dict', output_path_dict)
+        print('subject_dict', subject_dict)
+
+        # Create an ExptFunction object for the node, and update the ExptConfig data.
+        expt_function = expt_config.function
+        print('node_id', node_id)
+        expt_config.function[node_id] = ExptFunction(
+            unique_id=expt_function[node_id].unique_id,
+            name=expt_function[node_id].name,
+            success=analysis_info.get_node_analysis_status(),
+            hasNWB=expt_function[node_id].hasNWB,
+            message=analysis_info.get_node_analysis_status(),
+            outputPaths=output_path_dict,
+            started_at=analysis_info.analysis_start_time,
+            finished_at=analysis_info.analysis_end_time,
+            subjects=subject_dict
+        )
+
+        # Overwrite the experiment.yaml with updated ExptConfig data.
+        ConfigWriter.write(
+            dirname=workflow_dirpath,
+            filename=DIRPATH.EXPERIMENT_YML,
+            config=asdict(expt_config)
+        )
+
+        # Debug
+        ConfigWriter.write(
+            dirname=workflow_dirpath,
+            filename='experiment2.yaml',
+            config=asdict(expt_config)
+        )
 
     @classmethod
     def set_func_start_timestamp(cls, output_dirpath):
@@ -136,3 +217,38 @@ class Runner:
             return cls.dict2leaf(root_dict[path], path_list)
         else:
             return root_dict[path]
+
+
+# CJS-3: Test experiment.yaml update.
+if __name__ == '__main__':
+
+    print('\n[set_node_analysis_info test]')
+
+    # The folder saving the output files of the workflow analysis, whose name is same as the workflow ID.
+    output_dirpath = r'../../test_data/cjs/output/3a55fa37/func1'
+
+    # Set the paths of the workflow input files.
+    wf_input_file_path_list = [
+        'proj_root/mouse1/sub-mouse1_ses-20230501123456_rec-1_run-1_T2W.nii',
+        'proj_root/mouse2/sub-mouse2_ses-20230502123456_rec-1_run-1_T2W.nii',]
+
+    # Create an AnalysisInfo object.
+    project_path = r'../../test_data/cjs/test_project'
+    analysis_info = AnalysisInfo(wf_input_file_path_list, project_path)
+
+    # Set the data.
+    output_file_path_dict = {}
+    analysis_status_dict = {}
+    for wf_input_path in wf_input_file_path_list:
+        input_file_name = os.path.splitext(os.path.basename(wf_input_path))[0]
+        folder_path = os.path.dirname(wf_input_path)
+        output_file_path = os.path.join(folder_path, input_file_name + '_nodeA.nii')
+        analysis_info.set_output_file_paths(wf_input_path, output_file_path)
+        analysis_info.set_analysis_status(wf_input_path, AnalysisStatus.PROCESSED)
+    analysis_info.analysis_start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    analysis_info.analysis_end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    # Update the experiment.yaml with the node analysis info such as output file paths and status.
+    Runner.set_node_analysis_info(output_dirpath, analysis_info)
+
+    print(f'\nTest finished.')
