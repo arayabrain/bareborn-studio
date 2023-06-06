@@ -619,6 +619,7 @@ const BoxDrag = styled(Box)({
 
 const TableWrap = styled(Box)({
   overflowX: 'scroll',
+  height: 'calc(100vh - 200px)'
 })
 
 const DataTable = styled('table')({
