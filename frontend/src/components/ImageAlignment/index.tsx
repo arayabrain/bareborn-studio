@@ -5,6 +5,7 @@ import { ObjectType } from 'pages/Database'
 import { useDispatch } from 'react-redux'
 import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
+import { DATABASE_URL_HOST } from 'const/API'
 // import { setSaveFileName } from 'store/slice/VisualizeItem/VisualizeItemSlice'
 
 type ImageViewProps = {
@@ -24,7 +25,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
   onClose,
   urls,
   params = { nodeId: '', alignments: [] },
-  readOnly= false
+  readOnly = false,
 }) => {
   const viewerRef = useRef<any>()
   const [url, setUrl] = useState(urls[0])
@@ -151,7 +152,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
       volumes: [
         {
           type: 'nifti1',
-          nii_url: url,
+          nii_url: `${DATABASE_URL_HOST}${url}`,
           template: {
             element_id: 'volume-ui-template',
             viewer_insert_className: 'volume-viewer-display',
@@ -222,6 +223,10 @@ const ImageAlignment: FC<ImageViewProps> = ({
           volumeLoaded(e, true),
         )
         viewer.addEventListener('sliceupdate', volumeLoaded)
+        viewer.addEventListener('error', ({ message }: { message: string }) => {
+          window.alert(message)
+          onClose?.()
+        })
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
         viewer.setDefaultPanelSize(256, 256)
@@ -231,7 +236,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
           volumes: [
             {
               type: 'nifti1',
-              nii_url: url,
+              nii_url: `${DATABASE_URL_HOST}${url}`,
               template: {
                 element_id: 'volume-ui-template',
                 viewer_insert_className: 'volume-viewer-display',
@@ -517,4 +522,3 @@ const CloseIconWrapper = styled(CloseIcon)({
 })
 
 export default ImageAlignment
-
