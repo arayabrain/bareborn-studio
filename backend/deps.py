@@ -11,7 +11,7 @@ from backend.service.firebase.crud_user import read_user
 
 async def get_current_user(
     res: Response,
-    ex_token: Optional[str] = Depends(APIKeyHeader(name='ex_token', auto_error=False)),
+    ex_token: Optional[str] = Depends(APIKeyHeader(name='ExToken', auto_error=False)),
     credential: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)),
 ):
     if settings.USE_FIREBASE_TOKEN:

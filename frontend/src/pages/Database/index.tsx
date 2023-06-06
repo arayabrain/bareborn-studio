@@ -450,6 +450,7 @@ const Database = () => {
         />
       )}
       <DatabaseTableComponent
+        addProject={false}
         defaultExpand
         onSort={handleSort}
         rowClick={rowClick}

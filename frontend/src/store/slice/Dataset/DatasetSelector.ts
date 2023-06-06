@@ -3,6 +3,9 @@ import { SubFolder } from './DatasetType'
 
 export const selectDataset = (state: RootState) => state.dataset
 
+export const selectCurrentProjectId = (state: RootState) =>
+  state.dataset.project_id
+
 const getUrlFromSubfolder = (subfolders: SubFolder[], urls: string[]) => {
   subfolders.forEach((sub) => {
     if (sub.sub_folders) {

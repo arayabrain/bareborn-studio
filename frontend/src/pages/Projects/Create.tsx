@@ -610,7 +610,10 @@ const ProjectFormComponent = () => {
                 .flat()
                 .map((image) => image.image_url)
               dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
-              if (routeGoback) navigate(routeGoback)
+              if (routeGoback)
+                navigate(`${routeGoback}&id=${idEdit}`, {
+                  state: { edited: true },
+                })
             }
             setLoading(false)
           },
@@ -770,6 +773,7 @@ const ProjectFormComponent = () => {
             </ButtonFilter>
           </BoxFilter>
           <DatabaseTableComponent
+            addProject={true}
             onSort={handleSort}
             orderKey={columnSort}
             orderBy={orderBy}
