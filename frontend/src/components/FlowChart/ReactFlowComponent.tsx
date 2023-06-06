@@ -192,6 +192,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
       }),
       [reactFlowInstance],
     )
+
     return (
       <div className="flow">
         <DialogContext.Provider
@@ -225,12 +226,14 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
               </ReactFlow>
             </div>
           </ReactFlowProvider>
-          <ImageAlignment
-            open={openPopupAlignment.open}
-            onClose={() => setOpenPopupAlignment({ open: false })}
-            urls={['/lib/test.nii', '/lib/test0.nii']}
-            params={openPopupAlignment.params}
-          />
+          {openPopupAlignment.open && (
+            <ImageAlignment
+              open={openPopupAlignment.open}
+              onClose={() => setOpenPopupAlignment({ open: false })}
+              urls={urls}
+              params={openPopupAlignment.params}
+            />
+          )}
           {dialogNodeId && (
             <AlgorithmOutputDialog
               nodeId={dialogNodeId}
