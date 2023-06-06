@@ -13,7 +13,7 @@ import {
   selectPipelineLatestUid,
   selectRunResultPendingNodeIdList,
 } from './PipelineSelectors'
-import { selectCurrentProjectId } from '../Project/ProjectSelector'
+import { selectCurrentProjectId } from '../Dataset/DatasetSelector'
 
 export const run = createAsyncThunk<
   string,
