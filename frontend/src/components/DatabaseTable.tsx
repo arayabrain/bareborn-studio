@@ -35,6 +35,7 @@ export type Column = {
 }
 
 type TableComponentProps = {
+  addProject: boolean
   data?: (RecordDatabase | RecordList)[]
   className?: string
   columns?: Column[]
@@ -334,6 +335,7 @@ const RenderColumn = (props: RenderColumnProps) => {
 
 const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
   const {
+    addProject,
     className,
     orderKey,
     orderBy,
@@ -520,7 +522,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
 
   return (
     <>
-      <TableWrap ref={refTable} className={className}>
+      <TableWrap ref={refTable} className={className} addProject={addProject}>
         <DataTable
           style={{
             width: columns.reduce((a, b) => a + (Number(b.width) || 110), 0),
@@ -617,10 +619,12 @@ const BoxDrag = styled(Box)({
   alignItems: 'center',
 })
 
-const TableWrap = styled(Box)({
+const TableWrap = styled(Box, {
+  shouldForwardProp: (props) => props !== 'addProject',
+})<{addProject: boolean}>(({addProject}) => ({
   overflowX: 'scroll',
-  height: 'calc(100vh - 200px)'
-})
+  height: `calc(100vh - ${addProject ? 365 : 200}px)`
+}))
 
 const DataTable = styled('table')({
   boxSizing: 'border-box',

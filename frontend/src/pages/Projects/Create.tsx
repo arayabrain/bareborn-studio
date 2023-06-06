@@ -770,6 +770,7 @@ const ProjectFormComponent = () => {
             </ButtonFilter>
           </BoxFilter>
           <DatabaseTableComponent
+            addProject={true}
             onSort={handleSort}
             orderKey={columnSort}
             orderBy={orderBy}
