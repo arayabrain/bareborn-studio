@@ -77,6 +77,11 @@ const columns: Column[] = [
     width: 100,
   },
   {
+    title: 'Protocol',
+    name: 'image_attributes.protocol',
+    filter: true,
+  },
+  {
     title: 'Size',
     name: 'image_attributes.scale',
     filter: true,
