@@ -71,7 +71,9 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
     const [searchParams] = useSearchParams()
     const { onOpenImageAlignment } = useContext(DialogContext)
 
-    const inputNode = useSelector(selectInputNodeParam(nodeId || '')) as AlignmentData
+    const inputNode = useSelector(
+      selectInputNodeParam(nodeId || ''),
+    ) as AlignmentData
 
     const id = searchParams.get('id')
     const getNameSelectec = () => {
@@ -103,6 +105,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
         </div>
         <ButtonGroup size="small" style={{ width: '90%', margin: '8px 0' }}>
           <Button
+            disabled={!filePath || !filePath.length}
             onClick={() => {
               if (!nodeId) return
               onOpenImageAlignment(true, {

@@ -111,7 +111,11 @@ VolumeViewer.createVolume = function (header, native_data) {
   finishHeader(header)
 
   var volume = {
-    position: {},
+    position: {
+      xspace: 0,
+      yspace: 0,
+      zspace: 0,
+    },
     current_time: 0,
     data: native_data,
     header: header,
@@ -529,7 +533,9 @@ function createMincData(header, raw_data) {
       break
     default:
       var error_message = 'Unsupported data type: ' + header.datatype
-      window.BrainBrowser.events.triggerEvent('error', { message: error_message })
+      window.BrainBrowser.events.triggerEvent('error', {
+        message: error_message,
+      })
       throw new Error(error_message)
   }
 
