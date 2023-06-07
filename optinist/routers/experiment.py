@@ -37,6 +37,18 @@ async def get_experiments(project_id: str):
     return exp_config
 
 
+@router.get("/experiments/import/default", response_model=ExptImportData, tags=['experiments'])
+async def import_experiment():
+    config = ExptConfigReader.read(join_filepath([
+        DIRPATH.ROOT_DIR,
+        DIRPATH.DEFAULT_EXPERIMENT_YML,
+    ]))
+    return {
+        "nodeDict": config.nodeDict,
+        "edgeDict": config.edgeDict,
+    }
+
+
 @router.get("/experiments/import/{unique_id}", response_model=ExptImportData, tags=['experiments'])
 async def import_experiment(unique_id: str):
     config = ExptConfigReader.read(join_filepath([
