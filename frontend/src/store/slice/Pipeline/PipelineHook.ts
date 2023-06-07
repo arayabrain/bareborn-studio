@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams, useLocation } from 'react-router-dom'
+import { AppDispatch } from 'store/store'
 
 import { selectRunPostData } from 'store/selectors/run/RunSelectors'
 import {
@@ -18,6 +19,7 @@ import { RUN_STATUS } from './PipelineType'
 import {
   fetchExperiment,
   getExperiments,
+  importExperimentByUid,
 } from '../Experiments/ExperimentsActions'
 import { getDatasetList } from '../Dataset/DatasetAction'
 import { reset } from '../Dataset/DatasetSlice'
@@ -39,6 +41,7 @@ type DataActionThunk = {
 
 export function useRunPipeline() {
   const dispatch = useDispatch()
+  const appDispatch: AppDispatch = useDispatch()
   const uid = useSelector(selectPipelineLatestUid)
   const isCanceled = useSelector(selectPipelineIsCanceled)
   const isStartedSuccess = useSelector(selectPipelineIsStartedSuccess)
@@ -84,7 +87,11 @@ export function useRunPipeline() {
       {}
     >[] = [dispatch(getDatasetList({ project_id: projectId }))]
     if (!isEdited) {
-      promises.push(dispatch(fetchExperiment(projectId.toString())))
+      promises.push(
+        appDispatch(fetchExperiment(String(projectId)))
+          .unwrap()
+          .catch((_) => dispatch(importExperimentByUid('default'))) as any,
+      )
     }
     const [dataset, experiment] = await Promise.all(promises)
     let urls: string[] = []
