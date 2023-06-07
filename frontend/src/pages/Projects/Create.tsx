@@ -44,6 +44,7 @@ import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
 import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
 import {
   createProject,
+  editProject,
   // editProject,
   getProjectId,
 } from 'store/slice/Project/ProjectAction'
@@ -56,6 +57,7 @@ import { Dataset } from 'store/slice/Dataset/DatasetType'
 import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
 import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
 import { reset } from 'store/slice/Dataset/DatasetSlice'
+import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 
 const columns: Column[] = [
   { title: 'User', name: 'user_name', filter: true, width: 100 },
@@ -84,6 +86,7 @@ const columns: Column[] = [
     title: 'Voxel size',
     name: 'image_attributes.voxel',
     filter: true,
+    width: 110,
     render: (_, value) => JSON.stringify(value),
   },
 ]
@@ -594,36 +597,32 @@ const ProjectFormComponent = () => {
         source_image_ids: within.data.map((d) => d.image_id),
       })),
     }))
-    if (nodeId) {
-      // dispatch(
-      //   editProject({
-      //     project,
-      //     project_id: nodeId,
-      //     dataset,
-      //     callback: (isSuccess: boolean) => {
-      //       if (isSuccess) {
-      //         const urls = dataFactors
-      //           .map((el) => {
-      //             if (el.data.length) return el.data
-      //             return el.within.map((w) => w.data).flat()
-      //           })
-      //           .flat()
-      //           .map((image) => image.image_url)
-      //         dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
-      //         if (routeGoback)
-      //           navigate(`${routeGoback}&id=${idEdit}`, {
-      //             state: { edited: true },
-      //           })
-      //       }
-      //       setLoading(false)
-      //     },
-      //   }),
-      // )
-      if (routeGoback) {
-        navigate(`${routeGoback}&id=${idEdit}`, {
-          state: { edited: true },
-        })
-      }
+    if (nodeId && idEdit) {
+      dispatch(
+        editProject({
+          project,
+          project_id: idEdit,
+          dataset,
+          callback: (isSuccess: boolean) => {
+            if (isSuccess) {
+              const urls = dataFactors
+                .map((el) => {
+                  if (el.data.length) return el.data
+                  return el.within.map((w) => w.data).flat()
+                })
+                .flat()
+                .map((image) => image.image_url)
+              dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+              if (routeGoback) {
+                navigate(`${routeGoback}&id=${idEdit}`, {
+                  state: { edited: true },
+                })
+              }
+            }
+            setLoading(false)
+          },
+        }),
+      )
     } else {
       dispatch(
         createProject({

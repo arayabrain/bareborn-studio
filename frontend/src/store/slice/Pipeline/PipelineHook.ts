@@ -92,7 +92,7 @@ export function useRunPipeline() {
       (dataset as unknown as DataActionThunk).payload.dataset?.sub_folders,
       urls,
     )
-    if ((experiment as unknown as DataActionThunk).error) {
+    if ((experiment as unknown as DataActionThunk)?.error) {
       dispatch(
         setInputNodeFilePath({
           nodeId: initialElements[0].id,
