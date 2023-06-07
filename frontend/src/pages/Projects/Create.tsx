@@ -682,13 +682,14 @@ const ProjectFormComponent = () => {
               value={ProjectTypeValue.FACTOR}
               control={<Radio />}
               label="Between factor"
+              disabled={!!idEdit}
             />
           </Box>
           <FormControlLabel
             value={ProjectTypeValue.WITHIN_FACTOR}
             control={<Radio />}
             label="Between factor-within factor"
-            disabled={idEdit ? true : false}
+            disabled={!!idEdit}
           />
         </Box>
       </BoxOptions>
