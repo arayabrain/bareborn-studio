@@ -87,15 +87,13 @@ export const editProject = createAsyncThunk<
   const { rejectWithValue } = thunkAPI
   try {
     // const response = await updateProjectApi(param.project_id, param.project)
-    // thunkAPI.dispatch(
-    //   createDataset({
-    //     project_id: response.id,
-    //     dataset: param.dataset,
-    //     callback: param.callback,
-    //   }),
-    // )
-    // return response
-    //todo
+    thunkAPI.dispatch(
+      createDataset({
+        project_id: Number(param.project_id),
+        dataset: param.dataset,
+        callback: param.callback,
+      }),
+    )
     param.callback?.(true)
     return true
   } catch (e) {

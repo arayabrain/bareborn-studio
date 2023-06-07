@@ -19,10 +19,23 @@ import {
   fetchExperiment,
   getExperiments,
 } from '../Experiments/ExperimentsActions'
+import { getDatasetList } from '../Dataset/DatasetAction'
+import { reset } from '../Dataset/DatasetSlice'
+import { getUrlFromSubfolder } from '../Dataset/DatasetSelector'
+import { AsyncThunkAction } from '@reduxjs/toolkit'
+import { Dataset } from '../Dataset/DatasetType'
+import { ExperimentDTO } from 'api/experiments/Experiments'
+import { setInputNodeFilePath } from '../InputNode/InputNodeActions'
+import { initialElements } from '../FlowElement/FlowElementSlice'
 
 const POLLING_INTERVAL = 5000
 
 export type UseRunPipelineReturnType = ReturnType<typeof useRunPipeline>
+
+type DataActionThunk = {
+  payload: Dataset
+  error?: { message: string }
+}
 
 export function useRunPipeline() {
   const dispatch = useDispatch()
@@ -32,6 +45,9 @@ export function useRunPipeline() {
   const filePathIsUndefined = useSelector(selectFilePathIsUndefined)
   const algorithmNodeNotExist = useSelector(selectAlgorithmNodeNotExist)
   const runPostData = useSelector(selectRunPostData)
+  const [searchParams] = useSearchParams()
+  const projectId = searchParams.get('id')
+
   const handleRunPipeline = React.useCallback(
     (name: string) => {
       dispatch(run({ runPostData: { name, ...runPostData, forceRunList: [] } }))
@@ -41,22 +57,57 @@ export function useRunPipeline() {
   const handleRunPipelineByUid = React.useCallback(() => {
     dispatch(runByCurrentUid({ runPostData }))
   }, [dispatch, runPostData])
-  const [searchParams] = useSearchParams()
   const location = useLocation()
   const [isEdited] = useState<{ edited: boolean }>(
     location.state as { edited: boolean },
   )
-
   React.useEffect(() => {
-    const projectId = searchParams.get('id')
-    projectId && !isEdited && dispatch(fetchExperiment(projectId.toString()))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    getData().then()
+    //eslint-disable-next-line
   }, [])
+  React.useEffect(() => {
+    if (!projectId) return
+    return () => {
+      dispatch(reset())
+    }
+    //eslint-disable-next-line
+  }, [])
+
+  const getData = async () => {
+    if (!projectId) return
+    const promises: AsyncThunkAction<
+      Dataset | ExperimentDTO,
+      | {
+          project_id: string
+        }
+      | string,
+      {}
+    >[] = [dispatch(getDatasetList({ project_id: projectId }))]
+    if (!isEdited) {
+      promises.push(dispatch(fetchExperiment(projectId.toString())))
+    }
+    const [dataset, experiment] = await Promise.all(promises)
+    let urls: string[] = []
+    getUrlFromSubfolder(
+      (dataset as unknown as DataActionThunk).payload.dataset?.sub_folders,
+      urls,
+    )
+    if ((experiment as unknown as DataActionThunk)?.error) {
+      dispatch(
+        setInputNodeFilePath({
+          nodeId: initialElements[0].id,
+          filePath: urls,
+        }),
+      )
+    }
+  }
+
   const handleCancelPipeline = React.useCallback(() => {
     if (uid != null) {
       dispatch(cancelPipeline())
     }
   }, [dispatch, uid])
+
   React.useEffect(() => {
     const intervalId = setInterval(() => {
       if (isStartedSuccess && !isCanceled && uid != null) {
@@ -67,7 +118,9 @@ export function useRunPipeline() {
       clearInterval(intervalId)
     }
   }, [dispatch, uid, isCanceled, isStartedSuccess])
+
   const status = useSelector(selectPipelineStatus)
+
   const { enqueueSnackbar } = useSnackbar()
   // タブ移動による再レンダリングするたびにスナックバーが実行されてしまう挙動を回避するために前回の値を保持
   const [prevStatus, setPrevStatus] = React.useState(status)
@@ -88,6 +141,7 @@ export function useRunPipeline() {
       setPrevStatus(status)
     }
   }, [dispatch, status, prevStatus, enqueueSnackbar])
+
   return {
     filePathIsUndefined,
     algorithmNodeNotExist,
