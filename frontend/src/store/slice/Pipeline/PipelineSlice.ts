@@ -63,10 +63,14 @@ export const pipelineSlice = createSlice({
         state.run.status = RUN_STATUS.ABORTED
       })
       .addCase(importExperimentByUid.fulfilled, (state, action) => {
-        state.currentPipeline = {
-          uid: action.meta.arg,
+        if (action.meta.arg === 'default') {
+          state.runBtn = RUN_BTN_OPTIONS.RUN_NEW
+        } else {
+          state.currentPipeline = {
+            uid: action.meta.arg,
+          }
+          state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
         }
-        state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
         state.run = {
           status: RUN_STATUS.START_UNINITIALIZED,
         }
