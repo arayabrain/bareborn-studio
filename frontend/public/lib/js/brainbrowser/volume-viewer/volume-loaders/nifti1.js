@@ -120,13 +120,13 @@
     // Now that we have the transform, need to convert it to MINC-like
     // steps and direction_cosines.
 
-    var xmag = magnitude(transform[0])
-    var ymag = magnitude(transform[1])
-    var zmag = magnitude(transform[2])
+    // var xmag = magnitude(transform[0])
+    // var ymag = magnitude(transform[1])
+    // var zmag = magnitude(transform[2])
 
-    var xstep = transform[0][0] < 0 ? -xmag : xmag
-    var ystep = transform[1][1] < 0 ? -ymag : ymag
-    var zstep = transform[2][2] < 0 ? -zmag : zmag
+    var xstep = 1
+    var ystep = 1
+    var zstep = 1
 
     if (header.xspace.step) {
       xstep = header.xspace.step

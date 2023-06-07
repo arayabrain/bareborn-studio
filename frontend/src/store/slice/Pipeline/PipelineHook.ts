@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useSearchParams, useLocation } from 'react-router-dom'
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { AppDispatch } from 'store/store'
 
 import { selectRunPostData } from 'store/selectors/run/RunSelectors'
@@ -50,6 +50,7 @@ export function useRunPipeline() {
   const runPostData = useSelector(selectRunPostData)
   const [searchParams] = useSearchParams()
   const projectId = searchParams.get('id')
+  const navigate = useNavigate()
 
   const handleRunPipeline = React.useCallback(
     (name: string) => {
@@ -69,7 +70,10 @@ export function useRunPipeline() {
     //eslint-disable-next-line
   }, [])
   React.useEffect(() => {
-    if (!projectId) return
+    if (!projectId) {
+      navigate('/projects')
+      return
+    }
     return () => {
       dispatch(reset())
     }
