@@ -362,7 +362,7 @@ const Database = () => {
     if (!databases) return
 
     const data = onSort(
-      JSON.parse(JSON.stringify(databases.records)),
+      JSON.parse(JSON.stringify(initDataTable.records)),
       orderByValue,
       orderKey as OrderKey,
       type,
