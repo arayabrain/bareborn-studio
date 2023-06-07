@@ -276,22 +276,28 @@ const AccountManager = () => {
     if (paginate.next_page_token[page - 1]) {
       query.next_page_token = paginate.next_page_token[page - 1]
     }
-    const data = await listUser(query)
-    const nextPageToken: string[] = paginate.next_page_token
-    if (page > paginate.page) {
-      nextPageToken.push(data.next_page_token)
+    setIsLoading(true)
+    try {
+      const data = await listUser(query)
+      const nextPageToken: string[] = paginate.next_page_token
+      if (page > paginate.page) {
+        nextPageToken.push(data.next_page_token)
+      }
+      const newData = data.data.map((item: any) => {
+        const name = optionsRole.find((role) => item.role === role.code)?.name
+        return { ...item, role: name }
+      })
+      setData(newData)
+      setPaginate((pre) => ({
+        ...pre,
+        total: data.total_page * paginate.per_page,
+        next_page_token: nextPageToken as any,
+        page,
+      }))
     }
-    const newData = data.data.map((item: any) => {
-      const name = optionsRole.find((role) => item.role === role.code)?.name
-      return { ...item, role: name }
-    })
-    setData(newData)
-    setPaginate((pre) => ({
-      ...pre,
-      total: data.total_page * paginate.per_page,
-      next_page_token: nextPageToken as any,
-      page,
-    }))
+    finally {
+      setIsLoading(false)
+    }
   }
 
   const onOpenModal = () => {
