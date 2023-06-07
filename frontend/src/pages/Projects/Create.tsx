@@ -38,13 +38,13 @@ import {
 import { ObjectType } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
-import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
+// import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { useDispatch } from 'react-redux'
 import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
 import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
 import {
   createProject,
-  editProject,
+  // editProject,
   getProjectId,
 } from 'store/slice/Project/ProjectAction'
 import Loading from 'components/common/Loading'
@@ -595,30 +595,35 @@ const ProjectFormComponent = () => {
       })),
     }))
     if (nodeId) {
-      dispatch(
-        editProject({
-          project,
-          project_id: nodeId,
-          dataset,
-          callback: (isSuccess: boolean) => {
-            if (isSuccess) {
-              const urls = dataFactors
-                .map((el) => {
-                  if (el.data.length) return el.data
-                  return el.within.map((w) => w.data).flat()
-                })
-                .flat()
-                .map((image) => image.image_url)
-              dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
-              if (routeGoback)
-                navigate(`${routeGoback}&id=${idEdit}`, {
-                  state: { edited: true },
-                })
-            }
-            setLoading(false)
-          },
-        }),
-      )
+      // dispatch(
+      //   editProject({
+      //     project,
+      //     project_id: nodeId,
+      //     dataset,
+      //     callback: (isSuccess: boolean) => {
+      //       if (isSuccess) {
+      //         const urls = dataFactors
+      //           .map((el) => {
+      //             if (el.data.length) return el.data
+      //             return el.within.map((w) => w.data).flat()
+      //           })
+      //           .flat()
+      //           .map((image) => image.image_url)
+      //         dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+      //         if (routeGoback)
+      //           navigate(`${routeGoback}&id=${idEdit}`, {
+      //             state: { edited: true },
+      //           })
+      //       }
+      //       setLoading(false)
+      //     },
+      //   }),
+      // )
+      if (routeGoback) {
+        navigate(`${routeGoback}&id=${idEdit}`, {
+          state: { edited: true },
+        })
+      }
     } else {
       dispatch(
         createProject({
