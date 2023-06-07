@@ -37,7 +37,15 @@ async def get_experiments(project_id: str):
     return exp_config
 
 
-@router.get("/experiments/import/default", response_model=ExptImportData, tags=['experiments'])
+@router.get(
+    "/experiments/import/default",
+    response_model=ExptImportData,
+    description="""
+- Response default Workflow settings
+  - Default Workflow settings file: `default_experiment.yaml`
+""",
+    tags=['experiments']
+)
 async def import_experiment():
     config = ExptConfigReader.read(join_filepath([
         DIRPATH.ROOT_DIR,
