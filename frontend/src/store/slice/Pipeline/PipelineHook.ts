@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
-import { AppDispatch } from 'store/store'
-
 import { selectRunPostData } from 'store/selectors/run/RunSelectors'
 import {
   selectPipelineIsCanceled,
@@ -10,38 +8,26 @@ import {
   selectPipelineLatestUid,
   selectPipelineStatus,
 } from './PipelineSelectors'
-import { run, pollRunResult, runByCurrentUid } from './PipelineActions'
+import {
+  run,
+  pollRunResult,
+  runByCurrentUid,
+  getDataPipeLine,
+} from './PipelineActions'
 import { cancelPipeline } from './PipelineSlice'
 import { selectFilePathIsUndefined } from '../InputNode/InputNodeSelectors'
 import { selectAlgorithmNodeNotExist } from '../AlgorithmNode/AlgorithmNodeSelectors'
 import { useSnackbar } from 'notistack'
 import { RUN_STATUS } from './PipelineType'
-import {
-  fetchExperiment,
-  getExperiments,
-  importExperimentByUid,
-} from '../Experiments/ExperimentsActions'
-import { getDatasetList } from '../Dataset/DatasetAction'
+import { getExperiments } from '../Experiments/ExperimentsActions'
 import { reset } from '../Dataset/DatasetSlice'
-import { getUrlFromSubfolder } from '../Dataset/DatasetSelector'
-import { AsyncThunkAction } from '@reduxjs/toolkit'
-import { Dataset } from '../Dataset/DatasetType'
-import { ExperimentDTO } from 'api/experiments/Experiments'
-import { setInputNodeFilePath } from '../InputNode/InputNodeActions'
-import { INITIAL_IMAGE_ELEMENT_ID } from 'const/flowchart'
 
 const POLLING_INTERVAL = 5000
 
 export type UseRunPipelineReturnType = ReturnType<typeof useRunPipeline>
 
-type DataActionThunk = {
-  payload: Dataset
-  error?: { message: string }
-}
-
 export function useRunPipeline() {
   const dispatch = useDispatch()
-  const appDispatch: AppDispatch = useDispatch()
   const uid = useSelector(selectPipelineLatestUid)
   const isCanceled = useSelector(selectPipelineIsCanceled)
   const isStartedSuccess = useSelector(selectPipelineIsStartedSuccess)
@@ -66,50 +52,18 @@ export function useRunPipeline() {
     location.state as { edited: boolean },
   )
   React.useEffect(() => {
-    getData().then()
+    return getData()
     //eslint-disable-next-line
   }, [])
-  React.useEffect(() => {
+
+  const getData = () => {
     if (!projectId) {
       navigate('/projects')
       return
     }
+    dispatch(getDataPipeLine({ projectId, isEdited: !!isEdited?.edited }))
     return () => {
       dispatch(reset())
-    }
-    //eslint-disable-next-line
-  }, [])
-
-  const getData = async () => {
-    if (!projectId) return
-    const promises: AsyncThunkAction<
-      Dataset | ExperimentDTO,
-      | {
-          project_id: string
-        }
-      | string,
-      {}
-    >[] = [dispatch(getDatasetList({ project_id: projectId }))]
-    if (!isEdited) {
-      promises.push(
-        appDispatch(fetchExperiment(String(projectId)))
-          .unwrap()
-          .catch((_) => dispatch(importExperimentByUid('default'))) as any,
-      )
-    }
-    const [dataset, experiment] = await Promise.all(promises)
-    let urls: string[] = []
-    getUrlFromSubfolder(
-      (dataset as unknown as DataActionThunk).payload.dataset?.sub_folders,
-      urls,
-    )
-    if ((experiment as unknown as DataActionThunk)?.error) {
-      dispatch(
-        setInputNodeFilePath({
-          nodeId: INITIAL_IMAGE_ELEMENT_ID,
-          filePath: urls,
-        }),
-      )
     }
   }
 

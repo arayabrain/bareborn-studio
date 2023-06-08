@@ -1,7 +1,7 @@
-import { createAsyncThunk } from '@reduxjs/toolkit'
+import { AsyncThunk, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 
 import { ThunkApiConfig } from 'store/store'
-import { PIPELINE_SLICE_NAME } from './PipelineType'
+import { DataPipeLine, PIPELINE_SLICE_NAME } from './PipelineType'
 import {
   runApi,
   runByUidApi,
@@ -14,6 +14,13 @@ import {
   selectRunResultPendingNodeIdList,
 } from './PipelineSelectors'
 import { selectCurrentProjectId } from '../Dataset/DatasetSelector'
+import { Dataset, SubFolder } from '../Dataset/DatasetType'
+import { ExperimentDTO } from 'api/experiments/Experiments'
+import { getDatasetList } from '../Dataset/DatasetAction'
+import {
+  fetchExperiment,
+  importExperimentByUid,
+} from '../Experiments/ExperimentsActions'
 
 export const run = createAsyncThunk<
   string,
@@ -85,3 +92,62 @@ export const pollRunResult = createAsyncThunk<
     return thunkAPI.rejectWithValue('projectId does not exist.')
   }
 })
+
+export const getDataPipeLine: AsyncThunk<
+  DataPipeLine,
+  {
+    projectId: string
+    isEdited: boolean
+  },
+  ThunkApiConfig
+> = createAsyncThunk<
+  DataPipeLine,
+  { projectId: string; isEdited: boolean },
+  ThunkApiConfig
+>(
+  `${PIPELINE_SLICE_NAME}/getDataPipeLine`,
+  async ({ isEdited, projectId }, thunkAPI) => {
+    const promises: Promise<
+      | PayloadAction<
+          Dataset | unknown,
+          string,
+          {
+            arg: { project_id: string }
+            requestId: string
+            requestStatus: 'fulfilled' | 'rejected'
+          },
+          never
+        >
+      | PayloadAction<
+          RunPostData | unknown,
+          string,
+          {
+            arg: string
+            requestId: string
+            requestStatus: 'fulfilled' | 'rejected'
+          },
+          never
+        >
+      | ExperimentDTO
+      | undefined
+    >[] = [thunkAPI.dispatch(getDatasetList({ project_id: projectId }))]
+    if (!isEdited) {
+      promises.push(
+        thunkAPI
+          .dispatch(fetchExperiment(String(projectId)))
+          .unwrap()
+          .catch(() => thunkAPI.dispatch(importExperimentByUid('default'))),
+      )
+    }
+    try {
+      const [dataset, experiment] = await Promise.all(promises)
+      return {
+        dataset: (dataset as PayloadAction<Dataset>).payload
+          .dataset as SubFolder,
+        experiment: experiment as ExperimentDTO | undefined,
+      }
+    } catch (e) {
+      return thunkAPI.rejectWithValue(e)
+    }
+  },
+)

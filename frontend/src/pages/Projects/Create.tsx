@@ -134,7 +134,7 @@ const remapDatasetToDataFactor = ({
 }: Dataset): { datasets: DataFactor[]; ids: number[] } => {
   if (!dataset) return { ids: [], datasets: defaultFactor }
   let ids: number[] = []
-  const datasets = dataset.sub_folders.map((sub) => ({
+  const datasets = [dataset].map((sub) => ({
     id: sub.id,
     name: sub.folder_name || nameDefault,
     within: (sub.sub_folders || []).map((sub_within) => ({
