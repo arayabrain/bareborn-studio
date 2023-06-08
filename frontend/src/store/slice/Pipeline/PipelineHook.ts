@@ -8,19 +8,21 @@ import {
   selectPipelineLatestUid,
   selectPipelineStatus,
 } from './PipelineSelectors'
-import {
-  run,
-  pollRunResult,
-  runByCurrentUid,
-  getDataPipeLine,
-} from './PipelineActions'
+import { run, pollRunResult, runByCurrentUid } from './PipelineActions'
 import { cancelPipeline } from './PipelineSlice'
 import { selectFilePathIsUndefined } from '../InputNode/InputNodeSelectors'
 import { selectAlgorithmNodeNotExist } from '../AlgorithmNode/AlgorithmNodeSelectors'
 import { useSnackbar } from 'notistack'
 import { RUN_STATUS } from './PipelineType'
-import { getExperiments } from '../Experiments/ExperimentsActions'
+import {
+  fetchExperiment,
+  getExperiments,
+  importExperimentByUid,
+} from '../Experiments/ExperimentsActions'
 import { reset } from '../Dataset/DatasetSlice'
+import { getDatasetList } from '../Dataset/DatasetAction'
+import { AppDispatch } from 'store/store'
+import { setSelectedFilePath } from '../InputNode/InputNodeSlice'
 
 const POLLING_INTERVAL = 5000
 
@@ -28,6 +30,7 @@ export type UseRunPipelineReturnType = ReturnType<typeof useRunPipeline>
 
 export function useRunPipeline() {
   const dispatch = useDispatch()
+  const appDispatch: AppDispatch = useDispatch()
   const uid = useSelector(selectPipelineLatestUid)
   const isCanceled = useSelector(selectPipelineIsCanceled)
   const isStartedSuccess = useSelector(selectPipelineIsStartedSuccess)
@@ -54,9 +57,24 @@ export function useRunPipeline() {
   React.useEffect(() => {
     if (!projectId) {
       navigate('/projects')
-      return
+    } else {
+      appDispatch(getDatasetList({ project_id: projectId }))
+        .unwrap()
+        .then(({ dataset }) => {
+          if (!isEdited) {
+            appDispatch(fetchExperiment(projectId))
+              .unwrap()
+              .then(({ nodeDict }) => {
+                dispatch(setSelectedFilePath({ dataset, nodeDict }))
+              })
+              .catch((_) => {
+                dispatch(importExperimentByUid('default'))
+                dispatch(setSelectedFilePath({ dataset }))
+              })
+          }
+        })
     }
-    dispatch(getDataPipeLine({ projectId, isEdited: !!isEdited?.edited }))
+
     return () => {
       dispatch(reset())
     }
