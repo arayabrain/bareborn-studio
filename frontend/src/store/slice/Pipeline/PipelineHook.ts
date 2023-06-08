@@ -52,11 +52,6 @@ export function useRunPipeline() {
     location.state as { edited: boolean },
   )
   React.useEffect(() => {
-    return getData()
-    //eslint-disable-next-line
-  }, [])
-
-  const getData = () => {
     if (!projectId) {
       navigate('/projects')
       return
@@ -65,7 +60,8 @@ export function useRunPipeline() {
     return () => {
       dispatch(reset())
     }
-  }
+    //eslint-disable-next-line
+  }, [])
 
   const handleCancelPipeline = React.useCallback(() => {
     if (uid != null) {
