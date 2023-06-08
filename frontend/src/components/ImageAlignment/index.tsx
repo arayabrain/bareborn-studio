@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux'
 import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
 import { DATABASE_URL_HOST } from 'const/API'
-// import { setSaveFileName } from 'store/slice/VisualizeItem/VisualizeItemSlice'
 
 type ImageViewProps = {
   open: boolean
