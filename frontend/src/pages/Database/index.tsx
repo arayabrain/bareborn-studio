@@ -307,8 +307,7 @@ const Database = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [type, setType] = useState<'tree' | 'list'>('tree')
-  const [initDataTable, setInitDataTable] =
-    useState<DatabaseData>(defaultDatabase)
+  const [initDataTable, setInitDataTable] = useState<DatabaseData>(defaultDatabase)
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
@@ -362,7 +361,7 @@ const Database = () => {
     if (!databases) return
 
     const data = onSort(
-      JSON.parse(JSON.stringify(initDataTable.records)),
+      JSON.parse(JSON.stringify(databases.records)),
       orderByValue,
       orderKey as OrderKey,
       type,
@@ -414,7 +413,10 @@ const Database = () => {
       </ProjectsTitle>
       <BoxSelectTypeView>
         <Box
-          onClick={() => setType('tree')}
+          onClick={() => {
+            setOrdeBy('')
+            setType('tree')
+          }}
           style={{
             marginRight: 4,
             fontWeight: type === 'tree' ? 700 : 500,
@@ -426,7 +428,10 @@ const Database = () => {
         </Box>
         /
         <Box
-          onClick={() => setType('list')}
+          onClick={() => {
+            setOrdeBy('')
+            setType('list')
+          }}
           style={{
             marginLeft: 4,
             fontWeight: type === 'list' ? 700 : 500,
