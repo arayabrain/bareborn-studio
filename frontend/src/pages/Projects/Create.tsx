@@ -17,6 +17,7 @@ import React, {
   useRef,
   CSSProperties,
   useEffect,
+  useMemo,
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
@@ -123,15 +124,34 @@ const defaultFactor = [
   { name: nameDefault, within: [], id: getNanoId(), data: [] },
 ]
 
-const remapDatasetToDataFactor = ({ dataset }: Dataset): DataFactor[] => {
-  if (!dataset) return defaultFactor
-  return dataset.sub_folders.map((sub) => ({
+const remapDatasetToDataFactor = ({
+  dataset,
+}: Dataset): { datasets: DataFactor[]; ids: number[] } => {
+  if (!dataset) return { ids: [], datasets: defaultFactor }
+  let ids: number[] = []
+  const datasets = dataset.sub_folders.map((sub) => ({
     id: sub.id,
     name: sub.folder_name || nameDefault,
     within: (sub.sub_folders || []).map((sub_within) => ({
       id: sub_within.id,
       name: sub_within.folder_name,
-      data: (sub_within.images || []).map((image) => ({
+      data: (sub_within.images || []).map((image) => {
+        ids.push(image.id)
+        return {
+          project_name: image.attributes.datatype as string,
+          project_type: image.attributes.image_type as string,
+          id: String(image.id),
+          image_count: 1,
+          image_id: image.id,
+          protocol: image.attributes.protocol as string,
+          image_url: image.image_url,
+          jsonData: image.attributes,
+        }
+      }),
+    })),
+    data: (sub.images || []).map((image) => {
+      ids.push(image.id)
+      return {
         project_name: image.attributes.datatype as string,
         project_type: image.attributes.image_type as string,
         id: String(image.id),
@@ -140,19 +160,10 @@ const remapDatasetToDataFactor = ({ dataset }: Dataset): DataFactor[] => {
         protocol: image.attributes.protocol as string,
         image_url: image.image_url,
         jsonData: image.attributes,
-      })),
-    })),
-    data: (sub.images || []).map((image) => ({
-      project_name: image.attributes.datatype as string,
-      project_type: image.attributes.image_type as string,
-      id: String(image.id),
-      image_count: 1,
-      image_id: image.id,
-      protocol: image.attributes.protocol as string,
-      image_url: image.image_url,
-      jsonData: image.attributes,
-    })),
+      }
+    }),
   }))
+  return { ids, datasets }
 }
 
 const ProjectFormComponent = () => {
@@ -162,7 +173,6 @@ const ProjectFormComponent = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
-  const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
   const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
@@ -183,9 +193,10 @@ const ProjectFormComponent = () => {
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
   const [rowDrag, setRowDrag] = useState<ImagesDatabase | ImagesDatabase[]>()
-  const [dataFactors, setDataFactors] = useState<DataFactor[]>(
-    remapDatasetToDataFactor(dataset),
-  )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const { datasets, ids } = useMemo(() => remapDatasetToDataFactor(dataset), [])
+  const [dataFactors, setDataFactors] = useState<DataFactor[]>(datasets)
+  const [imageIDs, setImageIDs] = useState<number[]>(ids)
 
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
@@ -209,7 +220,9 @@ const ProjectFormComponent = () => {
   }, [])
 
   useEffect(() => {
-    setDataFactors(remapDatasetToDataFactor(dataset))
+    const { datasets, ids } = remapDatasetToDataFactor(dataset)
+    setDataFactors(datasets)
+    setImageIDs(ids)
   }, [dataset])
 
   useEffect(() => {
