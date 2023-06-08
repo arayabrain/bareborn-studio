@@ -45,8 +45,6 @@ import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
 import {
   createProject,
   editProject,
-  // TODO call when edit Project
-  // editProject,
   getProjectId,
 } from 'store/slice/Project/ProjectAction'
 import Loading from 'components/common/Loading'
