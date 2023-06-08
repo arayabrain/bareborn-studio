@@ -28,7 +28,7 @@ import { AsyncThunkAction } from '@reduxjs/toolkit'
 import { Dataset } from '../Dataset/DatasetType'
 import { ExperimentDTO } from 'api/experiments/Experiments'
 import { setInputNodeFilePath } from '../InputNode/InputNodeActions'
-import { initialElements } from '../FlowElement/FlowElementSlice'
+import { INITIAL_IMAGE_ELEMENT_ID } from 'const/flowchart'
 
 const POLLING_INTERVAL = 5000
 
@@ -106,7 +106,7 @@ export function useRunPipeline() {
     if ((experiment as unknown as DataActionThunk)?.error) {
       dispatch(
         setInputNodeFilePath({
-          nodeId: initialElements[0].id,
+          nodeId: INITIAL_IMAGE_ELEMENT_ID,
           filePath: urls,
         }),
       )

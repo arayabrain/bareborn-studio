@@ -193,12 +193,14 @@ export const inputNodeSlice = createSlice({
         Object.values(action.payload.nodeDict)
           .filter(isInputNodePostData)
           .forEach((node) => {
+            const { data } = node
+            const param = (data?.param || initParams) as AlignmentData
             if (node.data != null) {
               if (node.data.fileType === FILE_TYPE_SET.IMAGE) {
                 newState[node.id] = {
                   fileType: FILE_TYPE_SET.IMAGE,
                   selectedFilePath: node.data.path as string[],
-                  param: initParams,
+                  param,
                 }
               } else if (node.data.fileType === FILE_TYPE_SET.CSV) {
                 newState[node.id] = {
@@ -211,7 +213,7 @@ export const inputNodeSlice = createSlice({
                   fileType: FILE_TYPE_SET.HDF5,
                   hdf5Path: node.data.hdf5Path,
                   selectedFilePath: node.data.path as string,
-                  param: {},
+                  param,
                 }
               }
             }

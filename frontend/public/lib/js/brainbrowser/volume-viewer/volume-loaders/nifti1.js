@@ -119,11 +119,6 @@
 
     // Now that we have the transform, need to convert it to MINC-like
     // steps and direction_cosines.
-
-    // var xmag = magnitude(transform[0])
-    // var ymag = magnitude(transform[1])
-    // var zmag = magnitude(transform[2])
-
     var xstep = 1
     var ystep = 1
     var zstep = 1
@@ -222,9 +217,6 @@
 
     var scl_slope = dview.getFloat32(112, littleEndian)
     var scl_inter = dview.getFloat32(116, littleEndian)
-
-    // var qform_code = dview.getUint16(252, littleEndian);
-    // var sform_code = dview.getUint16(254, littleEndian);
 
     if (tlength >= 1) {
       header.time = {}

@@ -30,7 +30,7 @@ import { addAlgorithmNode, addInputNode } from './FlowElementActions'
 import { getLabelByPath } from './FlowElementUtils'
 import { uploadFile } from '../FileUploader/FileUploaderActions'
 
-export const initialElements: Elements<NodeData> = [
+const initialElements: Elements<NodeData> = [
   {
     id: INITIAL_IMAGE_ELEMENT_ID,
     type: REACT_FLOW_NODE_TYPE_KEY.ImageFileNode,
