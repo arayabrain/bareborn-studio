@@ -3,7 +3,12 @@ import {
   fetchExperiment,
   importExperimentByUid,
 } from '../Experiments/ExperimentsActions'
-import { pollRunResult, run, runByCurrentUid } from './PipelineActions'
+import {
+  getDataPipeLine,
+  pollRunResult,
+  run,
+  runByCurrentUid,
+} from './PipelineActions'
 import {
   Pipeline,
   PIPELINE_SLICE_NAME,
@@ -24,6 +29,7 @@ const initialState: Pipeline = {
     status: RUN_STATUS.START_UNINITIALIZED,
   },
   runBtn: RUN_BTN_OPTIONS.RUN_NEW,
+  allowRun: true,
 }
 
 export const pipelineSlice = createSlice({
@@ -106,6 +112,9 @@ export const pipelineSlice = createSlice({
         }
       })
       .addCase(fetchExperiment.rejected, (_state, _action) => initialState)
+      .addCase(getDataPipeLine.fulfilled, (state, action) => {
+        state.allowRun = action.payload.isUpdateDataset
+      })
       .addMatcher(
         isAnyOf(run.pending, runByCurrentUid.pending),
         (state, action) => {
@@ -128,6 +137,7 @@ export const pipelineSlice = createSlice({
           state.currentPipeline = {
             uid: action.payload,
           }
+          state.allowRun = false
         },
       )
       .addMatcher(

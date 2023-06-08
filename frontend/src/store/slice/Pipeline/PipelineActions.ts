@@ -21,6 +21,13 @@ import {
   fetchExperiment,
   importExperimentByUid,
 } from '../Experiments/ExperimentsActions'
+import dayjs from 'dayjs'
+
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone' // dependent on utc plugin
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 export const run = createAsyncThunk<
   string,
@@ -129,6 +136,7 @@ export const getDataPipeLine: AsyncThunk<
           never
         >
       | ExperimentDTO
+      | Dataset
       | undefined
     >[] = [thunkAPI.dispatch(getDatasetList({ project_id: projectId }))]
     if (!isEdited) {
@@ -141,10 +149,23 @@ export const getDataPipeLine: AsyncThunk<
     }
     try {
       const [dataset, experiment] = await Promise.all(promises)
+      const { dataset: data, last_updated_time } =
+        (dataset as PayloadAction<Dataset>).payload || {}
+      const updatedAtWorkflow = (experiment as ExperimentDTO)?.finished_at
+      let isUpdateDataset = isEdited || !updatedAtWorkflow
+      if (updatedAtWorkflow && !isEdited) {
+        const diff = dayjs(
+          dayjs
+            .utc(last_updated_time)
+            .tz('Asia/Tokyo')
+            .format('YYYY-MM-DD HH:mm'),
+        ).diff(dayjs(dayjs(updatedAtWorkflow).format('YYYY-MM-DD HH:mm')), 'm')
+        isUpdateDataset = diff > 0
+      }
       return {
-        dataset: (dataset as PayloadAction<Dataset>).payload
-          .dataset as SubFolder,
+        dataset: data as SubFolder,
         experiment: experiment as ExperimentDTO | undefined,
+        isUpdateDataset,
       }
     } catch (e) {
       return thunkAPI.rejectWithValue(e)

@@ -30,4 +30,5 @@ export type SubFolder = {
 export type Dataset = {
   dataset?: SubFolder
   project_id: string | null
+  last_updated_time: string | null
 }

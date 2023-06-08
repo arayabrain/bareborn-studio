@@ -11,6 +11,7 @@ export type Pipeline = {
     uid: string
   }
   runBtn: RUN_BTN_TYPE
+  allowRun: boolean
 }
 
 export const RUN_STATUS = {
@@ -122,4 +123,5 @@ export const RUN_BTN_LABELS = {
 export type DataPipeLine = {
   dataset?: SubFolder
   experiment: ExperimentDTO | undefined
+  isUpdateDataset: boolean
 }

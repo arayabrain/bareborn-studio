@@ -16,6 +16,7 @@ export const getDatasetList = createAsyncThunk<Dataset, { project_id: string }>(
       return {
         dataset: response?.records?.[0] as SubFolder,
         project_id: param.project_id,
+        last_updated_time: response?.last_updated_time,
       }
     } catch (e) {
       return rejectWithValue(e)

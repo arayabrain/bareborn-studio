@@ -24,6 +24,6 @@ export const getUrlFromSubfolder = (
 export const selectListImageUrl = (state: RootState): string[] => {
   if (!state.dataset.dataset) return []
   let urls: string[] = []
-  urls = getUrlFromSubfolder(state.dataset.dataset.sub_folders, urls)
+  urls = getUrlFromSubfolder([state.dataset.dataset], urls)
   return urls
 }

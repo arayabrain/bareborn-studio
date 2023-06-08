@@ -5,6 +5,7 @@ import { getDatasetList } from './DatasetAction'
 const initialState: Dataset = {
   dataset: undefined,
   project_id: null,
+  last_updated_time: null,
 }
 
 export const datasetSlice = createSlice({

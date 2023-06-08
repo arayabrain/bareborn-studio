@@ -100,29 +100,6 @@ export const flowElementSlice = createSlice({
         targetItem.position = coord
       }
     },
-    // editFlowElementParamsAlignmentById: (
-    //   state,
-    //   action: PayloadAction<{
-    //     nodeId: string
-    //     params: Params[]
-    //   }>,
-    // ) => {
-    //   let { nodeId, params } = action.payload
-    //   const elementIdx = state.flowElements.findIndex(
-    //     (ele) => ele.id === nodeId,
-    //   )
-    //   const targetItem = state.flowElements[elementIdx]
-    //   if (isNode(targetItem)) {
-    //     if (!targetItem.data) {
-    //       return
-    //     }
-    //     let newParams = params
-    //     if (!targetItem.data.param) {
-    //       targetItem.data.param = initParams
-    //     }
-    //     targetItem.data.param.alignments.value = newParams as Params[]
-    //   }
-    // },
   },
   extraReducers: (builder) =>
     builder
