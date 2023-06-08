@@ -156,7 +156,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
               if (!nodeId) return
               onOpenImageAlignment(true, {
                 nodeId,
-                alignments: inputNode.alignments.value,
+                alignments: inputNode?.alignments?.value || [],
               })
             }}
             style={{ width: '80%' }}

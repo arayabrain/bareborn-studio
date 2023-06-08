@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { isInputNodePostData } from 'api/run/RunUtils'
-import { INITIAL_IMAGE_ELEMENT_ID } from 'const/flowchart'
+import {
+  INITIAL_IMAGE_ELEMENT_ID,
+  REACT_FLOW_NODE_TYPE_KEY,
+} from 'const/flowchart'
 import {
   fetchExperiment,
   importExperimentByUid,
@@ -24,6 +27,8 @@ import {
   AlignmentData,
 } from './InputNodeType'
 import { isCsvInputNode, isHDF5InputNode } from './InputNodeUtils'
+import { getDataPipeLine } from '../Pipeline/PipelineActions'
+import { getUrlFromSubfolder } from '../Dataset/DatasetSelector'
 
 const initParams: AlignmentData = {
   alignments: {
@@ -69,6 +74,7 @@ export const inputNodeSlice = createSlice({
     ) {
       const { nodeId, param } = action.payload
       const inputNode = state[nodeId] as ImageInputNode
+      if (!inputNode.param?.alignments) return
       inputNode.param.alignments.value = param
     },
     setInputNodeHDF5Path(
@@ -231,6 +237,34 @@ export const inputNodeSlice = createSlice({
           } else {
             target.selectedFilePath = resultPath
           }
+        }
+      })
+      .addCase(getDataPipeLine.fulfilled, (state, action) => {
+        const { dataset, experiment } = action.payload
+        let urls: string[] = []
+        if (dataset) {
+          getUrlFromSubfolder([dataset], urls)
+        }
+        if (!experiment?.nodeDict) {
+          const targetNode = state[INITIAL_IMAGE_ELEMENT_ID]
+          targetNode.selectedFilePath = urls
+          if (isHDF5InputNode(targetNode)) {
+            targetNode.hdf5Path = undefined
+          }
+        } else {
+          const typeFileNode = Object.keys(REACT_FLOW_NODE_TYPE_KEY)
+          Object.keys(experiment.nodeDict).forEach((key) => {
+            if (
+              typeFileNode.includes(experiment.nodeDict[key].type as string)
+            ) {
+              const targetNode = state[key]
+              if (!targetNode) return
+              targetNode.selectedFilePath = urls
+              if (isHDF5InputNode(targetNode)) {
+                targetNode.hdf5Path = undefined
+              }
+            }
+          })
         }
       }),
 })
