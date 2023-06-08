@@ -61,6 +61,7 @@ import { reset } from 'store/slice/Dataset/DatasetSlice'
 import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 
 const columns: Column[] = [
+  { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true, width: 100 },
   { title: 'Date', name: 'recording_time', filter: true, width: 130 },
   { title: 'Subject', name: 'subject', filter: true, width: 120 },
@@ -76,6 +77,17 @@ const columns: Column[] = [
     name: 'datatype',
     filter: true,
     width: 100,
+  },
+  {
+    title: 'Type',
+    name: 'image_attributes.image_type',
+    filter: true,
+    width: 70,
+  },
+  {
+    title: 'Protocol',
+    name: 'image_attributes.protocol',
+    filter: true,
   },
   {
     title: 'Size',
