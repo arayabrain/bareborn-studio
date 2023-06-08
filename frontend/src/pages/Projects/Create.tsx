@@ -620,7 +620,7 @@ const ProjectFormComponent = () => {
         source_image_ids: within.data.map((d) => d.image_id),
       })),
     }))
-    if (nodeId && idEdit) {
+    if (idEdit) {
       dispatch(
         editProject({
           project,
@@ -628,18 +628,22 @@ const ProjectFormComponent = () => {
           dataset,
           callback: (isSuccess: boolean) => {
             if (isSuccess) {
-              const urls = dataFactors
-                .map((el) => {
-                  if (el.data.length) return el.data
-                  return el.within.map((w) => w.data).flat()
-                })
-                .flat()
-                .map((image) => image.image_url)
-              dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
-              if (routeGoback) {
-                navigate(`${routeGoback}&id=${idEdit}`, {
-                  state: { edited: true },
-                })
+              if (nodeId) {
+                const urls = dataFactors
+                  .map((el) => {
+                    if (el.data.length) return el.data
+                    return el.within.map((w) => w.data).flat()
+                  })
+                  .flat()
+                  .map((image) => image.image_url)
+                dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+                if (routeGoback) {
+                  navigate(`${routeGoback}&id=${idEdit}`, {
+                    state: { edited: true },
+                  })
+                }
+              } else {
+                onCancle()
               }
             }
             setLoading(false)
