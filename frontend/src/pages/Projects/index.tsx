@@ -26,7 +26,6 @@ const Projects = () => {
   const dispatch = useDispatch()
   const projects = useSelector(selectProjectList)
   const [idDelete, setIdDelete] = useState<number | string | undefined>()
-  const [page, setPage] = useState(1)
 
   useEffect(() => {
     dispatch(getProjectList())
@@ -127,12 +126,6 @@ const Projects = () => {
         </ButtonAdd>
       </BoxButton>
       <TableComponent
-        paginate={{
-          total: projects.length,
-          page,
-          page_size: 10,
-          onPageChange: ({ selected }) => setPage(selected),
-        }}
         data={projects}
         columns={columns}
       />
