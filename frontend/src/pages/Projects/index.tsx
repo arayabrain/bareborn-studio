@@ -136,6 +136,8 @@ const Projects = () => {
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
+  height: 'calc(100% - 90px)',
+  overflow: 'auto'
 }))
 
 const ProjectsTitle = styled('h1')(({ theme }) => ({}))
