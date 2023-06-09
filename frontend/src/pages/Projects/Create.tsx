@@ -57,6 +57,7 @@ import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
 import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
 import { reset } from 'store/slice/Dataset/DatasetSlice'
 import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
+import { setLoadingExpriment } from 'store/slice/Experiments/ExperimentsSlice'
 
 const columns: Column[] = [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
@@ -638,6 +639,7 @@ const ProjectFormComponent = () => {
                   .map((image) => image.image_url)
                 dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
                 dispatch(getDatasetList({ project_id: idEdit }))
+                dispatch(setLoadingExpriment({ loading: false }))
                 if (routeGoback) {
                   navigate(`${routeGoback}&id=${idEdit}`, {
                     state: { edited: true },

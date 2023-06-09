@@ -26,6 +26,7 @@ import { setSelectedFilePath } from '../InputNode/InputNodeSlice'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone' // dependent on utc plugin
+import { setLoadingExpriment } from '../Experiments/ExperimentsSlice'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -91,6 +92,7 @@ export function useRunPipeline() {
 
     return () => {
       dispatch(reset())
+      dispatch(setLoadingExpriment({ loading: true }))
     }
     //eslint-disable-next-line
   }, [])

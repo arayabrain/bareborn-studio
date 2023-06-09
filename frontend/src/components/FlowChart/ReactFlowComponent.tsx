@@ -47,6 +47,8 @@ import { FormHelperText, Popover } from '@mui/material'
 import ImageAlignment from '../ImageAlignment'
 import { Params } from 'store/slice/InputNode/InputNodeType'
 import { selectListImageUrl } from 'store/slice/Dataset/DatasetSelector'
+import { selectLoadingExperiment } from 'store/slice/Experiments/ExperimentsSelectors'
+import Loading from 'components/common/Loading'
 
 const initDialogFile = {
   filePath: '',
@@ -61,6 +63,8 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
     const flowElements = useSelector(selectFlowElements)
     const dispatch = useDispatch()
     const urls = useSelector(selectListImageUrl)
+
+    const loadingExpriment = useSelector(selectLoadingExperiment)
 
     const [openPopupAlignment, setOpenPopupAlignment] = useState<{
       open: boolean
@@ -231,6 +235,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
               </div>
             </Popover>
           )}
+          {loadingExpriment && <Loading />}
         </DialogContext.Provider>
       </div>
     )
