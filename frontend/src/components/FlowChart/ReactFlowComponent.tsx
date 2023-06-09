@@ -62,8 +62,6 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
     const dispatch = useDispatch()
     const urls = useSelector(selectListImageUrl)
 
-    console.log('urls', urls)
-
     const [openPopupAlignment, setOpenPopupAlignment] = useState<{
       open: boolean
       params?: { nodeId: string; alignments: Params[] }
