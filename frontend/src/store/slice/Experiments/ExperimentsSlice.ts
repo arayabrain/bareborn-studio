@@ -87,6 +87,9 @@ export const experimentsSlice = createSlice({
         }
         state.loading = false
       })
+      .addCase(fetchExperiment.rejected, (state, action) => {
+        state.loading = false
+      })
       .addMatcher(isAnyOf(run.fulfilled, runByCurrentUid.fulfilled), () => {
         return {
           status: 'uninitialized',
