@@ -584,9 +584,12 @@ const ProjectFormComponent = () => {
   }
 
   const onCancle = () => {
-    !routeGoback
-      ? navigate('/projects')
-      : navigate(`${routeGoback}&id=${idEdit}`, { state: { edited: true } })
+    if (routeGoback) {
+      navigate(`${routeGoback}&id=${idEdit}`, { state: { edited: true } })
+      dispatch(setLoadingExpriment({ loading: false }))
+    } else {
+      navigate('/projects')
+    }
   }
 
   const generateName = (name: string, index: number, subject: string) => {
