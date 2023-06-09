@@ -94,13 +94,13 @@ export const inputNodeSlice = createSlice({
     setSelectedFilePath(
       state,
       action: PayloadAction<{
-        dataset: SubFolder | undefined
+        dataset: SubFolder[] | undefined
         nodeDict?: NodeDict
       }>,
     ) {
       const { dataset, nodeDict } = action.payload
       let urls: string[] = []
-      dataset && getUrlFromSubfolder([dataset], urls)
+      dataset && getUrlFromSubfolder(dataset, urls)
       if (nodeDict) {
         const typeFileNode = Object.keys(REACT_FLOW_NODE_TYPE_KEY)
         Object.keys(nodeDict).forEach((key) => {

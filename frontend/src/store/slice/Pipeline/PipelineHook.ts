@@ -9,7 +9,7 @@ import {
   selectPipelineStatus,
 } from './PipelineSelectors'
 import { run, pollRunResult, runByCurrentUid } from './PipelineActions'
-import { cancelPipeline } from './PipelineSlice'
+import { cancelPipeline, setAllowRun } from './PipelineSlice'
 import { selectFilePathIsUndefined } from '../InputNode/InputNodeSelectors'
 import { selectAlgorithmNodeNotExist } from '../AlgorithmNode/AlgorithmNodeSelectors'
 import { useSnackbar } from 'notistack'
@@ -23,6 +23,12 @@ import { reset } from '../Dataset/DatasetSlice'
 import { getDatasetList } from '../Dataset/DatasetAction'
 import { AppDispatch } from 'store/store'
 import { setSelectedFilePath } from '../InputNode/InputNodeSlice'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone' // dependent on utc plugin
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const POLLING_INTERVAL = 5000
 
@@ -60,16 +66,24 @@ export function useRunPipeline() {
     } else {
       appDispatch(getDatasetList({ project_id: projectId }))
         .unwrap()
-        .then(({ dataset }) => {
+        .then(({ dataset, last_updated_time }) => {
           if (!isEdited) {
             appDispatch(fetchExperiment(projectId))
               .unwrap()
-              .then(({ nodeDict }) => {
+              .then(({ nodeDict, finished_at }) => {
+                const diffMinus = dayjs(
+                  dayjs(last_updated_time).format('YYYY-MM-DD HH:mm'),
+                ).diff(
+                  dayjs(dayjs(finished_at).format('YYYY-MM-DD HH:mm')),
+                  'm',
+                )
+                dispatch(setAllowRun({ allowRun: diffMinus > 0 }))
                 dispatch(setSelectedFilePath({ dataset, nodeDict }))
               })
               .catch((_) => {
                 dispatch(importExperimentByUid('default'))
                 dispatch(setSelectedFilePath({ dataset }))
+                dispatch(setAllowRun({ allowRun: true }))
               })
           }
         })

@@ -14,13 +14,6 @@ import {
   selectRunResultPendingNodeIdList,
 } from './PipelineSelectors'
 import { selectCurrentProjectId } from '../Dataset/DatasetSelector'
-import dayjs from 'dayjs'
-
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone' // dependent on utc plugin
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
 
 export const run = createAsyncThunk<
   string,
