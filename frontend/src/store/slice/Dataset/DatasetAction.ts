@@ -14,7 +14,7 @@ export const getDatasetList = createAsyncThunk<Dataset, { project_id: string }>(
     try {
       const response = await getDatasetListApi(param.project_id)
       return {
-        dataset: response?.records?.[0] as SubFolder,
+        dataset: response?.records as SubFolder[],
         project_id: param.project_id,
         last_updated_time: response?.last_updated_time,
       }
