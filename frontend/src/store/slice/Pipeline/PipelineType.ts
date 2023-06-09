@@ -121,7 +121,7 @@ export const RUN_BTN_LABELS = {
 } as const
 
 export type DataPipeLine = {
-  dataset?: SubFolder
+  dataset?: SubFolder[]
   experiment: ExperimentDTO | undefined
   isUpdateDataset: boolean
 }

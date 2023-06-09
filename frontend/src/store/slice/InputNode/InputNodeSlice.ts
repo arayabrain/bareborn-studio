@@ -243,7 +243,7 @@ export const inputNodeSlice = createSlice({
         const { dataset, experiment } = action.payload
         let urls: string[] = []
         if (dataset) {
-          getUrlFromSubfolder([dataset], urls)
+          getUrlFromSubfolder(dataset, urls)
         }
         if (!experiment?.nodeDict) {
           const targetNode = state[INITIAL_IMAGE_ELEMENT_ID]

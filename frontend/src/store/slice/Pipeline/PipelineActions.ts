@@ -163,7 +163,7 @@ export const getDataPipeLine: AsyncThunk<
         isUpdateDataset = diff > 0
       }
       return {
-        dataset: data as SubFolder,
+        dataset: data as SubFolder[],
         experiment: experiment as ExperimentDTO | undefined,
         isUpdateDataset,
       }
