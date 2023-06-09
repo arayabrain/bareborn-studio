@@ -626,7 +626,7 @@ const ProjectFormComponent = () => {
           project,
           project_id: idEdit,
           dataset,
-          callback: (isSuccess: boolean) => {
+          callback: async (isSuccess: boolean) => {
             if (isSuccess) {
               if (nodeId) {
                 const urls = dataFactors
@@ -637,6 +637,7 @@ const ProjectFormComponent = () => {
                   .flat()
                   .map((image) => image.image_url)
                 dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+                dispatch(getDatasetList({ project_id: idEdit }))
                 if (routeGoback) {
                   navigate(`${routeGoback}&id=${idEdit}`, {
                     state: { edited: true },
