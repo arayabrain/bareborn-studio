@@ -43,15 +43,13 @@ const ImageAlignment: FC<ImageViewProps> = ({
 
   useEffect(() => {
     if (open) {
-      setTimeout(loadFile, 0)
-      return
+      setTimeout(loadFile, 200)
     }
-    setStateParams(params.alignments)
-    setUrl(urls[0])
-    setIsLoadFile(false)
-    setLoadedSuccess(false)
+    return () => {
+      viewerRef.current.clearVolumes?.()
+    }
     //eslint-disable-next-line
-  }, [open])
+  }, [])
 
   useEffect(() => {
     urlRef.current = url
@@ -222,9 +220,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
           volumeLoaded(e, true),
         )
         viewer.addEventListener('sliceupdate', volumeLoaded)
-        viewer.addEventListener('error', ({ message }: { message: string }) => {
-          window.alert(message)
-          onClose?.()
+        viewer.addEventListener('error', () => {
+          setIsLoadFile(false)
+          setTimeout(loadFile, 200)
         })
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)

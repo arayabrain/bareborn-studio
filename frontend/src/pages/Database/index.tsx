@@ -307,7 +307,8 @@ const Database = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [type, setType] = useState<'tree' | 'list'>('tree')
-  const [initDataTable, setInitDataTable] = useState<DatabaseData>(defaultDatabase)
+  const [initDataTable, setInitDataTable] =
+    useState<DatabaseData>(defaultDatabase)
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
@@ -464,16 +465,18 @@ const Database = () => {
         data={databases && databases.records}
         columns={columns(rowClick, setOpenDelete, type, user)}
       />
-      <ImageView
-        disabled={disabled}
-        url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
-        open={viewer.open}
-        jsonData={viewer.jsonData}
-        onClose={onCloseImageView}
-        onNext={onNext}
-        onPrevious={onPrevious}
-        id={Number(viewer.id)}
-      />
+      {viewer.url && viewer.open && (
+        <ImageView
+          disabled={disabled}
+          url={`${DATABASE_URL_HOST}${viewer.url}`}
+          open={viewer.open}
+          jsonData={viewer.jsonData}
+          onClose={onCloseImageView}
+          onNext={onNext}
+          onPrevious={onPrevious}
+          id={Number(viewer.id)}
+        />
+      )}
       {isLoading && <Loading />}
     </DatabaseWrapper>
   )

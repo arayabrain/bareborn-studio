@@ -681,17 +681,19 @@ const ProjectFormComponent = () => {
           onClose={() => setOpenFilter(false)}
         />
       )}
-      <ImageView
-        editAttribute={false}
-        disabled={disabled}
-        url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
-        open={viewer.open}
-        jsonData={viewer.jsonData}
-        onClose={onCloseImageView}
-        onNext={onNext}
-        onPrevious={onPrevious}
-        id={Number(viewer.id)}
-      />
+      {viewer.url && viewer.open && (
+        <ImageView
+          editAttribute={false}
+          disabled={disabled}
+          url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
+          open={viewer.open}
+          jsonData={viewer.jsonData}
+          onClose={onCloseImageView}
+          onNext={onNext}
+          onPrevious={onPrevious}
+          id={Number(viewer.id)}
+        />
+      )}
       {isEditName ? (
         <InputName
           autoFocus
