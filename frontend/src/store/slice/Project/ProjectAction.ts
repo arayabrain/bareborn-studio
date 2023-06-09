@@ -9,8 +9,9 @@ import {
 import {
   createProjectApi,
   deleteProjectApi,
+  getProjectApi,
   getProjectListApi,
-  // updateProjectApi,
+  updateProjectApi,
 } from 'api/project'
 import { DatasetPostType } from '../Dataset/DatasetType'
 import { createDataset } from '../Dataset/DatasetAction'
@@ -37,12 +38,10 @@ export const getProjectId = createAsyncThunk<
   const { rejectWithValue } = thunkAPI
   try {
     if (!param?.project_id) return undefined
-    const response = await getProjectListApi({ project_id: param.project_id })
+    const response = await getProjectApi(param.project_id)
+    console.log('response', response)
     param?.callback?.(true)
-    return response.projects.find(
-      (project: CurrentProject) =>
-        String(project.id) === String(param.project_id),
-    )
+    return response;
   } catch (e) {
     param?.callback?.(false)
     return rejectWithValue(e)
@@ -75,8 +74,7 @@ export const createProject = createAsyncThunk<
 })
 
 export const editProject = createAsyncThunk<
-  // ProjectType,
-  boolean,
+  ProjectType,
   {
     project: ProjectCreate
     project_id: string
@@ -86,7 +84,7 @@ export const editProject = createAsyncThunk<
 >(`${PROJECT_SLICE_NAME}/editProject`, async (param, thunkAPI) => {
   const { rejectWithValue } = thunkAPI
   try {
-    // const response = await updateProjectApi(param.project_id, param.project)
+    const response = await updateProjectApi(param.project_id, param.project)
     thunkAPI.dispatch(
       createDataset({
         project_id: Number(param.project_id),
@@ -95,7 +93,7 @@ export const editProject = createAsyncThunk<
       }),
     )
     param.callback?.(true)
-    return true
+    return response
   } catch (e) {
     param.callback?.(false)
     return rejectWithValue(e)

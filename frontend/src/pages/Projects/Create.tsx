@@ -611,7 +611,6 @@ const ProjectFormComponent = () => {
     const project = {
       project_name: projectName,
       project_type: projectType,
-      image_count: imageIDs.length,
     }
     const dataset = dataFactors.map((factor, index) => ({
       folder_name: generateName(factor.name, index, 'Between'),
