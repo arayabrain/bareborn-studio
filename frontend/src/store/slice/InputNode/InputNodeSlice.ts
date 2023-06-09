@@ -27,8 +27,9 @@ import {
   AlignmentData,
 } from './InputNodeType'
 import { isCsvInputNode, isHDF5InputNode } from './InputNodeUtils'
-import { getDataPipeLine } from '../Pipeline/PipelineActions'
 import { getUrlFromSubfolder } from '../Dataset/DatasetSelector'
+import { NodeDict } from 'api/run/Run'
+import { SubFolder } from '../Dataset/DatasetType'
 
 const initParams: AlignmentData = {
   alignments: {
@@ -88,6 +89,36 @@ export const inputNodeSlice = createSlice({
       const item = state[nodeId]
       if (isHDF5InputNode(item)) {
         item.hdf5Path = path
+      }
+    },
+    setSelectedFilePath(
+      state,
+      action: PayloadAction<{
+        dataset: SubFolder[] | undefined
+        nodeDict?: NodeDict
+      }>,
+    ) {
+      const { dataset, nodeDict } = action.payload
+      let urls: string[] = []
+      dataset && getUrlFromSubfolder(dataset, urls)
+      if (nodeDict) {
+        const typeFileNode = Object.keys(REACT_FLOW_NODE_TYPE_KEY)
+        Object.keys(nodeDict).forEach((key) => {
+          if (typeFileNode.includes(nodeDict[key].type as string)) {
+            const targetNode = state[key]
+            if (!targetNode) return
+            targetNode.selectedFilePath = urls
+            if (isHDF5InputNode(targetNode)) {
+              targetNode.hdf5Path = undefined
+            }
+          }
+        })
+      } else {
+        const targetNode = state[INITIAL_IMAGE_ELEMENT_ID]
+        targetNode.selectedFilePath = urls
+        if (isHDF5InputNode(targetNode)) {
+          targetNode.hdf5Path = undefined
+        }
       }
     },
   },
@@ -238,34 +269,6 @@ export const inputNodeSlice = createSlice({
             target.selectedFilePath = resultPath
           }
         }
-      })
-      .addCase(getDataPipeLine.fulfilled, (state, action) => {
-        const { dataset, experiment } = action.payload
-        let urls: string[] = []
-        if (dataset) {
-          getUrlFromSubfolder(dataset, urls)
-        }
-        if (!experiment?.nodeDict) {
-          const targetNode = state[INITIAL_IMAGE_ELEMENT_ID]
-          targetNode.selectedFilePath = urls
-          if (isHDF5InputNode(targetNode)) {
-            targetNode.hdf5Path = undefined
-          }
-        } else {
-          const typeFileNode = Object.keys(REACT_FLOW_NODE_TYPE_KEY)
-          Object.keys(experiment.nodeDict).forEach((key) => {
-            if (
-              typeFileNode.includes(experiment.nodeDict[key].type as string)
-            ) {
-              const targetNode = state[key]
-              if (!targetNode) return
-              targetNode.selectedFilePath = urls
-              if (isHDF5InputNode(targetNode)) {
-                targetNode.hdf5Path = undefined
-              }
-            }
-          })
-        }
       }),
 })
 
@@ -273,6 +276,7 @@ export const {
   setCsvInputNodeParam,
   setInputNodeHDF5Path,
   setInputNodeParamAlignment,
+  setSelectedFilePath,
 } = inputNodeSlice.actions
 
 export default inputNodeSlice.reducer

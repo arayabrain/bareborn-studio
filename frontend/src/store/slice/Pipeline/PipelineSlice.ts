@@ -3,12 +3,7 @@ import {
   fetchExperiment,
   importExperimentByUid,
 } from '../Experiments/ExperimentsActions'
-import {
-  getDataPipeLine,
-  pollRunResult,
-  run,
-  runByCurrentUid,
-} from './PipelineActions'
+import { pollRunResult, run, runByCurrentUid } from './PipelineActions'
 import {
   Pipeline,
   PIPELINE_SLICE_NAME,
@@ -46,6 +41,14 @@ export const pipelineSlice = createSlice({
       }>,
     ) => {
       state.runBtn = action.payload.runBtnOption
+    },
+    setAllowRun: (
+      state,
+      action: PayloadAction<{
+        allowRun: boolean
+      }>,
+    ) => {
+      state.allowRun = action.payload.allowRun
     },
   },
   extraReducers: (builder) => {
@@ -112,9 +115,6 @@ export const pipelineSlice = createSlice({
         }
       })
       .addCase(fetchExperiment.rejected, (_state, _action) => initialState)
-      .addCase(getDataPipeLine.fulfilled, (state, action) => {
-        state.allowRun = action.payload.isUpdateDataset
-      })
       .addMatcher(
         isAnyOf(run.pending, runByCurrentUid.pending),
         (state, action) => {
@@ -151,6 +151,7 @@ export const pipelineSlice = createSlice({
   },
 })
 
-export const { cancelPipeline, setRunBtnOption } = pipelineSlice.actions
+export const { cancelPipeline, setRunBtnOption, setAllowRun } =
+  pipelineSlice.actions
 
 export default pipelineSlice.reducer
