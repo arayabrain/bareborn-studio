@@ -82,9 +82,10 @@ export function useRunPipeline() {
                 dispatch(setSelectedFilePath({ dataset, nodeDict }))
               })
               .catch((_) => {
-                dispatch(importExperimentByUid('default'))
-                dispatch(setSelectedFilePath({ dataset }))
-                dispatch(setAllowRun({ allowRun: true }))
+                appDispatch(importExperimentByUid('default')).then((_) => {
+                  dispatch(setSelectedFilePath({ dataset }))
+                  dispatch(setAllowRun({ allowRun: true }))
+                })
               })
           }
         })
