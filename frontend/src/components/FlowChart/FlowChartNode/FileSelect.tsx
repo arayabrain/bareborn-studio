@@ -88,9 +88,6 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
 
     const id = searchParams.get('id')
 
-    console.log('images', images)
-    console.log('filePath', filePath)
-
     useEffect(() => {
       if (!nodeId) return
       const valueAlignments = (selectInput.param as AlignmentData)?.alignments
@@ -100,9 +97,9 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
         newParams = filePath.map((path: string) => {
           const image = images.find((image) => image.url === path)
           const param = valueAlignments?.find(
-            (align) => align.image_id === path,
+            (align) => align.image_id === image?.id,
           )
-          if (param && param.image_id !== path) return param
+          if (param) return param
           return {
             image_id: image?.id || path,
             x_pos: 0,
