@@ -435,7 +435,7 @@ BrainBrowser.VolumeViewer.modules.loading = function (viewer) {
       )
       volume.propagateEventTo('*', viewer)
       ;['xspace', 'yspace', 'zspace'].forEach(function (axis) {
-        volume.position[axis] = Math.floor(volume.header[axis].space_length / 2)
+        volume.position[axis] = 0
       })
 
       volume.display.forEach(function (panel) {
