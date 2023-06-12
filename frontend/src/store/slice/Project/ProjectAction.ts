@@ -39,9 +39,8 @@ export const getProjectId = createAsyncThunk<
   try {
     if (!param?.project_id) return undefined
     const response = await getProjectApi(param.project_id)
-    console.log('response', response)
     param?.callback?.(true)
-    return response;
+    return response
   } catch (e) {
     param?.callback?.(false)
     return rejectWithValue(e)
