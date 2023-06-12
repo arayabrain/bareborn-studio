@@ -118,12 +118,8 @@ class Runner:
                     'message': [analysis_info.get_message(wf_input_path)]
                 }
 
-        print('output_path_dict', output_path_dict)
-        print('subject_dict', subject_dict)
-
         # Create an ExptFunction object for the node, and update the ExptConfig data.
         expt_function = expt_config.function
-        print('node_id', node_id)
         expt_config.function[node_id] = ExptFunction(
             unique_id=expt_function[node_id].unique_id,
             name=expt_function[node_id].name,
@@ -140,13 +136,6 @@ class Runner:
         ConfigWriter.write(
             dirname=workflow_dirpath,
             filename=DIRPATH.EXPERIMENT_YML,
-            config=asdict(expt_config)
-        )
-
-        # Debug
-        ConfigWriter.write(
-            dirname=workflow_dirpath,
-            filename='experiment2.yaml',
             config=asdict(expt_config)
         )
 

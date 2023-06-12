@@ -30,7 +30,7 @@ edgeDict:
 finished_at: null
 function:
   func1:
-    finished_at: '2023-06-05 21:30:46'
+    finished_at: '2023-06-12 06:05:58'
     hasNWB: true
     message: 'success: 2 '
     name: func1
@@ -43,7 +43,7 @@ function:
         max_index: null
         path: proj_root/mouse2\sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeA.nii
         type: images
-    started_at: '2023-06-05 21:30:46'
+    started_at: '2023-06-12 06:05:58'
     subjects:
       mouse1:
         message:

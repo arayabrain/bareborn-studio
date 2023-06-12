@@ -1,10 +1,12 @@
 from typing import Dict
 from fastapi import APIRouter, BackgroundTasks
 import uuid
+import json
 
 from optinist.api.workflow.workflow import NodeItem, RunItem, Message
 from optinist.api.workflow.workflow_runner import WorkflowRunner
 from optinist.api.workflow.workflow_result import WorkflowResult
+from optinist.api.experiment.experiment_reader import ExptConfigReader
 
 router = APIRouter()
 
@@ -35,3 +37,14 @@ async def run_id(
 )
 async def run_result(project_id: str, uid: str, nodeDict: NodeItem):
     return WorkflowResult(project_id, uid).get(nodeDict.pendingNodeIdList)
+
+
+@router.get('/run_result/{project_id}', tags=['run_result'])
+async def run_result(project_id: str):
+    """
+    Send the analysis info about the specified project to show a results table.
+    """
+
+    analysis_info = WorkflowResult(project_id, 'dummy_node_id').get_analysis_info()
+
+    return {'analysis_info': json.dumps(analysis_info)}

@@ -1,15 +1,17 @@
 import os
 import pandas as pd
 from glob import glob
-from typing import Optional
+from typing import Optional, Dict
 from fastapi import APIRouter
+from fastapi.responses import FileResponse
 from optinist.api.dir_path import DIRPATH
 
 from optinist.api.utils.json_writer import JsonWriter, save_tiff2json
 from optinist.api.utils.filepath_creater import create_directory, join_filepath
 from optinist.routers.const import ACCEPT_TIFF_EXT
 from optinist.routers.fileIO.file_reader import JsonReader, Reader
-from optinist.routers.model import JsonTimeSeriesData, OutputData
+from optinist.routers.model import JsonTimeSeriesData, OutputData, ImageCreationParams
+from optinist.wrappers.vbm_wrapper import vbm_visualization
 
 
 router = APIRouter()
@@ -162,3 +164,36 @@ async def get_csv(filepath: str):
         pd.read_csv(filepath, header=None)
     )
     return JsonReader.read_as_output(json_filepath)
+
+
+@router.put('/visualize/generate/{project_id}', tags=['visualize'])
+async def visualize_generate(project_id: str, image_creation_params: ImageCreationParams) -> Dict[str, str]:
+    """
+    Generate images of the statistical analysis results based on the image creation parameters,
+    save those images in an image file or PDF, and send the URL.
+    """
+
+    image_urls = vbm_visualization.generate_stats_images(project_id, image_creation_params)
+
+    return {'image_urls': image_urls}
+
+
+@router.put('/visualize/download/{project_id}', response_class=FileResponse, tags=['visualize'])
+async def visualize_download(project_id: str, image_creation_params: ImageCreationParams):
+    # Dummy
+    dir_path = os.path.dirname(__file__)
+    file_name = 'stats_results-230601_123456-1.pdf'
+    file_path = os.path.join(dir_path, r'../test_data/cjs/output/3a55fa37/stats_results', file_name)
+
+    response = FileResponse(
+        path=file_path,
+        filename=file_name
+    )
+
+    return response
+
+
+# if __name__ == "__main__":
+#     params = ImageCreationParams(threshold=[1.23, 4.56], cut_coords=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+#     response = visualize_download('abcde', params)
+#     print(response)

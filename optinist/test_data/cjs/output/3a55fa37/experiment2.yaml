@@ -61,16 +61,6 @@ function:
         - success
     success: 'success: 2 '
     unique_id: func1
-  func2:
-    finished_at: null
-    hasNWB: false
-    message: null
-    name: func2
-    outputPaths: null
-    started_at: null
-    subjects: null
-    success: error
-    unique_id: func1
 hasNWB: false
 name: New flow
 nodeDict:

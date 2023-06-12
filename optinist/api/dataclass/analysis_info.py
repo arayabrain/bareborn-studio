@@ -36,7 +36,7 @@ class AnalysisInfo(BaseData):
         wf_input_file_path_list: A list of the workflow input file paths.
         """
 
-        self.json_path = None
+        self.json_path = 'aaa.txt'
         self.__project_path = project_path
         self.__analysis_start_time = None
         self.__analysis_end_time = None
@@ -102,11 +102,9 @@ class AnalysisInfo(BaseData):
         # Set the path of filemap.json as <project_root_dir>/filemap.json.
         # project_root_dir = get_project_root_dir(project_id)
         # filemap_path = os.path.join(project_root_dir, 'filemap.json')
-        # DEBUG
-        # filemap_path = r'../../test_data/cjs/test_project/filemap.json'
-        print('cd', os.getcwd())
-        filemap_path = r'./optinist/test_data/cjs/test_project/filemap.json'
-        #print(DIRPATH.OPTINIST_DIR)
+        # Dummy
+        dir_path = os.path.dirname(__file__)
+        filemap_path = os.path.join(dir_path, r'../../test_data/cjs/test_project/filemap.json')
 
         # Get the between-factor and within-factor from the filemap.json.
         factors_dict = {}
