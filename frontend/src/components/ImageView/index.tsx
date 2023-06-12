@@ -497,7 +497,7 @@ const ButtonCanCel = styled('button')({
   border: '2px solid #000',
   cursor: 'pointer',
   background: '#000000c7',
-  color: 'red',
+  color: 'white',
   marginRight: 10,
 })
 

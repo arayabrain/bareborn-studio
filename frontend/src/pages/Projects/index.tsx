@@ -86,10 +86,15 @@ const Projects = () => {
               <ButtonAdd
                 variant="contained"
                 onClick={() => onWorkflow(data.id)}
+                sx={{ backgroundColor: '#1976D2 !important' }}
               >
                 Workflow
               </ButtonAdd>
-              <ButtonAdd variant="contained" onClick={() => onResults(data.id)}>
+              <ButtonAdd
+                variant="contained"
+                onClick={() => onResults(data.id)}
+                sx={{ backgroundColor: '#1976D2 !important' }}
+              >
                 Result
               </ButtonAdd>
               <ButtonAdd
