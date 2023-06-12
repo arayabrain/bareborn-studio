@@ -4,7 +4,7 @@ import { DatasetPostType } from 'store/slice/Dataset/DatasetType'
 
 export const getDatasetListApi = async (project_id: string) => {
   const response = await axios.get(
-    `${DATABASE_URL_HOST}/workdb/dataset/search?project_id=${project_id}`,
+    `${DATABASE_URL_HOST}/workdb/dataset/${project_id}/search`,
   )
   return response.data
 }

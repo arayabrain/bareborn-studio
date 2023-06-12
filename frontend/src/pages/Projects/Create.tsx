@@ -17,6 +17,7 @@ import React, {
   useRef,
   CSSProperties,
   useEffect,
+  useMemo,
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
@@ -38,7 +39,6 @@ import {
 import { ObjectType } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
-import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { useDispatch } from 'react-redux'
 import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
 import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
@@ -56,8 +56,11 @@ import { Dataset } from 'store/slice/Dataset/DatasetType'
 import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
 import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
 import { reset } from 'store/slice/Dataset/DatasetSlice'
+import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
+import { setLoadingExpriment } from 'store/slice/Experiments/ExperimentsSlice'
 
 const columns: Column[] = [
+  { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
   { title: 'User', name: 'user_name', filter: true, width: 100 },
   { title: 'Date', name: 'recording_time', filter: true, width: 130 },
   { title: 'Subject', name: 'subject', filter: true, width: 120 },
@@ -75,6 +78,17 @@ const columns: Column[] = [
     width: 100,
   },
   {
+    title: 'Type',
+    name: 'image_attributes.image_type',
+    filter: true,
+    width: 70,
+  },
+  {
+    title: 'Protocol',
+    name: 'image_attributes.protocol',
+    filter: true,
+  },
+  {
     title: 'Size',
     name: 'image_attributes.scale',
     filter: true,
@@ -84,6 +98,7 @@ const columns: Column[] = [
     title: 'Voxel size',
     name: 'image_attributes.voxel',
     filter: true,
+    width: 110,
     render: (_, value) => JSON.stringify(value),
   },
 ]
@@ -115,15 +130,34 @@ const defaultFactor = [
   { name: nameDefault, within: [], id: getNanoId(), data: [] },
 ]
 
-const remapDatasetToDataFactor = ({ dataset }: Dataset): DataFactor[] => {
-  if (!dataset) return defaultFactor
-  return dataset.sub_folders.map((sub) => ({
+const remapDatasetToDataFactor = ({
+  dataset,
+}: Dataset): { datasets: DataFactor[]; ids: number[] } => {
+  if (!dataset) return { ids: [], datasets: defaultFactor }
+  let ids: number[] = []
+  const datasets = dataset.map((sub) => ({
     id: sub.id,
     name: sub.folder_name || nameDefault,
     within: (sub.sub_folders || []).map((sub_within) => ({
       id: sub_within.id,
       name: sub_within.folder_name,
-      data: (sub_within.images || []).map((image) => ({
+      data: (sub_within.images || []).map((image) => {
+        ids.push(image.id)
+        return {
+          project_name: image.attributes.datatype as string,
+          project_type: image.attributes.image_type as string,
+          id: String(image.id),
+          image_count: 1,
+          image_id: image.id,
+          protocol: image.attributes.protocol as string,
+          image_url: image.image_url,
+          jsonData: image.attributes,
+        }
+      }),
+    })),
+    data: (sub.images || []).map((image) => {
+      ids.push(image.id)
+      return {
         project_name: image.attributes.datatype as string,
         project_type: image.attributes.image_type as string,
         id: String(image.id),
@@ -132,19 +166,10 @@ const remapDatasetToDataFactor = ({ dataset }: Dataset): DataFactor[] => {
         protocol: image.attributes.protocol as string,
         image_url: image.image_url,
         jsonData: image.attributes,
-      })),
-    })),
-    data: (sub.images || []).map((image) => ({
-      project_name: image.attributes.datatype as string,
-      project_type: image.attributes.image_type as string,
-      id: String(image.id),
-      image_count: 1,
-      image_id: image.id,
-      protocol: image.attributes.protocol as string,
-      image_url: image.image_url,
-      jsonData: image.attributes,
-    })),
+      }
+    }),
   }))
+  return { ids, datasets }
 }
 
 const ProjectFormComponent = () => {
@@ -154,7 +179,6 @@ const ProjectFormComponent = () => {
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
-  const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
   const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
@@ -175,9 +199,10 @@ const ProjectFormComponent = () => {
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
   const [rowDrag, setRowDrag] = useState<ImagesDatabase | ImagesDatabase[]>()
-  const [dataFactors, setDataFactors] = useState<DataFactor[]>(
-    remapDatasetToDataFactor(dataset),
-  )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const { datasets, ids } = useMemo(() => remapDatasetToDataFactor(dataset), [])
+  const [dataFactors, setDataFactors] = useState<DataFactor[]>(datasets)
+  const [imageIDs, setImageIDs] = useState<number[]>(ids)
 
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
@@ -201,7 +226,9 @@ const ProjectFormComponent = () => {
   }, [])
 
   useEffect(() => {
-    setDataFactors(remapDatasetToDataFactor(dataset))
+    const { datasets, ids } = remapDatasetToDataFactor(dataset)
+    setDataFactors(datasets)
+    setImageIDs(ids)
   }, [dataset])
 
   useEffect(() => {
@@ -557,9 +584,12 @@ const ProjectFormComponent = () => {
   }
 
   const onCancle = () => {
-    !routeGoback
-      ? navigate('/projects')
-      : navigate(`${routeGoback}&id=${idEdit}`, { state: { edited: true } })
+    if (routeGoback) {
+      navigate(`${routeGoback}&id=${idEdit}`, { state: { edited: true } })
+      dispatch(setLoadingExpriment({ loading: false }))
+    } else {
+      navigate('/projects')
+    }
   }
 
   const generateName = (name: string, index: number, subject: string) => {
@@ -584,7 +614,6 @@ const ProjectFormComponent = () => {
     const project = {
       project_name: projectName,
       project_type: projectType,
-      image_count: imageIDs.length,
     }
     const dataset = dataFactors.map((factor, index) => ({
       folder_name: generateName(factor.name, index, 'Between'),
@@ -594,26 +623,35 @@ const ProjectFormComponent = () => {
         source_image_ids: within.data.map((d) => d.image_id),
       })),
     }))
-    if (nodeId) {
+    if (idEdit) {
       dispatch(
         editProject({
           project,
-          project_id: nodeId,
+          project_id: idEdit,
           dataset,
-          callback: (isSuccess: boolean) => {
+          callback: async (isSuccess: boolean) => {
             if (isSuccess) {
-              const urls = dataFactors
-                .map((el) => {
-                  if (el.data.length) return el.data
-                  return el.within.map((w) => w.data).flat()
-                })
-                .flat()
-                .map((image) => image.image_url)
-              dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
-              if (routeGoback)
-                navigate(`${routeGoback}&id=${idEdit}`, {
-                  state: { edited: true },
-                })
+              if (nodeId) {
+                const urls = dataFactors
+                  .map((el) => {
+                    if (el.data.length) return el.data
+                    return el.within.map((w) => w.data).flat()
+                  })
+                  .flat()
+                  .map((image) => image.image_url)
+                await Promise.all([
+                  dispatch(setInputNodeFilePath({ nodeId, filePath: urls })),
+                  dispatch(getDatasetList({ project_id: idEdit })),
+                  dispatch(setLoadingExpriment({ loading: false })),
+                ])
+                if (routeGoback) {
+                  navigate(`${routeGoback}&id=${idEdit}`, {
+                    state: { edited: true },
+                  })
+                }
+              } else {
+                onCancle()
+              }
             }
             setLoading(false)
           },
@@ -649,17 +687,19 @@ const ProjectFormComponent = () => {
           onClose={() => setOpenFilter(false)}
         />
       )}
-      <ImageView
-        editAttribute={false}
-        disabled={disabled}
-        url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
-        open={viewer.open}
-        jsonData={viewer.jsonData}
-        onClose={onCloseImageView}
-        onNext={onNext}
-        onPrevious={onPrevious}
-        id={Number(viewer.id)}
-      />
+      {viewer.url && viewer.open && (
+        <ImageView
+          editAttribute={false}
+          disabled={disabled}
+          url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
+          open={viewer.open}
+          jsonData={viewer.jsonData}
+          onClose={onCloseImageView}
+          onNext={onNext}
+          onPrevious={onPrevious}
+          id={Number(viewer.id)}
+        />
+      )}
       {isEditName ? (
         <InputName
           autoFocus
@@ -682,13 +722,14 @@ const ProjectFormComponent = () => {
               value={ProjectTypeValue.FACTOR}
               control={<Radio />}
               label="Between factor"
+              disabled={!!idEdit}
             />
           </Box>
           <FormControlLabel
             value={ProjectTypeValue.WITHIN_FACTOR}
             control={<Radio />}
             label="Between factor-within factor"
-            disabled={idEdit ? true : false}
+            disabled={!!idEdit}
           />
         </Box>
       </BoxOptions>
@@ -795,7 +836,7 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={onOk}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
+        <ButtonFilter onClick={onOk} sx={{ backgroundColor: 'limegreen !important' }}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
         <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
       {loading && <Loading />}

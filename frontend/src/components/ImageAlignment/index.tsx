@@ -6,14 +6,13 @@ import { useDispatch } from 'react-redux'
 import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
 import { DATABASE_URL_HOST } from 'const/API'
-// import { setSaveFileName } from 'store/slice/VisualizeItem/VisualizeItemSlice'
 
 type ImageViewProps = {
   open: boolean
   onClose?: () => void
   onNext?: () => void
   onPrevious?: () => void
-  urls: string[]
+  urls: { id: string | number; url: string }[]
   jsonData?: ObjectType
   disabled?: { left: boolean; right: boolean }
   params?: { nodeId: string; alignments: Params[] }
@@ -28,47 +27,45 @@ const ImageAlignment: FC<ImageViewProps> = ({
   readOnly = false,
 }) => {
   const viewerRef = useRef<any>()
-  const [url, setUrl] = useState(urls[0])
+  const [image, setUrl] = useState(urls[0])
   const [isLoadFile, setIsLoadFile] = useState(false)
   const [loadedSuccess, setLoadedSuccess] = useState(false)
   const volumes = useRef<any>()
   const dispatch = useDispatch()
 
-  const urlRef = useRef(url)
+  const urlRef = useRef(image)
 
   const [stateParams, setStateParams] = useState<Params[]>(params.alignments)
 
   const paramAligment = useMemo(() => {
-    return stateParams.find((param) => param.image_id === url)
-  }, [url, stateParams])
+    return stateParams.find((param) => param.image_id === image.id)
+  }, [image.id, stateParams])
 
   useEffect(() => {
     if (open) {
-      setTimeout(loadFile, 0)
-      return
+      setTimeout(loadFile, 200)
     }
-    setStateParams(params.alignments)
-    setUrl(urls[0])
-    setIsLoadFile(false)
-    setLoadedSuccess(false)
+    return () => {
+      viewerRef.current.clearVolumes?.()
+    }
     //eslint-disable-next-line
-  }, [open])
+  }, [])
 
   useEffect(() => {
-    urlRef.current = url
+    urlRef.current = image
     loadFileIndex()
     //eslint-disable-next-line
-  }, [url])
+  }, [image])
 
   useEffect(() => {
     if (loadedSuccess) {
       const paramInit = params.alignments?.find(
-        (param) => param.image_id === url,
+        (param) => param.image_id === image.id,
       )
       setValueToBraibrowser(paramInit)
     }
     //eslint-disable-next-line
-  }, [loadedSuccess, url])
+  }, [loadedSuccess, image.id])
 
   const onOk = () => {
     if (params?.nodeId && stateParams) {
@@ -83,13 +80,13 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const onPreImage = () => {
-    const index = urls.findIndex((item) => item === url)
+    const index = urls.findIndex((item) => item.id === image.id)
     if (index === 0) return
     setUrl(urls[index - 1])
   }
 
   const onNextImage = () => {
-    const index = urls.findIndex((item) => item === url)
+    const index = urls.findIndex((item) => item.id === image.id)
     if (index === urls.length - 1) return
     setUrl(urls[index + 1])
   }
@@ -119,7 +116,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
     const { name, value } = e.target
     if (params?.nodeId && stateParams) {
       const newParams = stateParams.map((align) =>
-        align.image_id === url ? { ...align, [name]: value } : align,
+        align.image_id === image.id ? { ...align, [name]: value } : align,
       )
       setStateParams(newParams)
     }
@@ -137,14 +134,14 @@ const ImageAlignment: FC<ImageViewProps> = ({
     }
     if (params?.nodeId && stateParams) {
       const newParams = stateParams.map((align) =>
-        align.image_id === url ? { ...align, [name]: valueRadian } : align,
+        align.image_id === image.id ? { ...align, [name]: valueRadian } : align,
       )
       setStateParams(newParams)
     }
   }
 
   const loadFileIndex = () => {
-    if (!url || isLoadFile || !viewerRef.current) return
+    if (!image?.url || isLoadFile || !viewerRef.current) return
     setIsLoadFile(true)
     setLoadedSuccess(false)
     viewerRef.current.clearVolumes()
@@ -152,7 +149,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
       volumes: [
         {
           type: 'nifti1',
-          nii_url: `${DATABASE_URL_HOST}${url}`,
+          nii_url: `${DATABASE_URL_HOST}${image.url}`,
           template: {
             element_id: 'volume-ui-template',
             viewer_insert_className: 'volume-viewer-display',
@@ -174,7 +171,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
     const { volume } = event
     volumes.current = volume
     const paramsNode: Params = {
-      image_id: urlRef.current,
+      image_id: urlRef.current.id,
       x_pos: 0,
       y_pos: 0,
       z_pos: 0,
@@ -192,9 +189,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
       paramsNode.z_pos = voxel.j
     }
     const newParams = (pre: Params[]) => {
-      if (pre.find((align) => align.image_id === urlRef.current)) {
+      if (pre.find((align) => align.image_id === urlRef.current.id)) {
         return pre.map((align) => {
-          if (align.image_id === urlRef.current) return paramsNode
+          if (align.image_id === urlRef.current.id) return paramsNode
           return align
         })
       }
@@ -211,7 +208,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const loadFile = () => {
-    if (!url || isLoadFile) return
+    if (!image.url || isLoadFile) return
     setIsLoadFile(true)
     setLoadedSuccess(false)
     const brainbrowser = (window as any).BrainBrowser
@@ -223,9 +220,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
           volumeLoaded(e, true),
         )
         viewer.addEventListener('sliceupdate', volumeLoaded)
-        viewer.addEventListener('error', ({ message }: { message: string }) => {
-          window.alert(message)
-          onClose?.()
+        viewer.addEventListener('error', () => {
+          setIsLoadFile(false)
+          setTimeout(loadFile, 200)
         })
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
@@ -236,7 +233,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
           volumes: [
             {
               type: 'nifti1',
-              nii_url: `${DATABASE_URL_HOST}${url}`,
+              nii_url: `${DATABASE_URL_HOST}${image.url}`,
               template: {
                 element_id: 'volume-ui-template',
                 viewer_insert_className: 'volume-viewer-display',
@@ -396,11 +393,11 @@ const ImageAlignment: FC<ImageViewProps> = ({
                     <span>Select Image</span>
                     <SwitchContent>
                       <ButtonPre onClick={onPreImage}>{'<'}</ButtonPre>
-                      <InputImage value={url} readOnly />
+                      <InputImage value={image.url} readOnly />
                       <ButtonNext onClick={onNextImage}>{'>'}</ButtonNext>
                     </SwitchContent>
                     <span>{`(${
-                      urls.findIndex((item: string) => item === url) + 1
+                      urls.findIndex((item) => item.id === image.id) + 1
                     }/${urls.length})`}</span>
                   </SwitchImage>
                   <Flex sx={{ gap: 5 }}>

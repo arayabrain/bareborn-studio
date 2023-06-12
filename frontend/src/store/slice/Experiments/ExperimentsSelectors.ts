@@ -33,6 +33,9 @@ export const selectExperimentList = (state: RootState) => {
   }
 }
 
+export const selectLoadingExperiment = (state: RootState) =>
+  state.experiments.loading
+
 export const selectExperimentUidList = (state: RootState) =>
   Object.keys(selectExperimentList(state))
 

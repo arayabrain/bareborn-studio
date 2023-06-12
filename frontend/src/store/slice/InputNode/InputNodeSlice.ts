@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { isInputNodePostData } from 'api/run/RunUtils'
-import { INITIAL_IMAGE_ELEMENT_ID } from 'const/flowchart'
+import {
+  INITIAL_IMAGE_ELEMENT_ID,
+  REACT_FLOW_NODE_TYPE_KEY,
+} from 'const/flowchart'
 import {
   fetchExperiment,
   importExperimentByUid,
@@ -24,6 +27,9 @@ import {
   AlignmentData,
 } from './InputNodeType'
 import { isCsvInputNode, isHDF5InputNode } from './InputNodeUtils'
+import { getUrlFromSubfolder } from '../Dataset/DatasetSelector'
+import { NodeDict } from 'api/run/Run'
+import { SubFolder } from '../Dataset/DatasetType'
 
 const initParams: AlignmentData = {
   alignments: {
@@ -69,6 +75,7 @@ export const inputNodeSlice = createSlice({
     ) {
       const { nodeId, param } = action.payload
       const inputNode = state[nodeId] as ImageInputNode
+      if (!inputNode.param?.alignments) return
       inputNode.param.alignments.value = param
     },
     setInputNodeHDF5Path(
@@ -82,6 +89,36 @@ export const inputNodeSlice = createSlice({
       const item = state[nodeId]
       if (isHDF5InputNode(item)) {
         item.hdf5Path = path
+      }
+    },
+    setSelectedFilePath(
+      state,
+      action: PayloadAction<{
+        dataset: SubFolder[] | undefined
+        nodeDict?: NodeDict
+      }>,
+    ) {
+      const { dataset, nodeDict } = action.payload
+      let urls: { id: string | number; url: string }[] = []
+      dataset && getUrlFromSubfolder(dataset, urls)
+      if (nodeDict) {
+        const typeFileNode = Object.keys(REACT_FLOW_NODE_TYPE_KEY)
+        Object.keys(nodeDict).forEach((key) => {
+          if (typeFileNode.includes(nodeDict[key].type as string)) {
+            const targetNode = state[key]
+            if (!targetNode) return
+            targetNode.selectedFilePath = urls.map(({ url }) => url)
+            if (isHDF5InputNode(targetNode)) {
+              targetNode.hdf5Path = undefined
+            }
+          }
+        })
+      } else {
+        const targetNode = state[INITIAL_IMAGE_ELEMENT_ID]
+        targetNode.selectedFilePath = urls.map(({ url }) => url)
+        if (isHDF5InputNode(targetNode)) {
+          targetNode.hdf5Path = undefined
+        }
       }
     },
   },
@@ -193,12 +230,14 @@ export const inputNodeSlice = createSlice({
         Object.values(action.payload.nodeDict)
           .filter(isInputNodePostData)
           .forEach((node) => {
+            const { data } = node
+            const param = (data?.param || initParams) as AlignmentData
             if (node.data != null) {
               if (node.data.fileType === FILE_TYPE_SET.IMAGE) {
                 newState[node.id] = {
                   fileType: FILE_TYPE_SET.IMAGE,
                   selectedFilePath: node.data.path as string[],
-                  param: initParams,
+                  param,
                 }
               } else if (node.data.fileType === FILE_TYPE_SET.CSV) {
                 newState[node.id] = {
@@ -211,7 +250,7 @@ export const inputNodeSlice = createSlice({
                   fileType: FILE_TYPE_SET.HDF5,
                   hdf5Path: node.data.hdf5Path,
                   selectedFilePath: node.data.path as string,
-                  param: {},
+                  param,
                 }
               }
             }
@@ -237,6 +276,7 @@ export const {
   setCsvInputNodeParam,
   setInputNodeHDF5Path,
   setInputNodeParamAlignment,
+  setSelectedFilePath,
 } = inputNodeSlice.actions
 
 export default inputNodeSlice.reducer
