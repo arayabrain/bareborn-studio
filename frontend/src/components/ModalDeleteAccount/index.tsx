@@ -47,7 +47,7 @@ const ModalDeleteAccount: FC<ModalDeleteAccountProps> = ({
                 value={textDelete}
                 onChange={(e) => setTextDelete(e.target.value)}
             />
-            <ButtonConfirm onClick={onConfirm}>{titleSubmit}</ButtonConfirm>
+            <ButtonConfirm onClick={onConfirm} sx={{ backgroundColor: 'red !important' }}>{titleSubmit}</ButtonConfirm>
           </BoxConfirm>
           <Button onClick={onClose}>
             <Typography

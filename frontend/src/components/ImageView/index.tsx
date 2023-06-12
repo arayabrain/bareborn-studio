@@ -8,7 +8,7 @@ import {
   styled,
   Typography,
   DialogContent,
-  DialogActions
+  DialogActions,
 } from '@mui/material'
 import { FC, useEffect, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
@@ -16,8 +16,8 @@ import ChangeDrag from './ChangeSize'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import { ObjectType } from 'pages/Database'
-import { editAttributes } from "api/rawdb";
-import Loading from "../common/Loading";
+import { editAttributes } from 'api/rawdb'
+import Loading from '../common/Loading'
 
 type ImageViewProps = {
   open: boolean
@@ -37,33 +37,37 @@ type AlertDialogProps = {
   handleSaveAttributes: () => void
 }
 
-const AlertDialog = ({ open, handleClose, handleSaveAttributes }: AlertDialogProps) => {
+const AlertDialog = ({
+  open,
+  handleClose,
+  handleSaveAttributes,
+}: AlertDialogProps) => {
   return (
-      <div>
-        <Dialog
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-        >
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Do you want Save?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleSaveAttributes} autoFocus>
-              Ok
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-  );
+    <div>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Do you want Save?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleSaveAttributes} autoFocus>
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  )
 }
 
 const ImageView: FC<ImageViewProps> = ({
-  editAttribute= true,
+  editAttribute = true,
   open,
   onClose,
   url,
@@ -71,7 +75,7 @@ const ImageView: FC<ImageViewProps> = ({
   onPrevious,
   jsonData,
   disabled,
-  id
+  id,
 }) => {
   const viewerRef = useRef<any>()
   const [worldCoords, setWorldCoords] = useState({ x: 0, y: 0, z: 0 })
@@ -84,7 +88,9 @@ const ImageView: FC<ImageViewProps> = ({
   const [brightness, setBrightness] = useState(0)
   const [isLoadFile, setIsLoadFile] = useState(false)
   const [openSave, setOpenSave] = useState(false)
-  const [textAttribute, setTextAttribute] = useState(JSON.stringify(jsonData || ''))
+  const [textAttribute, setTextAttribute] = useState(
+    JSON.stringify(jsonData || ''),
+  )
   const [errorAttribute, setErrorAttribute] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const volumes = useRef<any>()
@@ -93,14 +99,12 @@ const ImageView: FC<ImageViewProps> = ({
   useEffect(() => {
     if (open) {
       setTimeout(loadFile, 0)
-      return
     }
-    setIsLoadFile(false)
-    setOpacity(0)
-    setContracts(1)
-    setBrightness(0)
+    return () => {
+      viewerRef.current.clearVolumes?.()
+    }
     //eslint-disable-next-line
-  }, [open])
+  }, [])
 
   useEffect(() => {
     loadFileIndex()
@@ -144,8 +148,7 @@ const ImageView: FC<ImageViewProps> = ({
     try {
       JSON.parse(value)
       setErrorAttribute('')
-    }
-    catch {
+    } catch {
       setErrorAttribute('format JSON invalid')
     }
     setTextAttribute(value)
@@ -231,20 +234,19 @@ const ImageView: FC<ImageViewProps> = ({
   }
 
   const handleClickOpenSave = () => {
-    if(errorAttribute) return
-    setOpenSave(true);
-  };
+    if (errorAttribute) return
+    setOpenSave(true)
+  }
 
   const handleCloseSave = () => {
-    setOpenSave(false);
-  };
+    setOpenSave(false)
+  }
 
   const handleSaveAttributes = async () => {
     setIsLoading(true)
     try {
       await editAttributes(id, textAttribute)
-    }
-    finally {
+    } finally {
       handleCloseSave()
       setIsLoading(false)
     }
@@ -285,69 +287,76 @@ const ImageView: FC<ImageViewProps> = ({
                 <div id="brainbrowser"></div>
               </div>
               {opacity ? (
-                <Box sx={{background: '#ffffff'}}>
+                <Box sx={{ background: '#ffffff' }}>
                   <BoxContentData>
                     <p style={{ margin: 0, padding: '20px 0' }}>
                       World Coordinates:
                     </p>
                     <span>X: {worldCoords.x.toPrecision(4)}</span>
                     <span style={{ marginLeft: 20 }}>
-                    Y: {worldCoords.y.toPrecision(4)}
-                  </span>
+                      Y: {worldCoords.y.toPrecision(4)}
+                    </span>
                     <span style={{ marginLeft: 20 }}>
-                    Z: {worldCoords.z.toPrecision(4)}
-                  </span>
+                      Z: {worldCoords.z.toPrecision(4)}
+                    </span>
                     <p>Voxel Coordinates:</p>
                     <span>I: {voxelCoords.i}</span>
                     <span style={{ marginLeft: 20 }}>J: {voxelCoords.j}</span>
                     <span style={{ marginLeft: 20 }}>K: {voxelCoords.k}</span>
                     <p>Value: {values}</p>
                     <ChangeDrag
-                        onChangeMin={onChangeMinThresh}
-                        max={maxThres}
-                        min={-maxThres}
-                        title={'Threshold'}
-                        value={thresholds}
-                        showInputMax
-                        showInputMin
-                        onChange={onChangeThreshold}
+                      onChangeMin={onChangeMinThresh}
+                      max={maxThres}
+                      min={-maxThres}
+                      title={'Threshold'}
+                      value={thresholds}
+                      showInputMax
+                      showInputMin
+                      onChange={onChangeThreshold}
                     />
                     <ChangeDrag
-                        title={'Contrast (0.0 to 2.0)'}
-                        value={contracts}
-                        onChange={onChangeContract}
+                      title={'Contrast (0.0 to 2.0)'}
+                      value={contracts}
+                      onChange={onChangeContract}
                     />
                     <ChangeDrag
-                        title={'Brightness (-1 to 1):'}
-                        value={brightness}
-                        min={-1}
-                        max={1}
-                        onChange={onChangeBrightness}
+                      title={'Brightness (-1 to 1):'}
+                      value={brightness}
+                      min={-1}
+                      max={1}
+                      onChange={onChangeBrightness}
                     />
                   </BoxContentData>
-                  <WrapperButton sx={{justifyContent: 'flex-end'}}>
+                  <WrapperButton sx={{ justifyContent: 'flex-end' }}>
                     <ButtonCanCel onClick={onClose}>Close</ButtonCanCel>
                   </WrapperButton>
                 </Box>
               ) : null}
             </div>
-            {
-              editAttribute &&
-                <WrapperJson>
-                    <WrapArea onClick={() => refTextArea.current?.focus?.()}>
-                        <TextArea
-                            ref={refTextArea}
-                            onChange={(event) => onChangeJson(event)}
-                            value={textAttribute}
-                            readOnly={window.location.pathname === '/projects/new-project'}
-                        />
-                        <Typography sx={{color: 'red', paddingLeft: 1, fontSize: 12}}>{errorAttribute}</Typography>
-                    </WrapArea>
-                    <WrapperButton>
-                        <ButtonOk onClick={handleClickOpenSave}>Save Attributes</ButtonOk>
-                    </WrapperButton>
-                </WrapperJson>
-            }
+            {editAttribute && (
+              <WrapperJson>
+                <WrapArea onClick={() => refTextArea.current?.focus?.()}>
+                  <TextArea
+                    ref={refTextArea}
+                    onChange={(event) => onChangeJson(event)}
+                    value={textAttribute}
+                    readOnly={
+                      window.location.pathname === '/projects/new-project'
+                    }
+                  />
+                  <Typography
+                    sx={{ color: 'red', paddingLeft: 1, fontSize: 12 }}
+                  >
+                    {errorAttribute}
+                  </Typography>
+                </WrapArea>
+                <WrapperButton>
+                  <ButtonOk onClick={handleClickOpenSave}>
+                    Save Attributes
+                  </ButtonOk>
+                </WrapperButton>
+              </WrapperJson>
+            )}
             {!disabled?.right ? (
               <ButtonNext onClick={onNext}>
                 <ArrowForwardIosIconWrapper />
@@ -373,13 +382,11 @@ const ImageView: FC<ImageViewProps> = ({
           </ButtonClose>
         </ImageViewWrapper>
         <AlertDialog
-            open={openSave}
-            handleClose={handleCloseSave}
-            handleSaveAttributes={handleSaveAttributes}
+          open={openSave}
+          handleClose={handleCloseSave}
+          handleSaveAttributes={handleSaveAttributes}
         />
-        {
-          isLoading && <Loading />
-        }
+        {isLoading && <Loading />}
       </div>
     </Modal>
   )
@@ -482,7 +489,7 @@ const ButtonOk = styled('button')({
   cursor: 'pointer',
   '&:hover': {
     background: 'rgba(0, 0, 0, 0.2)',
-  }
+  },
 })
 
 const ButtonCanCel = styled('button')({
@@ -490,8 +497,8 @@ const ButtonCanCel = styled('button')({
   border: '2px solid #000',
   cursor: 'pointer',
   background: '#000000c7',
-  color: 'red',
-  marginRight: 10
+  color: 'white',
+  marginRight: 10,
 })
 
 export default ImageView

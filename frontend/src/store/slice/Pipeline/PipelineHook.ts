@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useSearchParams, useLocation } from 'react-router-dom'
-import { AppDispatch } from 'store/store'
-
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { selectRunPostData } from 'store/selectors/run/RunSelectors'
 import {
   selectPipelineIsCanceled,
@@ -11,7 +9,7 @@ import {
   selectPipelineStatus,
 } from './PipelineSelectors'
 import { run, pollRunResult, runByCurrentUid } from './PipelineActions'
-import { cancelPipeline } from './PipelineSlice'
+import { cancelPipeline, setAllowRun } from './PipelineSlice'
 import { selectFilePathIsUndefined } from '../InputNode/InputNodeSelectors'
 import { selectAlgorithmNodeNotExist } from '../AlgorithmNode/AlgorithmNodeSelectors'
 import { useSnackbar } from 'notistack'
@@ -21,6 +19,17 @@ import {
   getExperiments,
   importExperimentByUid,
 } from '../Experiments/ExperimentsActions'
+import { reset } from '../Dataset/DatasetSlice'
+import { getDatasetList } from '../Dataset/DatasetAction'
+import { AppDispatch } from 'store/store'
+import { setSelectedFilePath } from '../InputNode/InputNodeSlice'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone' // dependent on utc plugin
+import { setLoadingExpriment } from '../Experiments/ExperimentsSlice'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const POLLING_INTERVAL = 5000
 
@@ -35,6 +44,10 @@ export function useRunPipeline() {
   const filePathIsUndefined = useSelector(selectFilePathIsUndefined)
   const algorithmNodeNotExist = useSelector(selectAlgorithmNodeNotExist)
   const runPostData = useSelector(selectRunPostData)
+  const [searchParams] = useSearchParams()
+  const projectId = searchParams.get('id')
+  const navigate = useNavigate()
+
   const handleRunPipeline = React.useCallback(
     (name: string) => {
       dispatch(run({ runPostData: { name, ...runPostData, forceRunList: [] } }))
@@ -44,28 +57,53 @@ export function useRunPipeline() {
   const handleRunPipelineByUid = React.useCallback(() => {
     dispatch(runByCurrentUid({ runPostData }))
   }, [dispatch, runPostData])
-  const [searchParams] = useSearchParams()
   const location = useLocation()
   const [isEdited] = useState<{ edited: boolean }>(
     location.state as { edited: boolean },
   )
-
   React.useEffect(() => {
-    const projectId = searchParams.get('id')
-    if (projectId && !isEdited) {
-      appDispatch(fetchExperiment(projectId.toString()))
+    if (!projectId) {
+      navigate('/projects')
+    } else {
+      appDispatch(getDatasetList({ project_id: projectId }))
         .unwrap()
-        .catch((_) => {
-          dispatch(importExperimentByUid('default'))
+        .then(({ dataset, last_updated_time }) => {
+          if (!isEdited) {
+            appDispatch(fetchExperiment(projectId))
+              .unwrap()
+              .then(({ nodeDict, finished_at }) => {
+                const diffMinus = dayjs(
+                  dayjs(last_updated_time).format('YYYY-MM-DD HH:mm'),
+                ).diff(
+                  dayjs(dayjs(finished_at).format('YYYY-MM-DD HH:mm')),
+                  'm',
+                )
+                dispatch(setAllowRun({ allowRun: diffMinus > 0 }))
+                dispatch(setSelectedFilePath({ dataset, nodeDict }))
+              })
+              .catch((_) => {
+                appDispatch(importExperimentByUid('default')).then((_) => {
+                  dispatch(setSelectedFilePath({ dataset }))
+                  dispatch(setAllowRun({ allowRun: true }))
+                })
+              })
+          }
         })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    return () => {
+      dispatch(reset())
+      dispatch(setLoadingExpriment({ loading: true }))
+    }
+    //eslint-disable-next-line
   }, [])
+
   const handleCancelPipeline = React.useCallback(() => {
     if (uid != null) {
       dispatch(cancelPipeline())
     }
   }, [dispatch, uid])
+
   React.useEffect(() => {
     const intervalId = setInterval(() => {
       if (isStartedSuccess && !isCanceled && uid != null) {
@@ -76,7 +114,9 @@ export function useRunPipeline() {
       clearInterval(intervalId)
     }
   }, [dispatch, uid, isCanceled, isStartedSuccess])
+
   const status = useSelector(selectPipelineStatus)
+
   const { enqueueSnackbar } = useSnackbar()
   // タブ移動による再レンダリングするたびにスナックバーが実行されてしまう挙動を回避するために前回の値を保持
   const [prevStatus, setPrevStatus] = React.useState(status)
@@ -97,6 +137,7 @@ export function useRunPipeline() {
       setPrevStatus(status)
     }
   }, [dispatch, status, prevStatus, enqueueSnackbar])
+
   return {
     filePathIsUndefined,
     algorithmNodeNotExist,

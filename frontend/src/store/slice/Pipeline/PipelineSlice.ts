@@ -24,6 +24,7 @@ const initialState: Pipeline = {
     status: RUN_STATUS.START_UNINITIALIZED,
   },
   runBtn: RUN_BTN_OPTIONS.RUN_NEW,
+  allowRun: true,
 }
 
 export const pipelineSlice = createSlice({
@@ -40,6 +41,14 @@ export const pipelineSlice = createSlice({
       }>,
     ) => {
       state.runBtn = action.payload.runBtnOption
+    },
+    setAllowRun: (
+      state,
+      action: PayloadAction<{
+        allowRun: boolean
+      }>,
+    ) => {
+      state.allowRun = action.payload.allowRun
     },
   },
   extraReducers: (builder) => {
@@ -128,6 +137,7 @@ export const pipelineSlice = createSlice({
           state.currentPipeline = {
             uid: action.payload,
           }
+          state.allowRun = false
         },
       )
       .addMatcher(
@@ -141,6 +151,7 @@ export const pipelineSlice = createSlice({
   },
 })
 
-export const { cancelPipeline, setRunBtnOption } = pipelineSlice.actions
+export const { cancelPipeline, setRunBtnOption, setAllowRun } =
+  pipelineSlice.actions
 
 export default pipelineSlice.reducer

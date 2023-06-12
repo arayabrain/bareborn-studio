@@ -362,7 +362,7 @@ const Database = () => {
     if (!databases) return
 
     const data = onSort(
-      JSON.parse(JSON.stringify(databases.records)),
+      JSON.parse(JSON.stringify(initDataTable.records)),
       orderByValue,
       orderKey as OrderKey,
       type,
@@ -414,7 +414,10 @@ const Database = () => {
       </ProjectsTitle>
       <BoxSelectTypeView>
         <Box
-          onClick={() => setType('tree')}
+          onClick={() => {
+            setOrdeBy('')
+            setType('tree')
+          }}
           style={{
             marginRight: 4,
             fontWeight: type === 'tree' ? 700 : 500,
@@ -426,7 +429,10 @@ const Database = () => {
         </Box>
         /
         <Box
-          onClick={() => setType('list')}
+          onClick={() => {
+            setOrdeBy('')
+            setType('list')
+          }}
           style={{
             marginLeft: 4,
             fontWeight: type === 'list' ? 700 : 500,
@@ -459,16 +465,18 @@ const Database = () => {
         data={databases && databases.records}
         columns={columns(rowClick, setOpenDelete, type, user)}
       />
-      <ImageView
-        disabled={disabled}
-        url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
-        open={viewer.open}
-        jsonData={viewer.jsonData}
-        onClose={onCloseImageView}
-        onNext={onNext}
-        onPrevious={onPrevious}
-        id={Number(viewer.id)}
-      />
+      {viewer.url && viewer.open && (
+        <ImageView
+          disabled={disabled}
+          url={`${DATABASE_URL_HOST}${viewer.url}`}
+          open={viewer.open}
+          jsonData={viewer.jsonData}
+          onClose={onCloseImageView}
+          onNext={onNext}
+          onPrevious={onPrevious}
+          id={Number(viewer.id)}
+        />
+      )}
       {isLoading && <Loading />}
     </DatabaseWrapper>
   )

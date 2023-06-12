@@ -39,8 +39,8 @@ const Header: FC = () => {
   return (
     <HeaderWrapper>
       <BoxWrapper>
-        <Image src="/static/favicon.ico" alt="logo" />
-        <TitleLogo>Studio</TitleLogo>
+        {/* <Image src="/static/favicon.ico" alt="logo" /> */}
+        <TitleLogo>MRI Analysis Studio</TitleLogo>
       </BoxWrapper>
       <BoxMenu ref={refMenu} tabIndex={1} onClick={onClick} onBlur={closeMenu}>
         <AccountCircleIcon />
@@ -83,9 +83,11 @@ const BoxDropdown = styled(Box)({
   minWidth: 250,
 })
 
+/*
 const Image = styled('img')({
   height: 46,
 })
+*/
 
 const BoxWrapper = styled(Box)({
   display: 'flex',

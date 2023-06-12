@@ -24,14 +24,11 @@ export type SubFolder = {
     parent_id: string
   }[]
   parent_id: string
-  sub_folders: SubFolder[]
+  sub_folders?: SubFolder[]
 }
 
 export type Dataset = {
-  dataset?: {
-    id: string
-    project_id: number
-    sub_folders: SubFolder[]
-  }
+  dataset?: SubFolder[]
   project_id: string | null
+  last_updated_time: string | null
 }

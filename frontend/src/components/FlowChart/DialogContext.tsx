@@ -19,6 +19,7 @@ export const DialogContext = createContext<{
   onOpen: (nodeId: string) => void
   onOpenDialogFile: (value: OpenDialogValue) => void
   onMessageError: (value: ErrorDialogValue) => void
+  images: { id: string | number; url: string }[]
   onOpenImageAlignment: (
     v: boolean,
     params?: { nodeId: string; alignments: Params[] },
@@ -28,4 +29,5 @@ export const DialogContext = createContext<{
   onOpenDialogFile: () => null,
   onMessageError: () => null,
   onOpenImageAlignment: () => null,
+  images: [],
 })

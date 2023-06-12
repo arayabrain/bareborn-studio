@@ -26,7 +26,6 @@ const Projects = () => {
   const dispatch = useDispatch()
   const projects = useSelector(selectProjectList)
   const [idDelete, setIdDelete] = useState<number | string | undefined>()
-  const [page, setPage] = useState(1)
 
   useEffect(() => {
     dispatch(getProjectList())
@@ -87,10 +86,15 @@ const Projects = () => {
               <ButtonAdd
                 variant="contained"
                 onClick={() => onWorkflow(data.id)}
+                sx={{ backgroundColor: '#1976D2 !important' }}
               >
                 Workflow
               </ButtonAdd>
-              <ButtonAdd variant="contained" onClick={() => onResults(data.id)}>
+              <ButtonAdd
+                variant="contained"
+                onClick={() => onResults(data.id)}
+                sx={{ backgroundColor: '#1976D2 !important' }}
+              >
                 Result
               </ButtonAdd>
               <ButtonAdd
@@ -127,12 +131,6 @@ const Projects = () => {
         </ButtonAdd>
       </BoxButton>
       <TableComponent
-        paginate={{
-          total: projects.length,
-          page,
-          page_size: 10,
-          onPageChange: ({ selected }) => setPage(selected),
-        }}
         data={projects}
         columns={columns}
       />
@@ -143,6 +141,8 @@ const Projects = () => {
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
+  height: 'calc(100% - 90px)',
+  overflow: 'auto'
 }))
 
 const ProjectsTitle = styled('h1')(({ theme }) => ({}))
