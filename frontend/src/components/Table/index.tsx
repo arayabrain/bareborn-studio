@@ -5,6 +5,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import { ProjectType } from 'store/slice/Project/ProjectType'
+import dayjs from "dayjs";
 
 export type Column = {
   width?: number | string
@@ -52,6 +53,9 @@ const TableComponent: FC<TableComponentProps> = (props) => {
 
   const renderCol = useCallback(
     (col: Column, item: ProjectType, index: number) => {
+      if(col.name === 'created_time' || col.name === 'updated_time') {
+        return dayjs(item[col.name]).format('YYYY-MM-DD HH:mm')
+      }
       const value = item[(col.name || col.dataIndex || '') as keyof ProjectType]
       if (col.render) return col.render(item, value, index)
       return value || null

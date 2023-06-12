@@ -9,13 +9,14 @@ import {
   Typography,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
-import DatabaseTableComponent from 'components/DatabaseTable'
+import DatabaseTableComponent, { Column } from 'components/DatabaseTable'
 import React, {
   useState,
   DragEvent,
   Fragment,
   useRef,
   CSSProperties,
+  useEffect,
 } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getNanoId } from 'utils/nanoid/NanoIdUtils'
@@ -27,23 +28,45 @@ import {
   Viewer,
 } from '../Database'
 import ImageView from 'components/ImageView'
-import { onGet, onRowClick, onSort, OrderKey } from 'utils/database'
-import { Object } from '../Database'
+import {
+  onFilterValue,
+  onGet,
+  onRowClick,
+  onSort,
+  OrderKey,
+} from 'utils/database'
+import { ObjectType } from '../Database'
 import { ChangeEvent } from 'react'
 import { RecordDatabase } from '../Database'
 import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { useDispatch } from 'react-redux'
+import { getDatasetList } from 'store/slice/Dataset/DatasetAction'
+import { ProjectTypeValue } from 'store/slice/Project/ProjectType'
+import {
+  createProject,
+  editProject,
+  getProjectId,
+} from 'store/slice/Project/ProjectAction'
+import Loading from 'components/common/Loading'
+import { getDataBaseTree } from 'api/rawdb'
+import { DATABASE_URL_HOST } from 'const/API'
+import { selectDataset } from 'store/slice/Dataset/DatasetSelector'
+import { useSelector } from 'react-redux'
+import { Dataset } from 'store/slice/Dataset/DatasetType'
+import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
+import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
+import { reset } from 'store/slice/Dataset/DatasetSlice'
 
-const columns = [
-  { title: 'User', name: 'user_name', filter: true },
-  { title: 'Date', name: 'recording_time', filter: true, width: 100 },
-  { title: 'Subject', name: 'subject', filter: true },
+const columns: Column[] = [
+  { title: 'User', name: 'user_name', filter: true, width: 100 },
+  { title: 'Date', name: 'recording_time', filter: true, width: 130 },
+  { title: 'Subject', name: 'subject', filter: true, width: 120 },
   {
     title: 'Session',
     name: 'session',
     child: 'label',
     filter: true,
-    width: 100,
+    width: 190,
   },
   {
     title: 'Datatype',
@@ -51,8 +74,18 @@ const columns = [
     filter: true,
     width: 100,
   },
-  { title: 'Size', name: 'attributes.size', filter: true },
-  { title: 'Voxel size', name: 'attributes.voxel_size', filter: true },
+  {
+    title: 'Size',
+    name: 'image_attributes.scale',
+    filter: true,
+    render: (_, value) => JSON.stringify(value),
+  },
+  {
+    title: 'Voxel size',
+    name: 'image_attributes.voxel',
+    filter: true,
+    render: (_, value) => JSON.stringify(value),
+  },
 ]
 
 type ProjectAdd = {
@@ -63,7 +96,7 @@ type ProjectAdd = {
   protocol: string
   id: string
   image_id: number
-  jsonData: Object
+  jsonData: ObjectType
 }
 
 type DataWithin = {
@@ -78,45 +111,143 @@ type DataFactor = {
 
 const nameDefault = 'DEFAULT'
 
-const ProjectFormComponent = () => {
-  const [searchParams] = useSearchParams()
+const defaultFactor = [
+  { name: nameDefault, within: [], id: getNanoId(), data: [] },
+]
 
+const remapDatasetToDataFactor = ({ dataset }: Dataset): DataFactor[] => {
+  if (!dataset) return defaultFactor
+  return dataset.sub_folders.map((sub) => ({
+    id: sub.id,
+    name: sub.folder_name || nameDefault,
+    within: (sub.sub_folders || []).map((sub_within) => ({
+      id: sub_within.id,
+      name: sub_within.folder_name,
+      data: (sub_within.images || []).map((image) => ({
+        project_name: image.attributes.datatype as string,
+        project_type: image.attributes.image_type as string,
+        id: String(image.id),
+        image_count: 1,
+        image_id: image.id,
+        protocol: image.attributes.protocol as string,
+        image_url: image.image_url,
+        jsonData: image.attributes,
+      })),
+    })),
+    data: (sub.images || []).map((image) => ({
+      project_name: image.attributes.datatype as string,
+      project_type: image.attributes.image_type as string,
+      id: String(image.id),
+      image_count: 1,
+      image_id: image.id,
+      protocol: image.attributes.protocol as string,
+      image_url: image.image_url,
+      jsonData: image.attributes,
+    })),
+  }))
+}
+
+const ProjectFormComponent = () => {
+  const [searchParams, setParams] = useSearchParams()
   const idEdit = searchParams.get('id')
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
   const [orderBy, setOrdeBy] = useState<'ASC' | 'DESC' | ''>('')
   const [columnSort, setColumnSort] = useState<string>('')
-  const [datasTable, setDatasTable] = useState<DatabaseData>(defaultDatabase)
+  const [loading, setLoading] = useState<boolean>(false)
   const [imageIDs, setImageIDs] = useState<number[]>([])
   const routeGoback = searchParams.get('back')
   const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
   const dispatch = useDispatch()
 
-  const [initDataTable /*setInitDataTable */] =
+  const dataset = useSelector(selectDataset)
+  const currentProject = useSelector(selectCurrentProject)
+
+  const [databasese, setDatabases] = useState<DatabaseData>(defaultDatabase)
+  const [initDatabase, setInitDatabase] =
     useState<DatabaseData>(defaultDatabase)
-  const [projectName, setProjectName] = useState('Prj Name 1')
-  const [projectLevel, setProjectLevel] = useState<'factor' | 'within-factor'>(
-    'factor',
+  const [projectName, setProjectName] = useState(
+    currentProject?.project_name || 'Prj Name 1',
+  )
+  const [projectType, setProjectType] = useState<ProjectTypeValue>(
+    currentProject?.project_type || ProjectTypeValue.FACTOR,
   )
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [openFilter, setOpenFilter] = useState(false)
   const [rowDrag, setRowDrag] = useState<ImagesDatabase | ImagesDatabase[]>()
-  const [dataFactors, setDataFactors] = useState<DataFactor[]>([
-    { name: nameDefault, within: [], id: getNanoId(), data: [] },
-  ])
+  const [dataFactors, setDataFactors] = useState<DataFactor[]>(
+    remapDatasetToDataFactor(dataset),
+  )
+
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
+
+  useEffect(() => {
+    if (!idEdit) return
+    setLoading(true)
+    dispatch(getDatasetList({ project_id: idEdit }))
+    dispatch(
+      getProjectId({
+        project_id: idEdit,
+        callback: () => setLoading(false),
+      }),
+    )
+    return () => {
+      dispatch(resetCurrentProject())
+      dispatch(reset())
+    }
+    //eslint-disable-next-line
+  }, [])
+
+  useEffect(() => {
+    setDataFactors(remapDatasetToDataFactor(dataset))
+  }, [dataset])
+
+  useEffect(() => {
+    if (currentProject?.project_name) {
+      setProjectName(currentProject?.project_name)
+    }
+  }, [currentProject?.project_name])
+
+  useEffect(() => {
+    if (typeof currentProject?.project_type === 'number') {
+      setProjectType(currentProject.project_type)
+    }
+  }, [currentProject?.project_type])
+
+  useEffect(() => {
+    getDataTree().then()
+    //eslint-disable-next-line
+  }, [])
+
+  const onFilter = (value: { [key: string]: string }) => {
+    if (!initDatabase) return
+    onFilterValue(value, setDatabases, initDatabase, 'tree')
+    if (!Object.keys(value).length) return
+    const newParams = Object.keys(value)
+      .map((key) => value[key] && `${key}=${value[key]}`)
+      .join('&')
+    setParams(newParams)
+  }
+
+  const getDataTree = async () => {
+    try {
+      const response = await getDataBaseTree()
+      setDatabases(response)
+      setInitDatabase(response)
+    } catch {}
+  }
 
   const onChangeName = (e: ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value)
   }
 
   const handleChangeLevel = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const type = event.target.value as 'within-factor' | 'factor'
-    setProjectLevel(type)
+    const type = Number(event.target.value) as ProjectTypeValue
+    setProjectType(type)
     let within: DataWithin[] = []
-    if (type === 'within-factor') {
+    if (type === ProjectTypeValue.WITHIN_FACTOR) {
       within = [{ name: nameDefault, id: getNanoId(), data: [] }]
     }
     setImageIDs([])
@@ -150,7 +281,7 @@ const ProjectFormComponent = () => {
   const onDeleteFactor = (row: DataFactor) => {
     setImageIDs((pre) =>
       pre.filter((id) => {
-        if (projectLevel === 'factor') {
+        if (projectType === ProjectTypeValue.FACTOR) {
           return !row.data.find((rowData) => rowData.image_id === id)
         }
         return !row.within.find((w) => w.data.find((d) => d.image_id === id))
@@ -257,10 +388,10 @@ const ProjectFormComponent = () => {
           project_name: rowDrag.datatype_label,
           image_count: 1,
           image_id: rowDrag.id,
-          project_type: rowDrag.attributes.type as string,
-          protocol: rowDrag.attributes.protocol as string,
+          project_type: rowDrag.image_attributes.image_type as string,
+          protocol: rowDrag.image_attributes.protocol as string,
           image_url: rowDrag?.image_url,
-          jsonData: rowDrag?.attributes,
+          jsonData: rowDrag?.image_attributes,
         },
       ]
     } else if (Array.isArray(rowDrag)) {
@@ -269,13 +400,13 @@ const ProjectFormComponent = () => {
         project_name: row.datatype_label,
         image_count: 1,
         image_id: row.id,
-        project_type: row.attributes.type as string,
-        protocol: row.attributes.protocol as string,
+        project_type: row.image_attributes.image_type as string,
+        protocol: row.image_attributes.protocol as string,
         image_url: row?.image_url,
-        jsonData: row?.attributes,
+        jsonData: row?.image_attributes,
       }))
     }
-    if (projectLevel !== 'within-factor') {
+    if (projectType === ProjectTypeValue.FACTOR) {
       setDataFactors((pre) =>
         pre.map((p) => {
           if (p.id === factor.id) {
@@ -362,9 +493,7 @@ const ProjectFormComponent = () => {
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
         <TypographyBoxItem>{e.project_type}</TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
-        <Box
-          style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}
-        >
+        <Box style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}>
           <Button
             onClick={(event) => {
               event.preventDefault()
@@ -383,8 +512,8 @@ const ProjectFormComponent = () => {
     setViewer({ open: false, url: '' })
   }
 
-  const rowClick = (row: ImagesDatabase) => {
-    const { view, checkNext, checkPre } = onRowClick(datasTable, row)
+  const rowClick = async (row: ImagesDatabase) => {
+    const { view, checkNext, checkPre } = await onRowClick(databasese, row)
     setViewer(view)
     setDisabled({ left: !checkPre, right: !checkNext })
   }
@@ -406,24 +535,24 @@ const ProjectFormComponent = () => {
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
     const data = onSort(
-      JSON.parse(JSON.stringify(initDataTable.records)),
+      JSON.parse(JSON.stringify(initDatabase.records)),
       orderByValue,
       orderKey as OrderKey,
     )
-    setDatasTable({ ...datasTable, records: data as RecordDatabase[] })
+    setDatabases({ ...databasese, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
     setOrdeBy(orderByValue)
   }
 
   const onNext = () => {
     if (!viewer.image) return
-    const imageNext = onGet(datasTable, viewer.image, false)
+    const imageNext = onGet(databasese, viewer.image, false)
     if (imageNext) rowClick(imageNext as ImagesDatabase)
   }
 
   const onPrevious = () => {
     if (!viewer.image) return
-    const imagePre = onGet(datasTable, viewer.image, true)
+    const imagePre = onGet(databasese, viewer.image, true)
     if (imagePre) rowClick(imagePre as ImagesDatabase)
   }
 
@@ -433,31 +562,103 @@ const ProjectFormComponent = () => {
       : navigate(`${routeGoback}&id=${idEdit}`, { state: { edited: true } })
   }
 
-  const onOk = () => {
-    if (nodeId) {
-      const urls = dataFactors
-        .map((el) => {
-          if (el.data.length) return el.data
-          return el.within.map((w) => w.data).flat()
-        })
-        .flat()
-        .map((image) => image.image_url)
-      dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+  const generateName = (name: string, index: number, subject: string) => {
+    if (name === nameDefault) {
+      return `${subject} factor name ${index}`
     }
-    onCancle()
+    return name
+  }
+
+  const getBorderDrag = (): string => {
+    if (
+      (Array.isArray(rowDrag) && rowDrag.length) ||
+      (!Array.isArray(rowDrag) && !!rowDrag)
+    ) {
+      return '1px dashed red'
+    }
+    return ''
+  }
+
+  const onOk = async () => {
+    setLoading(true)
+    const project = {
+      project_name: projectName,
+      project_type: projectType,
+      image_count: imageIDs.length,
+    }
+    const dataset = dataFactors.map((factor, index) => ({
+      folder_name: generateName(factor.name, index, 'Between'),
+      source_image_ids: factor.data.map((d) => d.image_id),
+      sub_folders: factor.within.map((within, iWithin) => ({
+        folder_name: generateName(within.name, iWithin, 'Within'),
+        source_image_ids: within.data.map((d) => d.image_id),
+      })),
+    }))
+    if (nodeId) {
+      dispatch(
+        editProject({
+          project,
+          project_id: nodeId,
+          dataset,
+          callback: (isSuccess: boolean) => {
+            if (isSuccess) {
+              const urls = dataFactors
+                .map((el) => {
+                  if (el.data.length) return el.data
+                  return el.within.map((w) => w.data).flat()
+                })
+                .flat()
+                .map((image) => image.image_url)
+              dispatch(setInputNodeFilePath({ nodeId, filePath: urls }))
+              if (routeGoback)
+                navigate(`${routeGoback}&id=${idEdit}`, {
+                  state: { edited: true },
+                })
+            }
+            setLoading(false)
+          },
+        }),
+      )
+    } else {
+      dispatch(
+        createProject({
+          project,
+          dataset,
+          callback: (isSuccess: boolean) => {
+            if (isSuccess) {
+              return onCancle()
+            }
+            setLoading(false)
+          },
+        }),
+      )
+    }
   }
 
   return (
     <ProjectsWrapper>
-      {openFilter && <PopupSearch onClose={() => setOpenFilter(false)} />}
+      {openFilter && (
+        <PopupSearch
+          defaultValue={{
+            session_label: searchParams.get('session_label') || '',
+            datatypes_label: searchParams.get('datatypes_label') || '',
+            type: searchParams.get('type') || '',
+            protocol: searchParams.get('protocol') || '',
+          }}
+          onFilter={onFilter}
+          onClose={() => setOpenFilter(false)}
+        />
+      )}
       <ImageView
+        editAttribute={false}
         disabled={disabled}
-        url={viewer.url}
+        url={viewer.url && `${DATABASE_URL_HOST}${viewer.url}`}
         open={viewer.open}
         jsonData={viewer.jsonData}
         onClose={onCloseImageView}
         onNext={onNext}
         onPrevious={onPrevious}
+        id={Number(viewer.id)}
       />
       {isEditName ? (
         <InputName
@@ -471,22 +672,23 @@ const ProjectFormComponent = () => {
       )}
       <BoxOptions
         aria-labelledby="demo-radio-buttons-group-label"
-        value={projectLevel}
+        value={projectType}
         name="radio-buttons-group"
         onChange={handleChangeLevel}
       >
         <Box>
           <Box>
             <FormControlLabel
-              value="factor"
+              value={ProjectTypeValue.FACTOR}
               control={<Radio />}
               label="Between factor"
             />
           </Box>
           <FormControlLabel
-            value="within-factor"
+            value={ProjectTypeValue.WITHIN_FACTOR}
             control={<Radio />}
             label="Between factor-within factor"
+            disabled={idEdit ? true : false}
           />
         </Box>
       </BoxOptions>
@@ -499,32 +701,21 @@ const ProjectFormComponent = () => {
                   <Input
                     onChange={(e) => onChangeNameFactor(factor, e.target.value)}
                     style={{ width: 'calc(100% - 64px)' }}
-                    value={
-                      factor.name === nameDefault
-                        ? `Between factor name ${index}`
-                        : factor.name
-                    }
+                    value={generateName(factor.name, index, 'Between')}
                   />
                   <Button onClick={() => onDeleteFactor(factor)}>
                     <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
                   </Button>
-                  {projectLevel === 'within-factor' ? (
-                    factor.within.map((within, indexWithin) => (
+                  {projectType === ProjectTypeValue.WITHIN_FACTOR ? (
+                    factor.within.map((within, iWithin) => (
                       <BoxFactor key={within.id} style={{ marginLeft: 24 }}>
                         <Input
-                          onChange={(e) =>
-                            onChangeNameWithinFactor(
-                              factor,
-                              within,
-                              e.target.value,
-                            )
-                          }
+                          onChange={(e) => {
+                            const { value } = e.target
+                            onChangeNameWithinFactor(factor, within, value)
+                          }}
                           style={{ width: 'calc(100% - 64px)' }}
-                          value={
-                            within.name === nameDefault
-                              ? `Within factor name ${indexWithin}`
-                              : within.name
-                          }
+                          value={generateName(within.name, iWithin, 'Within')}
                         />
                         <Button onClick={() => onDeleteWithin(factor, within)}>
                           <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
@@ -533,13 +724,7 @@ const ProjectFormComponent = () => {
                           onDeleteDataWithin(factor, within, row)
                         })}
                         <BoxDrag
-                          style={{
-                            borderBottom:
-                              (Array.isArray(rowDrag) && rowDrag.length) ||
-                              (!Array.isArray(rowDrag) && !!rowDrag)
-                                ? '1px dashed red'
-                                : '',
-                          }}
+                          style={{ borderBottom: getBorderDrag() }}
                           onDrop={() => onDropData(factor, within)}
                           onMouseOver={() => onMouseOver(factor, within)}
                           onDragOver={onDragOver}
@@ -553,13 +738,7 @@ const ProjectFormComponent = () => {
                         onDeleteDataFactor(factor, row)
                       })}
                       <BoxDrag
-                        style={{
-                          borderBottom:
-                            (Array.isArray(rowDrag) && rowDrag.length) ||
-                            (!Array.isArray(rowDrag) && !!rowDrag)
-                              ? '1px dashed red'
-                              : '',
-                        }}
+                        style={{ borderBottom: getBorderDrag() }}
                         onDrop={() => onDropData(factor)}
                         onDragOver={onDragOver}
                         onDragLeave={onDragLeave}
@@ -568,7 +747,8 @@ const ProjectFormComponent = () => {
                     </>
                   )}
                 </BoxFactor>
-                {projectLevel === 'within-factor' && dataFactors.length ? (
+                {projectType === ProjectTypeValue.WITHIN_FACTOR &&
+                dataFactors.length ? (
                   <NewRowButton
                     onClick={() => onAddWithin(factor.id)}
                     style={{ marginLeft: 24 }}
@@ -593,6 +773,7 @@ const ProjectFormComponent = () => {
             </ButtonFilter>
           </BoxFilter>
           <DatabaseTableComponent
+            addProject={true}
             onSort={handleSort}
             orderKey={columnSort}
             orderBy={orderBy}
@@ -602,7 +783,7 @@ const ProjectFormComponent = () => {
             onDrag={onDragRow}
             onDragEnd={onDragEnd}
             draggable
-            data={datasTable.records}
+            data={databasese.records}
             columns={columns}
           />
         </DropBox>
@@ -617,6 +798,7 @@ const ProjectFormComponent = () => {
         <ButtonFilter onClick={onOk}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
         <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
+      {loading && <Loading />}
     </ProjectsWrapper>
   )
 }
@@ -642,6 +824,9 @@ const BoxItem = styled(Box)({
 
 const TypographyBoxItem = styled(Box)({
   minWidth: 120,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 })
 
 const BoxDrag = styled(Box)({
@@ -653,7 +838,7 @@ const BoxDrag = styled(Box)({
 const BoxFactor = styled(Box)({})
 
 const ProjectsWrapper = styled(Box)(({ theme }) => ({
-  width: '100%',
+  width: `calc(100% - ${theme.spacing(2)})`,
   padding: theme.spacing(2),
   marginBottom: theme.spacing(3),
   userSelect: 'none',

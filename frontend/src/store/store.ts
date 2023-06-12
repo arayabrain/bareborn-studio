@@ -21,6 +21,7 @@ import {
   hdf5Reducer,
   experimentsReducer,
   projectReducer,
+  datasetReducer,
 } from './slice'
 
 export const rootReducer = combineReducers({
@@ -40,6 +41,7 @@ export const rootReducer = combineReducers({
   hdf5: hdf5Reducer,
   experiments: experimentsReducer,
   project: projectReducer,
+  dataset: datasetReducer,
 })
 
 export const store = configureStore({

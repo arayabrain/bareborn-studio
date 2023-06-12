@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams, useLocation } from 'react-router-dom'
+import { AppDispatch } from 'store/store'
 
 import { selectRunPostData } from 'store/selectors/run/RunSelectors'
 import {
@@ -18,6 +19,7 @@ import { RUN_STATUS } from './PipelineType'
 import {
   fetchExperiment,
   getExperiments,
+  importExperimentByUid,
 } from '../Experiments/ExperimentsActions'
 
 const POLLING_INTERVAL = 5000
@@ -26,6 +28,7 @@ export type UseRunPipelineReturnType = ReturnType<typeof useRunPipeline>
 
 export function useRunPipeline() {
   const dispatch = useDispatch()
+  const appDispatch: AppDispatch = useDispatch()
   const uid = useSelector(selectPipelineLatestUid)
   const isCanceled = useSelector(selectPipelineIsCanceled)
   const isStartedSuccess = useSelector(selectPipelineIsStartedSuccess)
@@ -34,7 +37,6 @@ export function useRunPipeline() {
   const runPostData = useSelector(selectRunPostData)
   const handleRunPipeline = React.useCallback(
     (name: string) => {
-      console.log('asdassdasass', { runPostData: { name, ...runPostData, forceRunList: [] } })
       dispatch(run({ runPostData: { name, ...runPostData, forceRunList: [] } }))
     },
     [dispatch, runPostData],
@@ -50,7 +52,13 @@ export function useRunPipeline() {
 
   React.useEffect(() => {
     const projectId = searchParams.get('id')
-    projectId && !isEdited && dispatch(fetchExperiment(projectId.toString()))
+    if (projectId && !isEdited) {
+      appDispatch(fetchExperiment(projectId.toString()))
+        .unwrap()
+        .catch((_) => {
+          dispatch(importExperimentByUid('default'))
+        })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const handleCancelPipeline = React.useCallback(() => {

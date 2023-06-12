@@ -11,13 +11,13 @@ import {
 } from 'react'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import InputError from '../../components/common/InputError'
-import SelectError from '../../components/common/SelectError'
+import InputError from 'components/common/InputError'
+import SelectError from 'components/common/SelectError'
 import { createUser, deleteUser, editUser, listUser } from 'api/auth'
 import { useUser } from 'providers'
 import { ProjectType } from 'store/slice/Project/ProjectType'
 import { isAdmin, optionsRole } from 'utils/auth'
-import Loading from '../../components/common/Loading'
+import Loading from 'components/common/Loading'
 
 type ModalComponentProps = {
   onSubmitEdit: (
@@ -39,15 +39,15 @@ const initState = {
   confirmPassword: '',
 }
 
+export const regexPassword = /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
+export const regexEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+export const regexIgnoreS = /[^!#$%&()*+,-./@_|a-zA-Z0-9]/
+
 const ModalComponent: FC<ModalComponentProps> = ({
   onSubmitEdit,
   setIsOpenModal,
   dataEdit,
 }) => {
-  const regex =
-    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-  const regexPassword =
-    /^(?=.*\d)(?=.*[!#$%&()*+,-./@_|])(?=.*[a-zA-Z]).{6,255}$/
   const [formData, setFormData] = useState<{ [key: string]: string }>(
     dataEdit || initState,
   )
@@ -57,7 +57,7 @@ const ModalComponent: FC<ModalComponentProps> = ({
   const validateEmail = (value: string): string => {
     const error = validateField('email', 255, value)
     if (error) return error
-    if (!regex.test(value)) {
+    if (!regexEmail.test(value)) {
       return 'Invalid email format'
     }
     return ''
@@ -76,6 +76,9 @@ const ModalComponent: FC<ModalComponentProps> = ({
     let datas = values || formData
     if (!regexPassword.test(value) && value) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
+    }
+    if(regexIgnoreS.test(value)){
+      return 'Allowed special characters (!#$%&()*+,-./@_|)'
     }
     if (isConfirm && datas.password !== value && value) {
       return 'password is not match'
@@ -326,7 +329,6 @@ const AccountManager = () => {
       setIdDel(undefined)
       setOpenDelete(false)
       getList()
-      clearTimeout()
     } catch {
     } finally {
       setIsLoading(false)
@@ -359,7 +361,6 @@ const AccountManager = () => {
         name: 'action',
         width: 185,
         render: (data) => {
-          if (data?.uid === user?.uid) return null
           return (
             <>
               <ALink
@@ -368,12 +369,15 @@ const AccountManager = () => {
               >
                 <EditIcon sx={{ color: 'black' }} />
               </ALink>
-              <ALink
-                sx={{ ml: 1.25 }}
-                onClick={() => onConfirmDelete(data?.uid)}
-              >
-                <DeleteIcon sx={{ color: 'red' }} />
-              </ALink>
+              {
+                !(data?.uid === user?.uid) &&
+                <ALink
+                    sx={{ ml: 1.25 }}
+                    onClick={() => onConfirmDelete(data?.uid)}
+                >
+                  <DeleteIcon sx={{ color: 'red' }} />
+                </ALink>
+              }
             </>
           )
         },

@@ -4,18 +4,37 @@ import ModalChangePassword from 'components/ModalChangePassword'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
 import { useUser } from 'providers'
 import { useState } from 'react'
-import {optionsRole} from "../../utils/auth";
+import { isAdmin, optionsRole } from "utils/auth";
+import {deleteAccountProfile, editNameProfile, editPassProfile} from "api/auth";
+import { useNavigate } from "react-router-dom";
+import Loading from "components/common/Loading";
 
 const Account = () => {
-  const { user } = useUser()
+  const { user, setUser } = useUser()
+  const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
   const [openDelete, setOpenDelete] = useState(false)
   const [openChangePw, setOpenChangePw] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const onEditName = () => {
-    setIsEditName(false)
+  const onEditName = async (e: any) => {
+    const { value } = e.target
+    if(!value) {
+      alert('This field is required')
+      setIsEditName(false)
+      return
+    }
+    setIsLoading(true)
+    try {
+      setUser({...user, display_name: value})
+      await editNameProfile({...user, display_name: value})
+    }
+    catch {}
+    finally {
+      setIsLoading(false)
+      setIsEditName(false)
+    }
   }
-
   const handleCloseDelete = () => {
     setOpenDelete(false)
   }
@@ -24,8 +43,18 @@ const Account = () => {
     setOpenDelete(true)
   }
 
-  const onDelete = () => {
+  const onDelete = async () => {
     //todo call api
+    if(!user) return
+    setIsLoading(true)
+    try {
+      await deleteAccountProfile()
+      navigate('/login')
+    }
+    catch {}
+    finally {
+      setIsLoading(false)
+    }
     handleCloseDelete()
   }
 
@@ -37,9 +66,20 @@ const Account = () => {
     setOpenChangePw(true)
   }
 
-  const onChangePw = () => {
+  const onChangePw = async (oldPass: string, newPass: string) => {
     //todo call api
-    handleCloseChangePw()
+    setIsLoading(true)
+    try {
+      await editPassProfile({old_password: oldPass, new_password: newPass})
+      alert('Your password has been successfully changed.')
+      handleCloseChangePw()
+    }
+    catch {
+      alert('Failed to Change Password!')
+    }
+    finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -67,7 +107,7 @@ const Account = () => {
             <Input
               autoFocus
               defaultValue={user?.display_name || ''}
-              onBlur={onEditName}
+              onBlur={(e) => onEditName(e)}
               placeholder="Full name"
             />
           ) : (
@@ -90,8 +130,14 @@ const Account = () => {
       </BoxFlex>
       <BoxFlex sx={{ justifyContent: 'space-between', mt: 10 }}>
         <ButtonSubmit onClick={onConfirmChangePw}>Change Password</ButtonSubmit>
-        <ButtonSubmit onClick={onConfirmDelete}>Delete Account</ButtonSubmit>
+        {
+          !isAdmin(user?.role) &&
+          <ButtonSubmit onClick={onConfirmDelete}>Delete Account</ButtonSubmit>
+        }
       </BoxFlex>
+      {
+        isLoading && <Loading />
+      }
     </AccountWrapper>
   )
 }
