@@ -99,7 +99,7 @@ export const inputNodeSlice = createSlice({
       }>,
     ) {
       const { dataset, nodeDict } = action.payload
-      let urls: string[] = []
+      let urls: { id: string | number; url: string }[] = []
       dataset && getUrlFromSubfolder(dataset, urls)
       if (nodeDict) {
         const typeFileNode = Object.keys(REACT_FLOW_NODE_TYPE_KEY)
@@ -107,7 +107,7 @@ export const inputNodeSlice = createSlice({
           if (typeFileNode.includes(nodeDict[key].type as string)) {
             const targetNode = state[key]
             if (!targetNode) return
-            targetNode.selectedFilePath = urls
+            targetNode.selectedFilePath = urls.map(({ url }) => url)
             if (isHDF5InputNode(targetNode)) {
               targetNode.hdf5Path = undefined
             }
@@ -115,7 +115,7 @@ export const inputNodeSlice = createSlice({
         })
       } else {
         const targetNode = state[INITIAL_IMAGE_ELEMENT_ID]
-        targetNode.selectedFilePath = urls
+        targetNode.selectedFilePath = urls.map(({ url }) => url)
         if (isHDF5InputNode(targetNode)) {
           targetNode.hdf5Path = undefined
         }

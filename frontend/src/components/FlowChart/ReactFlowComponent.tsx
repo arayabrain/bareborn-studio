@@ -159,6 +159,7 @@ export const ReactFlowComponent = React.memo<UseRunPipelineReturnType>(
       <div className="flow">
         <DialogContext.Provider
           value={{
+            images: urls,
             onOpen: setDialogNodeId,
             onOpenDialogFile: setDialogFile,
             onMessageError: setMessageError,

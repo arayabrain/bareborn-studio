@@ -62,7 +62,7 @@ const Body = React.memo<{
 })
 
 const TableRowOfFunction = ({ data } : {data: MouseType}) => {
-    const {name, success, outputs, unique_id} = data
+    const {name, success, unique_id} = data
     const [popup, setPopup] = useState(false)
   return (
     <>
@@ -82,7 +82,7 @@ const TableRowOfFunction = ({ data } : {data: MouseType}) => {
         </TableRow>
         <ImageAlignment
             open={popup}
-            urls={outputs}
+            urls={[]}
             onClose={() => setPopup(false)}
             readOnly={true}
         />

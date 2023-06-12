@@ -8,22 +8,27 @@ export const selectCurrentProjectId = (state: RootState) =>
 
 export const getUrlFromSubfolder = (
   subfolders: SubFolder[] = [],
-  urls: string[],
+  urls: { id: string | number; url: string }[],
 ) => {
   subfolders.forEach((sub) => {
     if (sub.sub_folders) {
       getUrlFromSubfolder(sub.sub_folders, urls)
     } else if (sub.images?.length) {
-      const urlsImage = sub.images.map((image) => image.image_url)
+      const urlsImage = sub.images.map((image) => ({
+        url: image.image_url,
+        id: image.id,
+      }))
       urls.push(...urlsImage)
     }
   })
   return urls
 }
 
-export const selectListImageUrl = (state: RootState): string[] => {
+export const selectListImageUrl = (
+  state: RootState,
+): { id: string | number; url: string }[] => {
   if (!state.dataset.dataset) return []
-  let urls: string[] = []
+  let urls: { id: string | number; url: string }[] = []
   urls = getUrlFromSubfolder(state.dataset.dataset, urls)
   return urls
 }
