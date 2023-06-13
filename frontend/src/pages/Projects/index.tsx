@@ -58,11 +58,11 @@ const Projects = () => {
     setIdDelete(id)
   }
 
-  const onDeleteSubmit = () => {
+  const onDeleteSubmit = async () => {
     const id = idDelete
     if (!id) return
-    setIdDelete(undefined)
-    dispatch(deleteProject({ project_id: Number(id) }))
+      await dispatch(deleteProject({ project_id: Number(id) }))
+      setIdDelete(undefined)
   }
 
   const handleCloseDelete = () => {

@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { PROJECT_SLICE_NAME, Project } from './ProjectType'
-import { getProjectList, getProjectId } from './ProjectAction'
+import {getProjectList, getProjectId, deleteProject} from './ProjectAction'
 
 const initialState: Project = {
   projects: [],
@@ -20,7 +20,7 @@ export const projectSlice = createSlice({
     builder
         .addCase(getProjectList.fulfilled, (state, action) => {
           state.projects = action.payload.projects
-          state.loading= false
+          state.loading = false
         })
         .addCase(getProjectList.pending, (state) => {
           if(!state.loading) state.loading = true
@@ -30,6 +30,12 @@ export const projectSlice = createSlice({
         })
         .addCase(getProjectId.rejected, (state, action) => {
           state.loading = false
+        })
+        .addCase(deleteProject.fulfilled, (state, action) => {
+          state.loading = false
+        })
+        .addCase(deleteProject.pending, (state) => {
+          if(!state.loading) state.loading = true
         })
   },
 })
