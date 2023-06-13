@@ -16,6 +16,7 @@ export type CurrentProject = {
 
 export type Project = {
   projects: ProjectType[]
+  loading: boolean
   currentProject?: CurrentProject
 }
 

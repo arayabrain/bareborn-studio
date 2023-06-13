@@ -4,6 +4,7 @@ import { getProjectList, getProjectId } from './ProjectAction'
 
 const initialState: Project = {
   projects: [],
+  loading: true,
   currentProject: undefined,
 }
 
@@ -16,12 +17,20 @@ export const projectSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(getProjectList.fulfilled, (state, action) => {
-      state.projects = action.payload.projects
-    })
-    builder.addCase(getProjectId.fulfilled, (state, action) => {
-      state.currentProject = action.payload
-    })
+    builder
+        .addCase(getProjectList.fulfilled, (state, action) => {
+          state.projects = action.payload.projects
+          state.loading= false
+        })
+        .addCase(getProjectList.pending, (state) => {
+          if(!state.loading) state.loading = true
+        })
+        .addCase(getProjectId.fulfilled, (state, action) => {
+          state.currentProject = action.payload
+        })
+        .addCase(getProjectId.rejected, (state, action) => {
+          state.loading = false
+        })
   },
 })
 
