@@ -242,8 +242,8 @@ const ProjectFormComponent = () => {
   }, [currentProject?.project_name])
 
   useEffect(() => {
-    if (typeof currentProject?.project_type === 'number') {
-      setProjectType(currentProject.project_type)
+    if(currentProject?.project_type) {
+      setProjectType(currentProject.project_type as number)
     }
   }, [currentProject?.project_type])
 
@@ -254,7 +254,14 @@ const ProjectFormComponent = () => {
 
   const onFilter = (value: { [key: string]: string }) => {
     if (!initDatabase) return
-    onFilterValue(value, setDatabases, initDatabase, 'tree')
+    const records = onFilterValue(value, initDatabase, 'tree') as RecordDatabase[]
+    const data = onSort(
+        JSON.parse(JSON.stringify(records)),
+        orderBy,
+        columnSort as OrderKey,
+        "tree",
+    ) as RecordDatabase[]
+    setDatabases({...initDatabase, records: data})
     if (!Object.keys(value).length) return
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)

@@ -749,38 +749,26 @@ export const onSort = (
 
 export const onFilterValue = (
   value: { [key: string]: string },
-  setDatabases: (value: any) => void,
-  initDataTable: DatabaseData,
+  initDataTable: DatabaseData | DatabaseListData,
   type: 'tree' | 'list',
-) => {
+): (RecordDatabase | RecordList)[] => {
   if (!Object.keys(value).some((key) => value[key])) {
-    setDatabases(initDataTable)
-    return
+    return initDataTable.records
   }
   if (type === 'list') {
-    const arrFilter = initDataTable.records.filter((item: any) => {
-      return !Object.keys(value).some((key: string) => {
+    return (initDataTable.records as RecordList[]).filter((item) => {
+      return !Object.keys(value).some((key) => {
         if (!value[key]) return false
         if (key === 'protocol') {
           return !item.image_attributes[key]
             ?.toLowerCase()
             .includes(value[key].toLowerCase?.())
         }
-        return !item[key]?.includes(value[key].toLowerCase?.())
+        return !(item[key as keyof RecordList] as string)?.includes(value[key].toLowerCase?.())
       })
     })
-    setDatabases({
-      pagenation: {
-        page: 0,
-        limit: 0,
-        total: 0,
-        total_pages: 0,
-      },
-      records: arrFilter,
-    })
-    return
   }
-  const newRecords = initDataTable.records.reduce(
+  return (initDataTable.records as RecordDatabase[]).reduce(
     (arrRecord: RecordDatabase[], record) => {
       const subjects = record.subjects.reduce(
         (arrSub: SubjectDatabase[], subject) => {
@@ -839,14 +827,4 @@ export const onFilterValue = (
     },
     [],
   )
-  setDatabases({
-    pagenation: {
-      page: 0,
-      limit: 0,
-      total: 0,
-      total_pages: 0,
-    },
-    records: newRecords,
-  })
-  return
 }
