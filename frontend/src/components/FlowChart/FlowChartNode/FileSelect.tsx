@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext /*useEffect*/ } from 'react'
 import { Button, Typography } from '@mui/material'
 import ButtonGroup from '@mui/material/ButtonGroup'
 
@@ -7,19 +7,12 @@ import { LinearProgressWithLabel } from './LinerProgressWithLabel'
 import {
   AlignmentData,
   FILE_TYPE,
-  Params,
 } from 'store/slice/InputNode/InputNodeType'
 import { useFileUploader } from 'store/slice/FileUploader/FileUploaderHook'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { DialogContext } from '../DialogContext'
 import { useSelector } from 'react-redux'
-import {
-  selectInputNodeById,
-  selectInputNodeParam,
-} from 'store/slice/InputNode/InputNodeSelectors'
-import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
-import { useDispatch } from 'react-redux'
-
+import { selectInputNodeParam } from 'store/slice/InputNode/InputNodeSelectors'
 export const FileSelect = React.memo<{
   multiSelect?: boolean
   filePath: string | string[]
@@ -28,7 +21,6 @@ export const FileSelect = React.memo<{
   onChangeFilePath: (path: string | string[]) => void
 }>(({ multiSelect = false, filePath, nodeId, fileType, onChangeFilePath }) => {
   const {
-    // filePath: uploadedFilePath,
     onUploadFile,
     pending,
     uninitialized,
@@ -78,9 +70,9 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
   ({ filePath, nodeId }) => {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
-    const { onOpenImageAlignment, images } = useContext(DialogContext)
-    const selectInput = useSelector(selectInputNodeById(nodeId || ''))
-    const dispatch = useDispatch()
+    const { onOpenImageAlignment /*images*/ } = useContext(DialogContext)
+    // const selectInput = useSelector(selectInputNodeById(nodeId || ''))
+    // const dispatch = useDispatch()
 
     const inputNode = useSelector(
       selectInputNodeParam(nodeId || ''),
@@ -88,40 +80,40 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
 
     const id = searchParams.get('id')
 
-    useEffect(() => {
-      if (!nodeId) return
-      const valueAlignments = (selectInput.param as AlignmentData)?.alignments
-        ?.value
-      let newParams: Params[] = []
-      if (Array.isArray(filePath)) {
-        newParams = filePath.map((path: string) => {
-          const image = images.find((image) => image.url === path)
-          const param = valueAlignments?.find(
-            (align) => align.image_id === image?.id,
-          )
-          if (param) return param
-          return {
-            image_id: image?.id || path,
-            x_pos: 0,
-            x_resize: 1,
-            x_rotate: 0,
-            y_pos: 0,
-            y_resize: 1,
-            y_rotate: 0,
-            z_pos: 0,
-            z_resize: 1,
-            z_rotate: 0,
-          }
-        })
-      }
-      dispatch(
-        setInputNodeParamAlignment({
-          nodeId,
-          param: newParams,
-        }),
-      )
-      //eslint-disable-next-line
-    }, [filePath, nodeId, JSON.stringify(images)])
+    // useEffect(() => {
+    //   if (!nodeId) return
+    //   const valueAlignments = (selectInput.param as AlignmentData)?.alignments
+    //     ?.value
+    //   let newParams: Params[] = []
+    //   if (Array.isArray(filePath)) {
+    //     newParams = filePath.map((path: string) => {
+    //       const image = images.find((image) => image.url === path)
+    //       const param = valueAlignments?.find(
+    //         (align) => align.image_id === image?.id,
+    //       )
+    //       if (param) return param
+    //       return {
+    //         image_id: image?.id || path,
+    //         x_pos: 0,
+    //         x_resize: 1,
+    //         x_rotate: 0,
+    //         y_pos: 0,
+    //         y_resize: 1,
+    //         y_rotate: 0,
+    //         z_pos: 0,
+    //         z_resize: 1,
+    //         z_rotate: 0,
+    //       }
+    //     })
+    //   }
+    //   dispatch(
+    //     setInputNodeParamAlignment({
+    //       nodeId,
+    //       param: newParams,
+    //     }),
+    //   )
+    //   //eslint-disable-next-line
+    // }, [filePath, nodeId, JSON.stringify(images)])
 
     const getNameSelectec = () => {
       if (Array.isArray(filePath)) {

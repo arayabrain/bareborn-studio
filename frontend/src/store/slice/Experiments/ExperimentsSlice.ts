@@ -82,8 +82,8 @@ export const experimentsSlice = createSlice({
       })
       .addCase(fetchExperiment.fulfilled, (state, action) => {
         if (state.status === 'fulfilled') {
-          state.experimentList[action.payload.unique_id] =
-            convertToExperimentType(action.payload)
+          state.experimentList[action.payload.data.unique_id] =
+            convertToExperimentType(action.payload.data)
         }
         state.loading = false
       })

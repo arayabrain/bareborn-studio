@@ -31,6 +31,18 @@ import { getUrlFromSubfolder } from '../Dataset/DatasetSelector'
 import { NodeDict } from 'api/run/Run'
 import { SubFolder } from '../Dataset/DatasetType'
 
+const defaultValueParams = {
+  x_pos: 0,
+  x_resize: 1,
+  x_rotate: 0,
+  y_pos: 0,
+  y_resize: 1,
+  y_rotate: 0,
+  z_pos: 0,
+  z_resize: 1,
+  z_rotate: 0,
+}
+
 const initParams: AlignmentData = {
   alignments: {
     path: 'alignments',
@@ -197,15 +209,26 @@ export const inputNodeSlice = createSlice({
       })
       .addCase(importExperimentByUid.fulfilled, (_, action) => {
         const newState: InputNode = {}
-        Object.values(action.payload.nodeDict)
+        const { urls } = action.payload
+        Object.values(action.payload.data.nodeDict)
           .filter(isInputNodePostData)
           .forEach((node) => {
             if (node.data != null) {
               if (node.data.fileType === FILE_TYPE_SET.IMAGE) {
+                const valueParams = urls.map((element) => ({
+                  image_id: element.id,
+                  ...defaultValueParams,
+                }))
                 newState[node.id] = {
                   fileType: FILE_TYPE_SET.IMAGE,
-                  selectedFilePath: node.data.path as string[],
-                  param: initParams,
+                  selectedFilePath: urls.map(({ url }) => url) as string[],
+                  param: {
+                    ...initParams,
+                    alignments: {
+                      ...initParams.alignments,
+                      value: valueParams,
+                    },
+                  },
                 }
               } else if (node.data.fileType === FILE_TYPE_SET.CSV) {
                 newState[node.id] = {
@@ -227,17 +250,28 @@ export const inputNodeSlice = createSlice({
       })
       .addCase(fetchExperiment.fulfilled, (_, action) => {
         const newState: InputNode = {}
-        Object.values(action.payload.nodeDict)
+        const { urls } = action.payload
+        Object.values(action.payload.data.nodeDict)
           .filter(isInputNodePostData)
           .forEach((node) => {
             const { data } = node
-            const param = (data?.param || initParams) as AlignmentData
+            const param = data?.param as AlignmentData
             if (node.data != null) {
               if (node.data.fileType === FILE_TYPE_SET.IMAGE) {
+                const valueParams = urls.map((element) => ({
+                  image_id: element.id,
+                  ...defaultValueParams,
+                }))
                 newState[node.id] = {
                   fileType: FILE_TYPE_SET.IMAGE,
                   selectedFilePath: node.data.path as string[],
-                  param,
+                  param: {
+                    ...initParams,
+                    alignments: {
+                      ...initParams.alignments,
+                      value: valueParams,
+                    },
+                  },
                 }
               } else if (node.data.fileType === FILE_TYPE_SET.CSV) {
                 newState[node.id] = {
@@ -257,7 +291,6 @@ export const inputNodeSlice = createSlice({
           })
         return newState
       })
-      .addCase(fetchExperiment.rejected, (_state, _action) => initialState)
       .addCase(uploadFile.fulfilled, (state, action) => {
         const { nodeId } = action.meta.arg
         if (nodeId != null) {

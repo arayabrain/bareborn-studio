@@ -589,7 +589,7 @@ const ProjectFormComponent = () => {
 
   const onCancle = () => {
     if (routeGoback) {
-      navigate(`${routeGoback}&id=${idEdit}`, { state: { edited: true } })
+      navigate(`${routeGoback}&id=${idEdit}`)
       dispatch(setLoadingExpriment({ loading: false }))
     } else {
       navigate('/projects')
@@ -640,14 +640,17 @@ const ProjectFormComponent = () => {
                 let urls: { id: string | number; url: string }[] = []
                 getUrlFromSubfolder(response.records, urls)
                 await Promise.all([
-                  dispatch(setInputNodeFilePath({ nodeId, filePath: urls.map(({ url }) => url) })),
+                  dispatch(
+                    setInputNodeFilePath({
+                      nodeId,
+                      filePath: urls.map(({ url }) => url),
+                    }),
+                  ),
                   dispatch(getDatasetList({ project_id: idEdit })),
                   dispatch(setLoadingExpriment({ loading: false })),
                 ])
                 if (routeGoback) {
-                  navigate(`${routeGoback}&id=${idEdit}`, {
-                    state: { edited: true },
-                  })
+                  navigate(`${routeGoback}&id=${idEdit}`)
                 }
               } else {
                 onCancle()
@@ -836,7 +839,12 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={onOk} sx={{ backgroundColor: 'limegreen !important' }}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
+        <ButtonFilter
+          onClick={onOk}
+          sx={{ backgroundColor: 'limegreen !important' }}
+        >
+          {idEdit ? 'Ok' : 'Add'}
+        </ButtonFilter>
         <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
       {loading && <Loading />}

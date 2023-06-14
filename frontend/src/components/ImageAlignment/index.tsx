@@ -34,11 +34,12 @@ const ImageAlignment: FC<ImageViewProps> = ({
     loaded: false,
     error: false,
   })
+  const refVoxel = useRef<
+    undefined | { i: number; j: number; k: number; url: string }
+  >()
   const volumes = useRef<any>()
   const dispatch = useDispatch()
-
   const urlRef = useRef(image)
-
   const [stateParams, setStateParams] = useState<Params[]>(params.alignments)
 
   const paramAligment = useMemo(() => {
@@ -96,7 +97,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const setValueToBraibrowser = (valueParams?: Params) => {
-    if (valueParams) {
+    if (valueParams && refVoxel.current) {
       volumes.current.setResize({
         x: Number(valueParams.x_resize),
         y: Number(valueParams.y_resize),
@@ -108,9 +109,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
         Number(valueParams.z_rotate),
       )
       volumes.current.setVoxelCoords(
-        Number(valueParams.y_pos),
-        Number(valueParams.z_pos),
-        Number(valueParams.x_pos),
+        Number(Number(valueParams.y_pos) + refVoxel.current.i),
+        Number(Number(valueParams.z_pos) + refVoxel.current.j),
+        Number(Number(valueParams.x_pos) + refVoxel.current.k),
       )
       viewerRef.current.redrawVolumes()
     }
@@ -176,34 +177,12 @@ const ImageAlignment: FC<ImageViewProps> = ({
     const brainbrowser = (window as any).BrainBrowser
     const { volume } = event
     volumes.current = volume
-    const paramsNode: Params = {
-      image_id: urlRef.current.id,
-      x_pos: 0,
-      y_pos: 0,
-      z_pos: 0,
-      x_rotate: volume.header.xspace.radian,
-      y_rotate: volume.header.yspace.radian,
-      z_rotate: volume.header.zspace.radian,
-      x_resize: volume.header.xspace.step,
-      y_resize: volume.header.yspace.step,
-      z_resize: volume.header.zspace.step,
-    }
     if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
-      const voxel = volume.getVoxelCoords()
-      paramsNode.x_pos = voxel.k
-      paramsNode.y_pos = voxel.i
-      paramsNode.z_pos = voxel.j
-    }
-    const newParams = (pre: Params[]) => {
-      if (pre.find((align) => align.image_id === urlRef.current.id)) {
-        return pre.map((align) => {
-          if (align.image_id === urlRef.current.id) return paramsNode
-          return align
-        })
+      const voxelGet = volume.getVoxelCoords()
+      if (!refVoxel.current || refVoxel.current?.url !== urlRef.current.url) {
+        refVoxel.current = { ...voxelGet, url: urlRef }
       }
-      return [...pre, paramsNode]
     }
-    setStateParams(newParams)
     setLoading((pre) => ({ ...pre, file: false, error: false, loaded: true }))
   }
 

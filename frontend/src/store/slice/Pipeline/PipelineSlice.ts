@@ -72,11 +72,11 @@ export const pipelineSlice = createSlice({
         state.run.status = RUN_STATUS.ABORTED
       })
       .addCase(importExperimentByUid.fulfilled, (state, action) => {
-        if (action.meta.arg === 'default') {
+        if (action.meta.arg.uid === 'default') {
           state.runBtn = RUN_BTN_OPTIONS.RUN_NEW
         } else {
           state.currentPipeline = {
-            uid: action.meta.arg,
+            uid: action.meta.arg.uid,
           }
           state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
         }
@@ -86,21 +86,21 @@ export const pipelineSlice = createSlice({
       })
       .addCase(fetchExperiment.fulfilled, (state, action) => {
         state.currentPipeline = {
-          uid: action.payload.unique_id,
+          uid: action.payload.data.unique_id,
         }
         state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
         state.run = {
-          uid: action.payload.unique_id,
+          uid: action.payload.data.unique_id,
           status: RUN_STATUS.START_SUCCESS,
           runResult: {
             ...convertToRunResult(
-              convertFunctionsToRunResultDTO(action.payload.function),
+              convertFunctionsToRunResultDTO(action.payload.data.function),
             ),
           },
           runPostData: {
-            name: action.payload.name,
-            nodeDict: action.payload.nodeDict,
-            edgeDict: action.payload.edgeDict,
+            name: action.payload.data.name,
+            nodeDict: action.payload.data.nodeDict,
+            edgeDict: action.payload.data.edgeDict,
             snakemakeParam: {},
             nwbParam: {},
             forceRunList: [],
