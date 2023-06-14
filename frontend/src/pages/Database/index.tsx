@@ -368,14 +368,21 @@ const Database = () => {
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
-    if (!databases) return
+    if (!initDatabases) return
+    const filterValue = {
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    }
+    const records = onFilterValue(filterValue, initDatabases, type)
     const data = onSort(
-      JSON.parse(JSON.stringify(databases.records)),
-      orderByValue,
-      orderKey as OrderKey,
-      type,
+        JSON.parse(JSON.stringify(records)),
+        orderByValue,
+        orderKey as OrderKey,
+        type,
     )
-    setDatabases({ ...databases, records: data as RecordList[] })
+    setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
     setOrderByAndTypeAndSort((pre) => ({
       ...pre,
       orderBy: orderByValue,

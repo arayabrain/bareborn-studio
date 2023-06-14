@@ -680,6 +680,16 @@ const ProjectFormComponent = () => {
     }
   }
 
+  const handleClear = () => {
+    setParams('')
+    const data = onSort(
+        JSON.parse(JSON.stringify(initDatabase.records)),
+        orderBy,
+        columnSort as OrderKey,
+    )
+    setDatabases({...initDatabase, records: data as RecordDatabase[]})
+  }
+
   return (
     <ProjectsWrapper>
       {openFilter && (
@@ -813,12 +823,17 @@ const ProjectFormComponent = () => {
         </DragBox>
         <DropBox>
           <BoxFilter>
-            <ButtonFilter
-              onClick={() => setOpenFilter(true)}
-              style={{ margin: '0 26px 0 0' }}
-            >
-              Filter
-            </ButtonFilter>
+            <Box sx={{display: 'flex', gap: 5}}>
+              <Button variant="contained" onClick={handleClear}>
+                Clear Filter
+              </Button>
+              <ButtonFilter
+                  onClick={() => setOpenFilter(true)}
+                  style={{ margin: '0 26px 0 0' }}
+              >
+                Filter
+              </ButtonFilter>
+            </Box>
           </BoxFilter>
           <DatabaseTableComponent
             addProject={true}
