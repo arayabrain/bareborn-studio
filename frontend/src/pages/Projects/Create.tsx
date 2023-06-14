@@ -212,6 +212,8 @@ const ProjectFormComponent = () => {
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
+  const errorProjectEmpty = useMemo(() => !projectName, [projectName])
+
   useEffect(() => {
     if (!idEdit) return
     setLoading(true)
@@ -614,6 +616,17 @@ const ProjectFormComponent = () => {
   }
 
   const onOk = async () => {
+    if (errorProjectEmpty) return
+    if (
+      dataFactors.some((factor) => {
+        return (
+          !factor.name ||
+          (factor.within.length && factor.within.some((within) => !within.name))
+        )
+      })
+    ) {
+      return
+    }
     setLoading(true)
     const project = {
       project_name: projectName,
@@ -640,7 +653,12 @@ const ProjectFormComponent = () => {
                 let urls: { id: string | number; url: string }[] = []
                 getUrlFromSubfolder(response.records, urls)
                 await Promise.all([
-                  dispatch(setInputNodeFilePath({ nodeId, filePath: urls.map(({ url }) => url) })),
+                  dispatch(
+                    setInputNodeFilePath({
+                      nodeId,
+                      filePath: urls.map(({ url }) => url),
+                    }),
+                  ),
                   dispatch(getDatasetList({ project_id: idEdit })),
                   dispatch(setLoadingExpriment({ loading: false })),
                 ])
@@ -701,12 +719,26 @@ const ProjectFormComponent = () => {
         />
       )}
       {isEditName ? (
-        <InputName
-          autoFocus
-          onBlur={() => setIsEditName(false)}
-          value={projectName}
-          onChange={onChangeName}
-        />
+        <Fragment>
+          <InputName
+            autoFocus
+            onBlur={() => {
+              if (errorProjectEmpty) return
+              setIsEditName(false)
+            }}
+            value={projectName}
+            onChange={onChangeName}
+            style={{
+              borderColor: errorProjectEmpty ? 'red' : '#000',
+              borderStyle: 'solid',
+            }}
+          />
+          {errorProjectEmpty && (
+            <span style={{ fontSize: 12, color: 'red' }}>
+              Project name can't empty
+            </span>
+          )}
+        </Fragment>
       ) : (
         <TextName onClick={() => setIsEditName(true)}>{projectName}</TextName>
       )}
@@ -739,28 +771,51 @@ const ProjectFormComponent = () => {
             return (
               <Fragment key={factor.id}>
                 <BoxFactor>
-                  <Input
-                    onChange={(e) => onChangeNameFactor(factor, e.target.value)}
-                    style={{ width: 'calc(100% - 64px)' }}
-                    value={generateName(factor.name, index, 'Between')}
-                  />
-                  <Button onClick={() => onDeleteFactor(factor)}>
-                    <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-                  </Button>
+                  <div>
+                    <Input
+                      error={!factor.name}
+                      onChange={(e) =>
+                        onChangeNameFactor(factor, e.target.value)
+                      }
+                      style={{ width: 'calc(100% - 64px)' }}
+                      value={generateName(factor.name, index, 'Between')}
+                    />
+                    <Button onClick={() => onDeleteFactor(factor)}>
+                      <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+                    </Button>
+                    {!factor.name && (
+                      <div style={{ fontSize: 12, color: 'red' }}>
+                        Factor name can't empty
+                      </div>
+                    )}
+                  </div>
                   {projectType === ProjectTypeValue.WITHIN_FACTOR ? (
                     factor.within.map((within, iWithin) => (
                       <BoxFactor key={within.id} style={{ marginLeft: 24 }}>
-                        <Input
-                          onChange={(e) => {
-                            const { value } = e.target
-                            onChangeNameWithinFactor(factor, within, value)
-                          }}
-                          style={{ width: 'calc(100% - 64px)' }}
-                          value={generateName(within.name, iWithin, 'Within')}
-                        />
-                        <Button onClick={() => onDeleteWithin(factor, within)}>
-                          <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-                        </Button>
+                        <div>
+                          <Input
+                            error={!within.name}
+                            onChange={(e) => {
+                              const { value } = e.target
+                              onChangeNameWithinFactor(factor, within, value)
+                            }}
+                            style={{ width: 'calc(100% - 64px)' }}
+                            value={generateName(within.name, iWithin, 'Within')}
+                          />
+                          <Button
+                            onClick={() => onDeleteWithin(factor, within)}
+                          >
+                            <DeleteIcon
+                              fontSize="small"
+                              sx={{ color: 'red' }}
+                            />
+                          </Button>
+                          {!within.name && (
+                            <div style={{ fontSize: 12, color: 'red' }}>
+                              Within factor name can't empty
+                            </div>
+                          )}
+                        </div>
                         {renderData(within.data, { marginLeft: 48 }, (row) => {
                           onDeleteDataWithin(factor, within, row)
                         })}
@@ -836,7 +891,12 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={onOk} sx={{ backgroundColor: 'limegreen !important' }}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
+        <ButtonFilter
+          onClick={onOk}
+          sx={{ backgroundColor: 'limegreen !important' }}
+        >
+          {idEdit ? 'Ok' : 'Add'}
+        </ButtonFilter>
         <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
       {loading && <Loading />}
@@ -861,6 +921,7 @@ const BoxItem = styled(Box)({
   borderBottom: '1px solid rgba(0,0,0,0.8)',
   paddingLeft: 16,
   marginBottom: 4,
+  justifyContent: 'space-between',
 })
 
 const TypographyBoxItem = styled(Box)({
