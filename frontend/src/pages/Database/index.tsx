@@ -243,6 +243,19 @@ export const columns = (
     width: 100,
   },
   {
+    title: 'Image ID',
+    name: 'id',
+    width: 100,
+    render: (record) => {
+      if (!(record as ImagesDatabase).image_attributes) return
+      return (
+        <div style={{ textAlign: 'center' }}>
+          {(record as ImagesDatabase).id}
+        </div>
+      )
+    },
+  },
+  {
     title: 'Type',
     name: 'image_attributes.image_type',
     filter: true,
@@ -301,7 +314,7 @@ export const columns = (
 
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
-  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
+  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '', id: '' })
   const [databases, setDatabases] = useState<DatabaseData | DatabaseListData>()
   const [openDelete, setOpenDelete] = useState(false)
   const [{ orderBy, type, columnSort }, setOrderByAndTypeAndSort] = useState<{
@@ -319,7 +332,7 @@ const Database = () => {
   const [searchParams, setParams] = useSearchParams()
 
   const onCloseImageView = () => {
-    setViewer({ open: false, url: '' })
+    setViewer({ open: false, url: '', id: '' })
   }
 
   const fetchData = useCallback(async () => {
