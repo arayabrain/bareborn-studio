@@ -97,7 +97,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
         newParams = filePath.map((path: string) => {
           const image = images.find((image) => image.url === path)
           const param = valueAlignments?.find(
-            (align) => align.image_id === path,
+            (align) => align.image_id === image?.id,
           )
           if (param) return param
           return {
@@ -121,7 +121,7 @@ export const FileSelectImple = React.memo<FileSelectImpleProps>(
         }),
       )
       //eslint-disable-next-line
-    }, [filePath, nodeId])
+    }, [filePath, nodeId, JSON.stringify(images)])
 
     const getNameSelectec = () => {
       if (Array.isArray(filePath)) {
