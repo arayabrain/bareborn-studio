@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
 import { DATABASE_URL_HOST } from 'const/API'
+import Loading from 'components/common/Loading'
 
 type ImageViewProps = {
   open: boolean
@@ -28,8 +29,13 @@ const ImageAlignment: FC<ImageViewProps> = ({
 }) => {
   const viewerRef = useRef<any>()
   const [image, setUrl] = useState(urls[0])
-  const [isLoadFile, setIsLoadFile] = useState(false)
-  const [loadedSuccess, setLoadedSuccess] = useState(false)
+  // const [isLoadFile, setIsLoadFile] = useState(false)
+  const [loading, setLoading] = useState({
+    file: false,
+    loaded: false,
+    error: false,
+  })
+  const [isReloadError, setIsReloadError] = useState(false)
   const volumes = useRef<any>()
   const dispatch = useDispatch()
 
@@ -58,14 +64,14 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }, [image])
 
   useEffect(() => {
-    if (loadedSuccess) {
+    if (loading.loaded) {
       const paramInit = params.alignments?.find(
         (param) => param.image_id === image.id,
       )
       setValueToBraibrowser(paramInit)
     }
     //eslint-disable-next-line
-  }, [loadedSuccess, image.id])
+  }, [loading.loaded, image.id])
 
   const onOk = () => {
     if (params?.nodeId && stateParams) {
@@ -141,9 +147,8 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const loadFileIndex = () => {
-    if (!image?.url || isLoadFile || !viewerRef.current) return
-    setIsLoadFile(true)
-    setLoadedSuccess(false)
+    if (!image?.url || loading.file || !viewerRef.current) return
+    setLoading((pre) => ({ ...pre, file: true }))
     viewerRef.current.clearVolumes()
     viewerRef.current.loadVolumes({
       volumes: [
@@ -162,11 +167,14 @@ const ImageAlignment: FC<ImageViewProps> = ({
           },
         },
       ],
-      complete: () => setValueToBraibrowser(paramAligment),
+      complete: () => {
+        setValueToBraibrowser(paramAligment)
+        setLoading((pre) => ({ ...pre, file: false, loaded: true }))
+      },
     })
   }
 
-  const volumeLoaded = (event: any, isLoaded?: boolean) => {
+  const volumeLoaded = (event: any) => {
     const brainbrowser = (window as any).BrainBrowser
     const { volume } = event
     volumes.current = volume
@@ -198,8 +206,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
       return [...pre, paramsNode]
     }
     setStateParams(newParams)
-    setIsLoadFile(false)
-    setLoadedSuccess(true)
+    setLoading((pre) => ({ ...pre, file: false, error: false, loaded: true }))
   }
 
   const gerenateValueNumber = (value?: number) => {
@@ -208,48 +215,44 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const loadFile = () => {
-    if (!image.url || isLoadFile) return
-    setIsLoadFile(true)
-    setLoadedSuccess(false)
+    if (!image.url || (loading.file && !isReloadError)) return
+    setLoading((pre) => ({ ...pre, file: true, loaded: false }))
     const brainbrowser = (window as any).BrainBrowser
     const color_map_config = brainbrowser.config.get('color_maps')[2]
     viewerRef.current = brainbrowser.VolumeViewer.start(
       'brainbrowser',
       (viewer: any) => {
-        viewer.addEventListener('volumeloaded', (e: any) =>
-          volumeLoaded(e, true),
-        )
+        viewer.addEventListener('volumeloaded', volumeLoaded)
         viewer.addEventListener('sliceupdate', volumeLoaded)
         viewer.addEventListener('error', () => {
-          setIsLoadFile(false)
+          setLoading((pre) => ({ ...pre, error: false }))
           setTimeout(loadFile, 200)
         })
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
-        viewer.setDefaultPanelSize(256, 256)
-        viewer.render()
-        viewer.clearVolumes()
-        viewer.loadVolumes({
-          volumes: [
-            {
-              type: 'nifti1',
-              nii_url: `${DATABASE_URL_HOST}${image.url}`,
-              template: {
-                element_id: 'volume-ui-template',
-                viewer_insert_className: 'volume-viewer-display',
-              },
-              overlay: {
+        setTimeout(() => {
+          viewer.setDefaultPanelSize(256, 256)
+          viewer.render()
+          viewer.clearVolumes()
+          viewer.loadVolumes({
+            volumes: [
+              {
+                type: 'nifti1',
+                nii_url: `${DATABASE_URL_HOST}${image.url}`,
                 template: {
-                  element_id: 'overlay-ui-template',
-                  viewer_insert_className: 'overlay-viewer-display',
+                  element_id: 'volume-ui-template',
+                  viewer_insert_className: 'volume-viewer-display',
+                },
+                overlay: {
+                  template: {
+                    element_id: 'overlay-ui-template',
+                    viewer_insert_className: 'overlay-viewer-display',
+                  },
                 },
               },
-              complete: function () {
-                setIsLoadFile(false)
-              },
-            },
-          ],
-        })
+            ],
+          })
+        }, 200)
       },
     )
   }
@@ -278,7 +281,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                 style={{
                   minWidth: 768,
                   minHeight: 256,
-                  background: '#ffffff',
+                  background: '#000',
                 }}
               >
                 <div id="brainbrowser"></div>
@@ -408,6 +411,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
               </Flex>
             </div>
           </div>
+          {!loading.loaded && <Loading />}
           <ButtonClose onClick={onClose}>
             <CloseIconWrapper />
           </ButtonClose>
@@ -423,7 +427,7 @@ const ButtonClose = styled(IconButton)({
   position: 'absolute',
   right: '10%',
   top: '10%',
-  zIndex: 9999,
+  zIndex: 100001,
   background: 'rgba(0, 0, 0, 0.6)',
   '&:hover': {
     background: 'rgba(0, 0, 0, 0.8)',
