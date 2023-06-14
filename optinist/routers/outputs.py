@@ -1,9 +1,12 @@
 import os
 import pandas as pd
+import pathlib
+from pathlib import PurePosixPath
+
 from glob import glob
-from typing import Optional, Dict
-from fastapi import APIRouter
-from fastapi.responses import FileResponse
+from typing import Optional, Dict, List
+from fastapi import APIRouter, status
+from fastapi.responses import FileResponse, JSONResponse
 from optinist.api.dir_path import DIRPATH
 
 from optinist.api.utils.json_writer import JsonWriter, save_tiff2json
@@ -12,7 +15,7 @@ from optinist.routers.const import ACCEPT_TIFF_EXT
 from optinist.routers.fileIO.file_reader import JsonReader, Reader
 from optinist.routers.model import JsonTimeSeriesData, OutputData, ImageCreationParams
 from optinist.wrappers.vbm_wrapper import vbm_visualization
-
+from optinist.api.dataclass.utils import check_path_format
 
 router = APIRouter()
 
@@ -166,34 +169,86 @@ async def get_csv(filepath: str):
     return JsonReader.read_as_output(json_filepath)
 
 
-@router.put('/visualize/generate/{project_id}', tags=['visualize'])
-async def visualize_generate(project_id: str, image_creation_params: ImageCreationParams) -> Dict[str, str]:
+@router.get('/outputs/nifti_image/{url: path}', response_class=FileResponse, tags=['outputs'])
+async def get_nifti_image(url: str):
     """
-    Generate images of the statistical analysis results based on the image creation parameters,
-    save those images in an image file or PDF, and send the URL.
+    Get the image data saved in an NIfTI file.
     """
 
-    image_urls = vbm_visualization.generate_stats_images(project_id, image_creation_params)
+    # TODO: Get the project path.
+    # project_path = get_project_path()
+    # Dummy
+    project_path = os.path.join(DIRPATH.ROOT_DIR, r'test_data/cjs/1')
+    file_path = os.path.join(project_path, 'derivatives', url)
+
+    if not os.path.isfile(file_path):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={'message': 'Image file cannot be found.'},
+        )
+
+    return FileResponse(
+        path=file_path,
+        filename=os.path.basename(file_path),
+        media_type='image/nifti'
+    )
+
+
+@router.get('/outputs/png_image/{url: path}', response_class=FileResponse, tags=['outputs'])
+async def get_png_image(url: str):
+    """
+    Get the image data saved in a PNG file.
+    """
+
+    # TODO: Get the project path.
+    # project_path = get_project_path()
+    # Dummy
+    project_path = os.path.join(DIRPATH.ROOT_DIR, r'test_data/cjs/1')
+    file_path = os.path.join(project_path, 'derivatives', url)
+
+    if not os.path.isfile(file_path):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={'message': 'Image file cannot be found.'},
+        )
+
+    return FileResponse(
+        path=file_path,
+        filename=os.path.basename(file_path),
+        media_type='image/png'
+    )
+
+
+@router.post('/visualize/generate/{project_id}', response_model=Dict[str, List[str]], tags=['visualize'])
+async def generate_stats_images(project_id: str, image_creation_params: ImageCreationParams):
+    """
+    Send URLs of statistical analysis image files, which were created with the image creation parameters.
+    """
+
+    # TODO: Create a statistical analysis images, and get a list of those URLs. How to get the analysis ID?
+    # image_urls = vbm_visualization.create_stats_images(project_id, analysis_id, image_creation_params)
+    # Dummy
+    file_names = ['Figure_1.png', 'Figure_2.png', 'Figure_3.png']
+    image_urls = []
+    for file_name in file_names:
+        image_urls.append(check_path_format(os.path.join(r'3a55fa37/stats_results', file_name)))
 
     return {'image_urls': image_urls}
 
 
-@router.put('/visualize/download/{project_id}', response_class=FileResponse, tags=['visualize'])
-async def visualize_download(project_id: str, image_creation_params: ImageCreationParams):
+@router.post('/visualize/download/{project_id}', response_class=FileResponse, tags=['visualize'])
+async def download_stats_report(project_id: str, image_creation_params: ImageCreationParams):
+    """
+    Send a statistical analysis report saved in the PDF.
+    """
+
+    # TODO: Create a statistical analysis report PDF, and get its file path. How to get the analysis ID?
+    # file_path = vbm_visualization.create_stats_report_pdf(project_id, analysis_id, image_creation_params)
     # Dummy
-    dir_path = os.path.dirname(__file__)
-    file_name = 'stats_results-230601_123456-1.pdf'
-    file_path = os.path.join(dir_path, r'../test_data/cjs/output/3a55fa37/stats_results', file_name)
+    file_path = os.path.join(DIRPATH.ROOT_DIR, r'test_data/cjs/1/derivatives/3a55fa37/stats_results/stats_report-1.pdf')
 
-    response = FileResponse(
+    return FileResponse(
         path=file_path,
-        filename=file_name
+        filename=os.path.basename(file_path),
+        media_type='application/pdf'
     )
-
-    return response
-
-
-# if __name__ == "__main__":
-#     params = ImageCreationParams(threshold=[1.23, 4.56], cut_coords=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-#     response = visualize_download('abcde', params)
-#     print(response)

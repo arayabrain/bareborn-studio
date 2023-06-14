@@ -1,10 +1,10 @@
 from enum import Enum
 import json
-import os
 import re
 from typing import List, Dict
 
 from optinist.api.dataclass.base import BaseData
+from optinist.api.dataclass.utils import check_path_format
 
 
 """ analysis_info.py
@@ -36,13 +36,12 @@ class AnalysisInfo(BaseData):
         wf_input_file_path_list: A list of the workflow input file paths.
         """
 
-        self.json_path = 'aaa.txt'
         self.__project_path = project_path
         self.__analysis_start_time = None
         self.__analysis_end_time = None
 
         # A list of the workflow input file paths.
-        self.__wf_input_file_path_list: List[str] = wf_input_file_path_list
+        self.__wf_input_file_path_list: List[str] = check_path_format(wf_input_file_path_list)
 
         # A dict of the workflow input file path key and UnitAnalysisInfo object value,
         # which collectively stores the analysis info in a node.
@@ -236,7 +235,7 @@ class AnalysisInfo(BaseData):
         if isinstance(output_file_path_list, str):
             output_file_path_list = [output_file_path_list]
 
-        self.__unit_analysis_info_dict[wf_input_file_path].output_file_path_list = output_file_path_list
+        self.__unit_analysis_info_dict[wf_input_file_path].output_file_path_list = check_path_format(output_file_path_list)
 
     def set_analysis_status(self, wf_input_path: str, analysis_status: AnalysisStatus):
         self.__unit_analysis_info_dict[wf_input_path].analysis_status = analysis_status

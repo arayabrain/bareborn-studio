@@ -2,11 +2,10 @@ import os
 from dataclasses import asdict
 from datetime import datetime
 from glob import glob
-from typing import Dict
 
 from optinist.api.pickle.pickle_reader import PickleReader
 from optinist.api.dataclass.dataclass import *
-from optinist.api.workflow.workflow import Message, OutputPath, OutputType
+from optinist.api.workflow.workflow import Message, OutputPath, OutputType, ExptInfo, NodeInfo
 from optinist.api.config.config_writer import ConfigWriter
 from optinist.api.experiment.experiment_reader import ExptConfigReader
 from optinist.api.utils.filepath_creater import join_filepath
@@ -89,46 +88,58 @@ class WorkflowResult:
                     config=asdict(config),
                 )
 
-    def get_analysis_info(self):
+    def get_experiment_info(self):
         """
-        Get the analysis info for a client results table.
-        :param expt_config_data: an ExptConfig object that holds the experiment settings and analysis info.
-        :return The following analysis info for a client results table:
-          [{<subject>, [{<function>, <node_id>, [<success>] [<output>]}].
+        Get the experiment info about the workflow analysis.
         """
 
-        # expt_file_path = self.expt_filepath
+        # TODO: Set the experiment.yaml path.
+        expt_file_path = os.path.join(DIRPATH.OUTPUT_DIR, str(self.project_id), self.unique_id, DIRPATH.EXPERIMENT_YML)
         # Dummy
-        dir_path = os.path.dirname(__file__)
-        expt_file_path = os.path.join(dir_path, r'../../test_data/cjs/output/3a55fa37/experiment2.yaml')
-        expt_config_data = ExptConfigReader.read(expt_file_path)
+        expt_file_path = os.path.join(DIRPATH.ROOT_DIR, r'test_data/cjs/output/1/3a55fa37/experiment2.yaml')
 
-        # Get the function data ({<node_id>, ExptFunction}).
-        function_data = expt_config_data.function
+        # Get the experiment config data (ExptConfig) and the function data in it ({<node_id>, ExptFunction}).
+        expt_config = ExptConfigReader.read(expt_file_path)
+        function_data = expt_config.function
 
-        analysis_info = []
+        # Rearrange the analysis info for each subject, and store them in results_data.
+        results_data = []
         for node_id in function_data.keys():
-            if node_id != 'input_0':  # Ignore the data source node.
-                # Get the subject data ({<subject_name>, {<success>, <output_path>, <message>}}).
-                subjects_data = function_data[node_id].subjects
-                for subject_name in subjects_data.keys():
-                    # Create a node analysis info for a single table row.
-                    node_analysis_info = {
-                        'function': function_data[node_id].name,  # Node name
-                        'node_id': node_id,
-                        'success': subjects_data[subject_name].success,
-                        'output': subjects_data[subject_name].output_path
-                    }
+            # Get the subjects data ({<subject_name>, {<success>, <output_path>, <message>}}).
+            subjects_data = function_data[node_id].subjects
+            if subjects_data is None:
+                continue
+            for subject_name in subjects_data.keys():
+                # Summarize the analysis info for the node.
+                node_analysis_info = NodeInfo(
+                    unique_id=node_id,
+                    name=function_data[node_id].name,
+                    success=', '.join(subjects_data[subject_name].success), # 2D -> 1D
+                    outputs=[x for row in subjects_data[subject_name].output_path for x in row] # 2D -> 1D
+                )
 
-                    # Add to the corresponding output subject data.
-                    for subject_info in analysis_info:
-                        if subject_name == subject_info['subject']:
-                            subject_info['node_results'].append(node_analysis_info)
-                            break
-                    else:
-                        analysis_info.append({'subject': subject_name, 'node_results': [node_analysis_info]})
+                # Add to the corresponding subject data in results_data.
+                for subject_data in results_data:
+                    if subject_name == subject_data['subject_name']:
+                        subject_data[node_id] = node_analysis_info
+                        break
+                else:
+                    results_data.append({
+                        'subject_id': subject_name,
+                        'subject_name': subject_name,
+                        node_id: node_analysis_info
+                    })
 
-        return analysis_info
+        return  ExptInfo(
+            started_at=expt_config.started_at,
+            finished_at=expt_config.finished_at,
+            unique_id=expt_config.unique_id,
+            name=expt_config.name,
+            status=expt_config.success,
+            results=results_data,
+            nodeDict={},
+            edgeDict={}
+        )
 
 
 class NodeResult:

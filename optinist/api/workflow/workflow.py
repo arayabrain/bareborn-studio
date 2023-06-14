@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 from pydantic import BaseModel
 
@@ -107,3 +107,25 @@ class SubjectAnalysisInfo:
     success: list       # List[str]
     output_path: list   # List[str]
     message: list       # List[str]
+
+
+# CJS-3: Added.
+@dataclass
+class NodeInfo:
+    unique_id: str
+    name: str
+    success: str
+    outputs: List[str]
+
+
+@dataclass
+# CJS-3: Added.
+class ExptInfo:
+    started_at: str
+    finished_at: Optional[str]
+    unique_id: str
+    name: str
+    status: Optional[str]
+    results: List[Dict[str, Union[str, NodeInfo]]]
+    nodeDict: Dict[str, Node]
+    edgeDict: Dict[str, Edge]

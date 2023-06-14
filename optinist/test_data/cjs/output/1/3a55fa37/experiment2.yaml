@@ -37,11 +37,11 @@ function:
     outputPaths:
       sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeA:
         max_index: null
-        path: proj_root/mouse1\sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeA.nii
+        path: 3a55fa37/alignment/sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeA.nii
         type: images
       sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeA:
         max_index: null
-        path: proj_root/mouse2\sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeA.nii
+        path: 3a55fa37/alignment/sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeA.nii
         type: images
     started_at: '2023-06-05 21:30:46'
     subjects:
@@ -49,14 +49,14 @@ function:
         message:
         - ''
         output_path:
-        - - proj_root/mouse1\sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeA.nii
+        - - 3a55fa37/alignment/sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeA.nii
         success:
         - success
       mouse2:
         message:
         - ''
         output_path:
-        - - proj_root/mouse2\sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeA.nii
+        - - 3a55fa37/alignment/sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeA.nii
         success:
         - success
     success: 'success: 2 '
