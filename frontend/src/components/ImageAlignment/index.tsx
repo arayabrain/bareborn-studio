@@ -29,13 +29,11 @@ const ImageAlignment: FC<ImageViewProps> = ({
 }) => {
   const viewerRef = useRef<any>()
   const [image, setUrl] = useState(urls[0])
-  // const [isLoadFile, setIsLoadFile] = useState(false)
   const [loading, setLoading] = useState({
     file: false,
     loaded: false,
     error: false,
   })
-  const [isReloadError, setIsReloadError] = useState(false)
   const volumes = useRef<any>()
   const dispatch = useDispatch()
 
@@ -215,7 +213,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const loadFile = () => {
-    if (!image.url || (loading.file && !isReloadError)) return
+    if (!image.url || (loading.file && !loading.error)) return
     setLoading((pre) => ({ ...pre, file: true, loaded: false }))
     const brainbrowser = (window as any).BrainBrowser
     const color_map_config = brainbrowser.config.get('color_maps')[2]
