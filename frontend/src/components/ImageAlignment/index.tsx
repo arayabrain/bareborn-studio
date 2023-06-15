@@ -43,8 +43,8 @@ const ImageAlignment: FC<ImageViewProps> = ({
   const [stateParams, setStateParams] = useState<Params[]>(params.alignments)
 
   const paramAligment = useMemo(() => {
-    return stateParams.find((param) => param.image_id === image.id)
-  }, [image.id, stateParams])
+    return stateParams.find((param) => param.image_id === image?.id)
+  }, [image?.id, stateParams])
 
   useEffect(() => {
     if (open) {
@@ -65,12 +65,12 @@ const ImageAlignment: FC<ImageViewProps> = ({
   useEffect(() => {
     if (loading.loaded) {
       const paramInit = params.alignments?.find(
-        (param) => param.image_id === image.id,
+        (param) => param.image_id === image?.id,
       )
       setValueToBraibrowser(paramInit)
     }
     //eslint-disable-next-line
-  }, [loading.loaded, image.id])
+  }, [loading.loaded, image?.id])
 
   const onOk = () => {
     if (params?.nodeId && stateParams) {
@@ -85,13 +85,13 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const onPreImage = () => {
-    const index = urls.findIndex((item) => item.id === image.id)
+    const index = urls.findIndex((item) => item.id === image?.id)
     if (index === 0) return
     setUrl(urls[index - 1])
   }
 
   const onNextImage = () => {
-    const index = urls.findIndex((item) => item.id === image.id)
+    const index = urls.findIndex((item) => item.id === image?.id)
     if (index === urls.length - 1) return
     setUrl(urls[index + 1])
   }
@@ -121,7 +121,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
     const { name, value } = e.target
     if (params?.nodeId && stateParams) {
       const newParams = stateParams.map((align) =>
-        align.image_id === image.id ? { ...align, [name]: value } : align,
+        align.image_id === image?.id
+          ? { ...align, [name]: Number(value) }
+          : align,
       )
       setStateParams(newParams)
     }
@@ -139,7 +141,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
     }
     if (params?.nodeId && stateParams) {
       const newParams = stateParams.map((align) =>
-        align.image_id === image.id ? { ...align, [name]: valueRadian } : align,
+        align.image_id === image?.id
+          ? { ...align, [name]: valueRadian }
+          : align,
       )
       setStateParams(newParams)
     }
@@ -181,6 +185,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
       const voxelGet = volume.getVoxelCoords()
       if (!refVoxel.current || refVoxel.current?.url !== urlRef.current.url) {
         refVoxel.current = { ...voxelGet, url: urlRef }
+      } else {
       }
     }
     setLoading((pre) => ({ ...pre, file: false, error: false, loaded: true }))
@@ -377,7 +382,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <ButtonNext onClick={onNextImage}>{'>'}</ButtonNext>
                     </SwitchContent>
                     <span>{`(${
-                      urls.findIndex((item) => item.id === image.id) + 1
+                      urls.findIndex((item) => item.id === image?.id) + 1
                     }/${urls.length})`}</span>
                   </SwitchImage>
                   <Flex sx={{ gap: 5 }}>

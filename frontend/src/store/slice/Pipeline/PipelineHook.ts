@@ -58,32 +58,42 @@ export function useRunPipeline() {
     dispatch(runByCurrentUid({ runPostData }))
   }, [dispatch, runPostData])
   const location = useLocation()
+
   React.useEffect(() => {
     window.addEventListener('beforeunload', removeStateIsEdit)
     if (!projectId) {
       navigate('/projects')
     } else {
-      appDispatch(getDatasetList({ project_id: projectId }))
-        .unwrap()
-        .then(({ dataset, last_updated_time }) => {
-          let urls: { id: string | number; url: string }[] = []
-          getUrlFromSubfolder(dataset, urls)
-          appDispatch(fetchExperiment({ projectId, urls }))
-            .unwrap()
-            .then(({ data: { finished_at } }) => {
-              const diffMinus = dayjs(
-                dayjs(last_updated_time).format('YYYY-MM-DD HH:mm'),
-              ).diff(dayjs(dayjs(finished_at).format('YYYY-MM-DD HH:mm')), 'm')
-              dispatch(setAllowRun({ allowRun: diffMinus > 0 }))
-            })
-            .catch((_) => {
-              appDispatch(importExperimentByUid({ uid: 'default', urls })).then(
-                (_) => {
+      if (!location.state?.cancel) {
+        appDispatch(getDatasetList({ project_id: projectId }))
+          .unwrap()
+          .then(({ dataset, last_updated_time }) => {
+            let urls: { id: string | number; url: string }[] = []
+            getUrlFromSubfolder(dataset, urls)
+            appDispatch(fetchExperiment({ projectId, urls }))
+              .unwrap()
+              .then(({ data: { finished_at } }) => {
+                const diffMinus = dayjs(
+                  dayjs(last_updated_time).format('YYYY-MM-DD HH:mm'),
+                ).diff(
+                  dayjs(dayjs(finished_at).format('YYYY-MM-DD HH:mm')),
+                  'm',
+                )
+                dispatch(setAllowRun({ allowRun: diffMinus > 0 }))
+              })
+              .catch((_) => {
+                appDispatch(
+                  importExperimentByUid({ uid: 'default', urls }),
+                ).then((_) => {
                   dispatch(setAllowRun({ allowRun: true }))
-                },
-              )
-            })
+                })
+              })
+          })
+      } else {
+        appDispatch(getDatasetList({ project_id: projectId })).then(() => {
+          dispatch(setLoadingExpriment({ loading: false }))
         })
+      }
     }
 
     return () => {

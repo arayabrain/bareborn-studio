@@ -555,6 +555,7 @@ const ProjectFormComponent = () => {
       open: true,
       url: row.image_url,
       jsonData: row.jsonData,
+      id: row.image_id,
     })
     setDisabled({ left: true, right: true })
   }
@@ -584,7 +585,7 @@ const ProjectFormComponent = () => {
 
   const onCancle = () => {
     if (routeGoback) {
-      navigate(`${routeGoback}&id=${idEdit}`)
+      navigate(`${routeGoback}&id=${idEdit}`, { state: { cancel: true } })
       dispatch(setLoadingExpriment({ loading: false }))
     } else {
       navigate('/projects')
@@ -631,7 +632,7 @@ const ProjectFormComponent = () => {
           callback: async (isSuccess: boolean) => {
             if (isSuccess) {
               if (nodeId) {
-                await dispatch(setLoadingExpriment({ loading: false }))
+                await dispatch(setLoadingExpriment({ loading: true }))
                 if (routeGoback) {
                   navigate(`${routeGoback}&id=${idEdit}`)
                 }
