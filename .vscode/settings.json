@@ -1,0 +1,8 @@
+{
+  "search.exclude": {
+    "frontend/build/**": true,
+    "build/**": true
+  },
+  "esbonio.sphinx.confDir": "",
+  "nuxt.isNuxtApp": false
+}
