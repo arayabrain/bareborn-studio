@@ -5,7 +5,7 @@ from glob import glob
 
 from optinist.api.pickle.pickle_reader import PickleReader
 from optinist.api.dataclass.dataclass import *
-from optinist.api.workflow.workflow import Message, OutputPath, OutputType, ExptInfo, NodeInfo
+from optinist.api.workflow.workflow import Message, OutputPath, OutputType, ExptInfo, SubjectInfo, NodeInfo
 from optinist.api.config.config_writer import ConfigWriter
 from optinist.api.experiment.experiment_reader import ExptConfigReader
 from optinist.api.utils.filepath_creater import join_filepath
@@ -96,14 +96,13 @@ class WorkflowResult:
         # TODO: Set the experiment.yaml path.
         expt_file_path = os.path.join(DIRPATH.OUTPUT_DIR, str(self.project_id), self.unique_id, DIRPATH.EXPERIMENT_YML)
         # Dummy
-        expt_file_path = os.path.join(DIRPATH.ROOT_DIR, r'test_data/cjs/output/1/3a55fa37/experiment2.yaml')
+        expt_file_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/output/1/3a55fa37/experiment2.yaml')
 
-        # Get the experiment config data (ExptConfig) and the function data in it ({<node_id>, ExptFunction}).
+        # Get the experiment config data (ExptConfig) and the function data ({<node_id>, ExptFunction}).
         expt_config = ExptConfigReader.read(expt_file_path)
         function_data = expt_config.function
 
-        # Rearrange the analysis info for each subject, and store them in results_data.
-        results_data = []
+        results_data = []   # List[SubjectInfo] appended to ExptInfo.results.
         for node_id in function_data.keys():
             # Get the subjects data ({<subject_name>, {<success>, <output_path>, <message>}}).
             subjects_data = function_data[node_id].subjects
@@ -120,15 +119,18 @@ class WorkflowResult:
 
                 # Add to the corresponding subject data in results_data.
                 for subject_data in results_data:
-                    if subject_name == subject_data['subject_name']:
-                        subject_data[node_id] = node_analysis_info
+                    if subject_name == subject_data.name:
+                        subject_data.function[node_id] = node_analysis_info
                         break
                 else:
-                    results_data.append({
-                        'subject_id': subject_name,
-                        'subject_name': subject_name,
-                        node_id: node_analysis_info
-                    })
+                    results_data.append(
+                        SubjectInfo(
+                            subject_id=subject_name,
+                            name=subject_name,
+                            function={node_id: node_analysis_info},
+                            nodeDict={},
+                            edgeDict={}
+                    ))
 
         return  ExptInfo(
             started_at=expt_config.started_at,
@@ -136,9 +138,7 @@ class WorkflowResult:
             unique_id=expt_config.unique_id,
             name=expt_config.name,
             status=expt_config.success,
-            results=results_data,
-            nodeDict={},
-            edgeDict={}
+            results=results_data
         )
 
 

@@ -178,7 +178,7 @@ async def get_nifti_image(url: str):
     # TODO: Get the project path.
     # project_path = get_project_path()
     # Dummy
-    project_path = os.path.join(DIRPATH.ROOT_DIR, r'test_data/cjs/1')
+    project_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/1')
     file_path = os.path.join(project_path, 'derivatives', url)
 
     if not os.path.isfile(file_path):
@@ -203,7 +203,7 @@ async def get_png_image(url: str):
     # TODO: Get the project path.
     # project_path = get_project_path()
     # Dummy
-    project_path = os.path.join(DIRPATH.ROOT_DIR, r'test_data/cjs/1')
+    project_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/1')
     file_path = os.path.join(project_path, 'derivatives', url)
 
     if not os.path.isfile(file_path):
@@ -245,7 +245,7 @@ async def download_stats_report(project_id: str, image_creation_params: ImageCre
     # TODO: Create a statistical analysis report PDF, and get its file path. How to get the analysis ID?
     # file_path = vbm_visualization.create_stats_report_pdf(project_id, analysis_id, image_creation_params)
     # Dummy
-    file_path = os.path.join(DIRPATH.ROOT_DIR, r'test_data/cjs/1/derivatives/3a55fa37/stats_results/stats_report-1.pdf')
+    file_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/1/derivatives/3a55fa37/stats_results/stats_report-1.pdf')
 
     return FileResponse(
         path=file_path,

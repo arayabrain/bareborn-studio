@@ -27,7 +27,7 @@ edgeDict:
     target: suite2p_roi_m6v8o3dctg
     targetHandle: suite2p_roi_m6v8o3dctg--ops--Suite2pData
     type: buttonedge
-finished_at: null
+finished_at: '2023-06-05 21:30:46'
 function:
   func1:
     finished_at: '2023-06-05 21:30:46'
@@ -50,6 +50,7 @@ function:
         - ''
         output_path:
         - - 3a55fa37/alignment/sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeA.nii
+        - - 3a55fa37/alignment/sub-mouse1_ses-20230501123456_rec-1_run-2_T2W_nodeA.nii
         success:
         - success
       mouse2:
@@ -57,10 +58,45 @@ function:
         - ''
         output_path:
         - - 3a55fa37/alignment/sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeA.nii
+        - - 3a55fa37/alignment/sub-mouse2_ses-20230502123456_rec-1_run-2_T2W_nodeA.nii
         success:
         - success
     success: 'success: 2 '
     unique_id: func1
+  func2:
+    finished_at: '2023-06-05 21:30:46'
+    hasNWB: false
+    message: 'success: 1, false 1'
+    name: func2
+    outputPaths:
+      sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeB:
+        max_index: null
+        path: 3a55fa37/alignment/sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeB.nii
+        type: images
+      sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeB:
+        max_index: null
+        path: 3a55fa37/alignment/sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeB.nii
+        type: images
+    started_at: '2023-06-05 21:30:46'
+    subjects:
+      mouse1:
+        message:
+        - ''
+        output_path:
+        - - 3a55fa37/alignment/sub-mouse1_ses-20230501123456_rec-1_run-1_T2W_nodeB.nii
+        - - 3a55fa37/alignment/sub-mouse1_ses-20230501123456_rec-1_run-2_T2W_nodeB.nii
+        success:
+        - success
+      mouse2:
+        message:
+        - ''
+        output_path:
+        - - 3a55fa37/alignment/sub-mouse2_ses-20230502123456_rec-1_run-1_T2W_nodeB.nii
+        - - 3a55fa37/alignment/sub-mouse2_ses-20230502123456_rec-1_run-2_T2W_nodeB.nii
+        success:
+        - success
+    success: 'success: 1, false 1'
+    unique_id: func2
 hasNWB: false
 name: New flow
 nodeDict:
@@ -132,5 +168,5 @@ nodeDict:
     type: AlgorithmNode
 project_id: 12345678
 started_at: '2022-05-15 23:02:15'
-success: running
+success: success
 unique_id: 838d4234

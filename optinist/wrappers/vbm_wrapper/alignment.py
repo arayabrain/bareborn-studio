@@ -67,39 +67,3 @@ def get_wf_input_file_path(image_id):
     file_path = os.path.join(folder_path, file_name)
 
     return file_path
-
-
-# Test
-if __name__ == '__main__':
-
-    print('\n[align_images test]')
-
-    # Set parameters.
-    params = [{
-        'image_id': 'abcdefgh',
-        'a': 24.7802,
-        'b': 26.0210,
-        'c': 37.6303,
-        'd': 0.1000,
-        'e': 0.2000,
-        'f': 0.3000,
-        'g': 1.0000,
-        'h': 1.0000,
-        'i': 1.0000,
-        'j': 0,
-        'k': 0,
-        'l': 0
-    }]
-
-    # Run the node analysis.
-    info = align_images(params)
-
-    analysis_info = info['analysis_info_out']
-    for wf_input_path in analysis_info.workflow_input_file_path_list:
-        output_file_paths = analysis_info.get_output_file_paths(wf_input_path)
-        print(f'\n{wf_input_path}')
-        print(f'  Status: {analysis_info.get_unit_analysis_status(wf_input_path)}')
-        print(f'  Output paths: {output_file_paths}')
-        print(f'  Message: {analysis_info.get_message(wf_input_path)}')
-
-    print(f'\nTest finished.')

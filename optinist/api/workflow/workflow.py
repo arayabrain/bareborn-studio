@@ -101,15 +101,13 @@ class RunItem(BaseModel):
     forceRunList: List[ForceRun]
 
 
-# CJS-3: Added.
 @dataclass
 class SubjectAnalysisInfo:
-    success: list       # List[str]
-    output_path: list   # List[str]
-    message: list       # List[str]
+    success: List[str]
+    output_path: List[str]
+    message: List[str]
 
 
-# CJS-3: Added.
 @dataclass
 class NodeInfo:
     unique_id: str
@@ -119,13 +117,19 @@ class NodeInfo:
 
 
 @dataclass
-# CJS-3: Added.
+class SubjectInfo:
+    subject_id: str
+    name: str
+    function: Dict[str, NodeInfo]
+    nodeDict: Dict[str, Node]
+    edgeDict: Dict[str, Edge]
+
+
+@dataclass
 class ExptInfo:
     started_at: str
     finished_at: Optional[str]
     unique_id: str
     name: str
     status: Optional[str]
-    results: List[Dict[str, Union[str, NodeInfo]]]
-    nodeDict: Dict[str, Node]
-    edgeDict: Dict[str, Edge]
+    results: List[SubjectInfo]

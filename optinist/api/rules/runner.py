@@ -14,8 +14,6 @@ from optinist.api.pickle.pickle_reader import PickleReader
 from optinist.api.pickle.pickle_writer import PickleWriter
 from optinist.api.utils.filepath_creater import join_filepath
 from optinist.api.nwb.nwb_creater import merge_nwbfile, save_nwb
-
-# CJS-3: Imports
 from optinist.api.dataclass.dataclass import AnalysisInfo, AnalysisStatus
 from optinist.api.experiment.experiment import ExptFunction
 
@@ -45,7 +43,7 @@ class Runner:
             )
 
             if 'analysis_info_out' in output_info.keys():
-                # CJS-3: The function was added just after the node analysis, which updates experiment.yaml
+                # The function was added just after the node analysis, which updates experiment.yaml
                 # with the node analysis info such as output file paths and status.
                 cls.set_node_analysis_info(os.path.dirname(__rule.output), output_info['analysis_info_out'])
 
@@ -81,7 +79,7 @@ class Runner:
     @classmethod
     def set_node_analysis_info(cls, output_dirpath: str, analysis_info: AnalysisInfo):
         """
-        CJS-3: Update the experiment.yaml with the node analysis info such as output file paths and status.
+        Update the experiment.yaml with the node analysis info such as output file paths and status.
         """
 
         # Get the ExptConfig data from the experiment.yaml.
@@ -206,38 +204,3 @@ class Runner:
             return cls.dict2leaf(root_dict[path], path_list)
         else:
             return root_dict[path]
-
-
-# CJS-3: Test experiment.yaml update.
-if __name__ == '__main__':
-
-    print('\n[set_node_analysis_info test]')
-
-    # The folder saving the output files of the workflow analysis, whose name is same as the workflow ID.
-    output_dirpath = r'../../test_data/cjs/output/3a55fa37/func1'
-
-    # Set the paths of the workflow input files.
-    wf_input_file_path_list = [
-        'proj_root/mouse1/sub-mouse1_ses-20230501123456_rec-1_run-1_T2W.nii',
-        'proj_root/mouse2/sub-mouse2_ses-20230502123456_rec-1_run-1_T2W.nii',]
-
-    # Create an AnalysisInfo object.
-    project_path = r'../../test_data/cjs/test_project'
-    analysis_info = AnalysisInfo(wf_input_file_path_list, project_path)
-
-    # Set the data.
-    output_file_path_dict = {}
-    analysis_status_dict = {}
-    for wf_input_path in wf_input_file_path_list:
-        input_file_name = os.path.splitext(os.path.basename(wf_input_path))[0]
-        folder_path = os.path.dirname(wf_input_path)
-        output_file_path = os.path.join(folder_path, input_file_name + '_nodeA.nii')
-        analysis_info.set_output_file_paths(wf_input_path, output_file_path)
-        analysis_info.set_analysis_status(wf_input_path, AnalysisStatus.PROCESSED)
-    analysis_info.analysis_start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    analysis_info.analysis_end_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    # Update the experiment.yaml with the node analysis info such as output file paths and status.
-    Runner.set_node_analysis_info(output_dirpath, analysis_info)
-
-    print(f'\nTest finished.')

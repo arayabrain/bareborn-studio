@@ -142,34 +142,3 @@ class NiftiImage:
         affine_matrix = translation_matrix @ rotation_matrix @ scaling_matrix @ shear_matrix
 
         return affine_matrix
-
-
-# Test
-if __name__ == '__main__':
-    import os
-
-    print('\n[NiftiImage test]')
-
-    # Set a file path.
-    folder_path = r'../../test_data/cjs/test_project'
-    file_name = 'T2_H477_SU007.nii'
-    file_path = os.path.join(folder_path, file_name)
-    print(f'\nFile path: {file_path}')
-
-    # Alignment parameters.
-    alignment_params = np.array([24.7802, 26.0210, 37.6303, 0.1000, 0.2000, 0.3000, 1.0000, 1.0000, 1.0000, 0, 0, 0])
-
-    # Create a NiftiImage object.
-    nifti = NiftiImage(file_path)
-
-    # Show a sample image.
-    slice_num = math.floor(nifti.image_data.shape[2] / 2)
-    print(f'Plot sagittal slice#: {slice_num}')
-    plt.imshow(nifti.image_data[slice_num, :, :], cmap='gray', origin='lower')
-    plt.show()
-
-    # Calculate a new affine transformation matrix with alignment parameters,
-    # and overwrite the NIfTI file with the matrix.
-    nifti.update_affine_matrix(alignment_params)
-
-    print(f'\nTest finished.')
