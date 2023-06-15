@@ -264,7 +264,7 @@ export const inputNodeSlice = createSlice({
                 }))
                 newState[node.id] = {
                   fileType: FILE_TYPE_SET.IMAGE,
-                  selectedFilePath: node.data.path as string[],
+                  selectedFilePath: urls.map(({ url }) => url),
                   param: {
                     ...initParams,
                     alignments: {
