@@ -234,7 +234,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
               },
             ],
           })
-        }, 200)
+        }, 500)
       },
     )
   }
