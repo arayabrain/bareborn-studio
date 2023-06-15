@@ -16,6 +16,7 @@ snakemake
 jinja2==3.0.3
 firebase_admin
 pydantic[email]
+pydantic[dotenv]
 pyrebase4==4.6.0
 requests-toolbelt==0.10.1
 python-jose[cryptography]
