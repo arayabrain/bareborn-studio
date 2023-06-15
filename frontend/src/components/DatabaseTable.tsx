@@ -535,7 +535,9 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                 const nameCol = col.name || col.dataIndex || ''
                 return (
                   <Th
-                    onClick={() => onSortHandle(nameCol)}
+                    onClick={() => {
+                      if (col.filter) onSortHandle(nameCol)
+                    }}
                     style={{
                       maxWidth: col.width,
                       minWidth: col.width,
@@ -600,9 +602,8 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                   <Box
                     key={`${rowId}_-${index}`}
                     style={{ width, padding: 16 }}
-                  >
-                    {td.html}
-                  </Box>
+                    dangerouslySetInnerHTML={{ __html: td.html }}
+                  />
                 )
               })}
             </BoxDrag>
