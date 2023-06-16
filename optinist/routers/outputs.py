@@ -121,10 +121,10 @@ async def get_html(filepath: str):
 
 @router.get("/outputs/image/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_image(
-        filepath: str,
-        start_index: Optional[int] = 0,
-        end_index: Optional[int] = 1
-    ):
+    filepath: str,
+    start_index: Optional[int] = 0,
+    end_index: Optional[int] = 1
+):
     filename, ext = os.path.splitext(os.path.basename(filepath))
     if ext in ACCEPT_TIFF_EXT:
         filepath = join_filepath([DIRPATH.INPUT_DIR, filepath])
