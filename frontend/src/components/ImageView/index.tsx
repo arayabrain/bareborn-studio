@@ -291,6 +291,7 @@ const ImageView: FC<ImageViewProps> = ({
               {opacity ? (
                 <Box sx={{ background: '#ffffff' }}>
                   <BoxContentData>
+                    <p style={{ margin: 0, paddingTop: 5 }}>[ID: {id}]</p>
                     <p style={{ margin: 0, padding: '20px 0' }}>
                       World Coordinates:
                     </p>

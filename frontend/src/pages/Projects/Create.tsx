@@ -77,6 +77,19 @@ const columns: Column[] = [
     width: 100,
   },
   {
+    title: 'Image ID',
+    name: 'id',
+    width: 100,
+    render: (record) => {
+      if (!(record as ImagesDatabase).image_attributes) return
+      return (
+        <div style={{ textAlign: 'center' }}>
+          {(record as ImagesDatabase).id}
+        </div>
+      )
+    },
+  },
+  {
     title: 'Type',
     name: 'image_attributes.image_type',
     filter: true,
@@ -182,6 +195,7 @@ const ProjectFormComponent = () => {
   const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const dataset = useSelector(selectDataset)
   const currentProject = useSelector(selectCurrentProject)
@@ -204,7 +218,6 @@ const ProjectFormComponent = () => {
   const [imageIDs, setImageIDs] = useState<number[]>(ids)
 
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
-  const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
   useEffect(() => {
@@ -516,8 +529,13 @@ const ProjectFormComponent = () => {
         style={style}
         onClick={() => rowDataClick(e)}
       >
+        <TypographyBoxItem style={{ minWidth: 40 }}>
+          {e.image_id}
+        </TypographyBoxItem>
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
-        <TypographyBoxItem>{e.project_type}</TypographyBoxItem>
+        <TypographyBoxItem style={{ minWidth: 80 }}>
+          {e.project_type}
+        </TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
         <Box style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}>
           <Button
