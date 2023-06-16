@@ -1,7 +1,6 @@
 import math
 import os
 
-import matplotlib.pyplot as plt
 import nibabel as nib
 import numpy as np
 

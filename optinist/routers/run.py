@@ -1,12 +1,10 @@
 from typing import Dict
 from fastapi import APIRouter, BackgroundTasks
 import uuid
-import json
 
 from optinist.api.workflow.workflow import NodeItem, RunItem, Message, ExptInfo
 from optinist.api.workflow.workflow_runner import WorkflowRunner
 from optinist.api.workflow.workflow_result import WorkflowResult
-from optinist.api.experiment.experiment_reader import ExptConfigReader
 
 router = APIRouter()
 

@@ -10,8 +10,8 @@ Update the affine transformation matrix in NIfTI files for given alignment.
 
 
 def align_images(
-        #image_data: ImageData
-        params_in: dict=None
+            #image_data: ImageData
+            params_in: dict=None
 ) -> dict(analysis_info_out=AnalysisInfo):
     # Get the paths of the workflow input files.
     #wf_input_path_list = [get_wf_input_file_path(params['image_id']) for params in image_data.params]   DEBUG
@@ -49,9 +49,6 @@ def align_images(
             # Set the same file path as output.
             analysis_info_out.set_output_file_paths(wf_input_path, [wf_input_path])
             analysis_info_out.set_analysis_status(wf_input_path, AnalysisStatus.PROCESSED)
-        except(RuntimeError) as error:
-            analysis_info_out.set_analysis_status(wf_input_path, AnalysisStatus.ERROR)
-            analysis_info_out.set_message(wf_input_path, error.args[0])
         except(Exception) as error:
             analysis_info_out.set_analysis_status(wf_input_path, AnalysisStatus.ERROR)
             analysis_info_out.set_message(wf_input_path, error.args[0])

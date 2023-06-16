@@ -93,6 +93,8 @@ class WorkflowResult:
         Get the experiment info about the workflow analysis.
         """
 
+        GET_NIFTI_IMAGE_API = '/outputs/nifti_image/'
+
         # TODO: Set the experiment.yaml path.
         expt_file_path = os.path.join(DIRPATH.OUTPUT_DIR, str(self.project_id), self.unique_id, DIRPATH.EXPERIMENT_YML)
         # Dummy
@@ -114,7 +116,7 @@ class WorkflowResult:
                     unique_id=node_id,
                     name=function_data[node_id].name,
                     success=', '.join(subjects_data[subject_name].success), # 2D -> 1D
-                    outputs=[x for row in subjects_data[subject_name].output_path for x in row] # 2D -> 1D
+                    outputs=[os.path.join(GET_NIFTI_IMAGE_API, x) for row in subjects_data[subject_name].output_path for x in row] # 2D -> 1D
                 )
 
                 # Add to the corresponding subject data in results_data.

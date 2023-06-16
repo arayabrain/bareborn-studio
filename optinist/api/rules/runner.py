@@ -14,7 +14,7 @@ from optinist.api.pickle.pickle_reader import PickleReader
 from optinist.api.pickle.pickle_writer import PickleWriter
 from optinist.api.utils.filepath_creater import join_filepath
 from optinist.api.nwb.nwb_creater import merge_nwbfile, save_nwb
-from optinist.api.dataclass.dataclass import AnalysisInfo, AnalysisStatus
+from optinist.api.dataclass.dataclass import AnalysisInfo
 from optinist.api.experiment.experiment import ExptFunction
 
 

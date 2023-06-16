@@ -1,7 +1,5 @@
 import os
 import pandas as pd
-import pathlib
-from pathlib import PurePosixPath
 
 from glob import glob
 from typing import Optional, Dict, List
@@ -14,7 +12,6 @@ from optinist.api.utils.filepath_creater import create_directory, join_filepath
 from optinist.routers.const import ACCEPT_TIFF_EXT
 from optinist.routers.fileIO.file_reader import JsonReader, Reader
 from optinist.routers.model import JsonTimeSeriesData, OutputData, ImageCreationParams
-from optinist.wrappers.vbm_wrapper import vbm_visualization
 from optinist.api.dataclass.utils import check_path_format
 
 router = APIRouter()
@@ -169,8 +166,8 @@ async def get_csv(filepath: str):
     return JsonReader.read_as_output(json_filepath)
 
 
-@router.get('/outputs/nifti_image/{url: path}', response_class=FileResponse, tags=['outputs'])
-async def get_nifti_image(url: str):
+@router.get('/outputs/nifti_image/{path: path}', response_class=FileResponse, tags=['outputs'])
+async def get_nifti_image(path: str):
     """
     Get the image data saved in an NIfTI file.
     """
@@ -179,12 +176,12 @@ async def get_nifti_image(url: str):
     # project_path = get_project_path()
     # Dummy
     project_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/1')
-    file_path = os.path.join(project_path, 'derivatives', url)
+    file_path = check_path_format(os.path.join(project_path, 'derivatives', path))
 
     if not os.path.isfile(file_path):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={'message': 'Image file cannot be found.'},
+            content={'message': f'Image file cannot be found. {file_path}'},
         )
 
     return FileResponse(
@@ -194,8 +191,8 @@ async def get_nifti_image(url: str):
     )
 
 
-@router.get('/outputs/png_image/{url: path}', response_class=FileResponse, tags=['outputs'])
-async def get_png_image(url: str):
+@router.get('/outputs/png_image/{path: path}', response_class=FileResponse, tags=['outputs'])
+async def get_png_image(path: str):
     """
     Get the image data saved in a PNG file.
     """
@@ -204,7 +201,7 @@ async def get_png_image(url: str):
     # project_path = get_project_path()
     # Dummy
     project_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/1')
-    file_path = os.path.join(project_path, 'derivatives', url)
+    file_path = check_path_format(os.path.join(project_path, 'derivatives', path))
 
     if not os.path.isfile(file_path):
         return JSONResponse(
@@ -225,13 +222,16 @@ async def generate_stats_images(project_id: str, image_creation_params: ImageCre
     Send URLs of statistical analysis image files, which were created with the image creation parameters.
     """
 
+    GET_PNG_IMAGE_API = '/outputs/png_image/'
+
     # TODO: Create a statistical analysis images, and get a list of those URLs. How to get the analysis ID?
     # image_urls = vbm_visualization.create_stats_images(project_id, analysis_id, image_creation_params)
     # Dummy
+    dir_path = '3a55fa37/stats_results/'
     file_names = ['Figure_1.png', 'Figure_2.png', 'Figure_3.png']
     image_urls = []
     for file_name in file_names:
-        image_urls.append(check_path_format(os.path.join(r'3a55fa37/stats_results', file_name)))
+        image_urls.append((GET_PNG_IMAGE_API + dir_path + file_name))
 
     return {'image_urls': image_urls}
 
@@ -245,7 +245,17 @@ async def download_stats_report(project_id: str, image_creation_params: ImageCre
     # TODO: Create a statistical analysis report PDF, and get its file path. How to get the analysis ID?
     # file_path = vbm_visualization.create_stats_report_pdf(project_id, analysis_id, image_creation_params)
     # Dummy
-    file_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/1/derivatives/3a55fa37/stats_results/stats_report-1.pdf')
+    project_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/1')
+    dir_path = 'derivatives/3a55fa37/stats_results/'
+    file_name = 'stats_report-1.pdf'
+    file_path = check_path_format(os.path.join(project_path, dir_path, file_name))
+    # file_path = os.path.join(DIRPATH.ROOT_DIR, r'../sample_data/cjs/1/derivatives/3a55fa37/stats_results/stats_report-1.pdf')
+
+    if not os.path.isfile(file_path):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={'message': f'Report file cannot be found. {file_path}'},
+        )
 
     return FileResponse(
         path=file_path,
