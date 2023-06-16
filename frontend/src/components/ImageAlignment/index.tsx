@@ -393,7 +393,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
               </Flex>
             </div>
           </div>
-          {!loading.loaded && <Loading />}
+          {loading.file && <Loading />}
           <ButtonClose onClick={onClose}>
             <CloseIconWrapper />
           </ButtonClose>
