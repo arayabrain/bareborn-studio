@@ -166,7 +166,7 @@ async def get_csv(filepath: str):
     return JsonReader.read_as_output(json_filepath)
 
 
-@router.get('/outputs/nifti_image/{path: path}', response_class=FileResponse, tags=['outputs'])
+@router.get('/outputs/nifti_image/{path:path}', response_class=FileResponse, tags=['outputs'])
 async def get_nifti_image(path: str):
     """
     Get the image data saved in an NIfTI file.
@@ -191,7 +191,7 @@ async def get_nifti_image(path: str):
     )
 
 
-@router.get('/outputs/png_image/{path: path}', response_class=FileResponse, tags=['outputs'])
+@router.get('/outputs/png_image/{path:path}', response_class=FileResponse, tags=['outputs'])
 async def get_png_image(path: str):
     """
     Get the image data saved in a PNG file.
