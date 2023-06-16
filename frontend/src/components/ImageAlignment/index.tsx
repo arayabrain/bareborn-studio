@@ -184,8 +184,21 @@ const ImageAlignment: FC<ImageViewProps> = ({
     if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
       const voxelGet = volume.getVoxelCoords()
       if (!refVoxel.current || refVoxel.current?.url !== urlRef.current.url) {
-        refVoxel.current = { ...voxelGet, url: urlRef }
-      } else {
+        refVoxel.current = { ...voxelGet, url: urlRef.current.url }
+      } else if (refVoxel.current?.url === urlRef.current.url) {
+        setStateParams((params) =>
+          params.map((param) => {
+            if (param.image_id === urlRef.current.id) {
+              return {
+                ...param,
+                x_pos: voxelGet.k - (refVoxel.current?.k || 0),
+                y_pos: voxelGet.i - (refVoxel.current?.i || 0),
+                z_pos: voxelGet.j - (refVoxel.current?.j || 0),
+              }
+            }
+            return param
+          }),
+        )
       }
     }
     setLoading((pre) => ({ ...pre, file: false, error: false, loaded: true }))
