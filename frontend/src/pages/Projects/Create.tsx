@@ -82,6 +82,19 @@ const columns: Column[] = [
     width: 100,
   },
   {
+    title: 'Image ID',
+    name: 'id',
+    width: 100,
+    render: (record) => {
+      if (!(record as ImagesDatabase).image_attributes) return
+      return (
+        <div style={{ textAlign: 'center' }}>
+          {(record as ImagesDatabase).id}
+        </div>
+      )
+    },
+  },
+  {
     title: 'Type',
     name: 'image_attributes.image_type',
     filter: true,
@@ -187,6 +200,7 @@ const ProjectFormComponent = () => {
   const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const dataset = useSelector(selectDataset)
   const currentProject = useSelector(selectCurrentProject)
@@ -209,7 +223,6 @@ const ProjectFormComponent = () => {
   const [imageIDs, setImageIDs] = useState<number[]>(ids)
 
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
-  const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
   useEffect(() => {
@@ -521,8 +534,13 @@ const ProjectFormComponent = () => {
         style={style}
         onClick={() => rowDataClick(e)}
       >
+        <TypographyBoxItem style={{ minWidth: 40 }}>
+          {e.image_id}
+        </TypographyBoxItem>
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
-        <TypographyBoxItem>{e.project_type}</TypographyBoxItem>
+        <TypographyBoxItem style={{ minWidth: 80 }}>
+          {e.project_type}
+        </TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
         <Box style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}>
           <Button
@@ -560,6 +578,7 @@ const ProjectFormComponent = () => {
       open: true,
       url: row.image_url,
       jsonData: row.jsonData,
+      id: row.image_id,
     })
     setDisabled({ left: true, right: true })
   }
@@ -640,7 +659,12 @@ const ProjectFormComponent = () => {
                 let urls: { id: string | number; url: string }[] = []
                 getUrlFromSubfolder(response.records, urls)
                 await Promise.all([
-                  dispatch(setInputNodeFilePath({ nodeId, filePath: urls.map(({ url }) => url) })),
+                  dispatch(
+                    setInputNodeFilePath({
+                      nodeId,
+                      filePath: urls.map(({ url }) => url),
+                    }),
+                  ),
                   dispatch(getDatasetList({ project_id: idEdit })),
                   dispatch(setLoadingExpriment({ loading: false })),
                 ])
@@ -836,7 +860,12 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={onOk} sx={{ backgroundColor: 'limegreen !important' }}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
+        <ButtonFilter
+          onClick={onOk}
+          sx={{ backgroundColor: 'limegreen !important' }}
+        >
+          {idEdit ? 'Ok' : 'Add'}
+        </ButtonFilter>
         <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
       {loading && <Loading />}
