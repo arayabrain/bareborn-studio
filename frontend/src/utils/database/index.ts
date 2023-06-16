@@ -227,7 +227,13 @@ const sortWithKey = (
       })
     } else valueB = valueB[orderKey] as string
     if (typeOrder === 'DESC') {
+      if (Array.isArray(valueA) && Array.isArray(valueB)) {
+        return valueA[0] > valueB[0] ? -1 : 1
+      }
       return valueA > valueB ? -1 : 1
+    }
+    if (Array.isArray(valueA) && Array.isArray(valueB)) {
+      return valueA[0] < valueB[0] ? -1 : 1
     }
     return valueA < valueB ? -1 : 1
   })
