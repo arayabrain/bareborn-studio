@@ -121,8 +121,18 @@ const ImageAlignment: FC<ImageViewProps> = ({
     const { name, value } = e.target
     if (params?.nodeId && stateParams) {
       const newParams = stateParams.map((align) =>
+        align.image_id === image?.id ? { ...align, [name]: value } : align,
+      )
+      setStateParams(newParams)
+    }
+  }
+
+  const onBlurValue = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    if (params?.nodeId && stateParams) {
+      const newParams = stateParams.map((align) =>
         align.image_id === image?.id
-          ? { ...align, [name]: Number(value) }
+          ? { ...align, [name]: Number(value || 0) }
           : align,
       )
       setStateParams(newParams)
@@ -291,6 +301,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="x_pos"
                         value={gerenateValueNumber(paramAligment?.x_pos)}
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -301,6 +312,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="y_pos"
                         value={gerenateValueNumber(paramAligment?.y_pos)}
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -311,6 +323,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="z_pos"
                         value={gerenateValueNumber(paramAligment?.z_pos)}
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -350,6 +363,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="x_resize"
                         value={gerenateValueNumber(paramAligment?.x_resize)}
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -359,6 +373,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={gerenateValueNumber(paramAligment?.y_resize)}
                         name="y_resize"
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -368,6 +383,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={gerenateValueNumber(paramAligment?.z_resize)}
                         name="z_resize"
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
