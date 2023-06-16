@@ -578,6 +578,7 @@ const ProjectFormComponent = () => {
       open: true,
       url: row.image_url,
       jsonData: row.jsonData,
+      id: row.image_id,
     })
     setDisabled({ left: true, right: true })
   }
