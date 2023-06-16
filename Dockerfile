@@ -26,6 +26,8 @@ COPY backend ./backend
 
 COPY frontend/build ./frontend/build
 
+COPY sample_data ./sample_data
+
 COPY main.py firebase_config.json firebase_private.json .env ./
 
 EXPOSE 8000
