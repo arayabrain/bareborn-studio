@@ -1,6 +1,6 @@
 import numpy as np
 
-from optinist.api.dataclass.dataclass import *
+from optinist.api.dataclass.dataclass import AnalysisInfo, AnalysisStatus
 from optinist.wrappers.vbm_wrapper.nifti_image import NiftiImage
 
 
@@ -10,11 +10,11 @@ Update the affine transformation matrix in NIfTI files for given alignment.
 
 
 def align_images(
-            #image_data: ImageData
-            params_in: dict=None
+    # image_data: ImageData
+    params_in: dict = None
 ) -> dict(analysis_info_out=AnalysisInfo):
     # Get the paths of the workflow input files.
-    #wf_input_path_list = [get_wf_input_file_path(params['image_id']) for params in image_data.params]   DEBUG
+    # wf_input_path_list = [get_wf_input_file_path(params['image_id']) for params in image_data.params]   DEBUG
     wf_input_path_list = [get_wf_input_file_path(params['image_id']) for params in params_in]
 
     # Initialize an AnalysisInfo object for output.
@@ -22,7 +22,7 @@ def align_images(
     analysis_info_out = AnalysisInfo(wf_input_path_list, project_path)
 
     # Update each NIfTI file.
-    #for wf_input_path, params in zip(wf_input_path_list, image_data.params):   DEBUG
+    # for wf_input_path, params in zip(wf_input_path_list, image_data.params):   DEBUG
     for wf_input_path, params in zip(wf_input_path_list, params_in):
         try:
             # Set the alignment parameters.
@@ -49,7 +49,7 @@ def align_images(
             # Set the same file path as output.
             analysis_info_out.set_output_file_paths(wf_input_path, [wf_input_path])
             analysis_info_out.set_analysis_status(wf_input_path, AnalysisStatus.PROCESSED)
-        except(Exception) as error:
+        except Exception as error:
             analysis_info_out.set_analysis_status(wf_input_path, AnalysisStatus.ERROR)
             analysis_info_out.set_message(wf_input_path, error.args[0])
 
