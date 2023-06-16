@@ -192,7 +192,7 @@ const ProjectFormComponent = () => {
   const currentProject = useSelector(selectCurrentProject)
 
   const [databasese, setDatabases] = useState<DatabaseData>(defaultDatabase)
-  const [initDatabase, setInitDatabase] =
+  const [initDatabases, setInitDatabases] =
     useState<DatabaseData>(defaultDatabase)
   const [projectName, setProjectName] = useState(
     currentProject?.project_name || 'Prj Name 1',
@@ -253,15 +253,15 @@ const ProjectFormComponent = () => {
   }, [])
 
   const onFilter = (value: { [key: string]: string }) => {
-    if (!initDatabase) return
-    const records = onFilterValue(value, initDatabase, 'tree') as RecordDatabase[]
+    if (!initDatabases) return
+    const records = onFilterValue(value, initDatabases, 'tree') as RecordDatabase[]
     const data = onSort(
         JSON.parse(JSON.stringify(records)),
         orderBy,
         columnSort as OrderKey,
         "tree",
     ) as RecordDatabase[]
-    setDatabases({...initDatabase, records: data})
+    setDatabases({...initDatabases, records: data})
     if (!Object.keys(value).length) return
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)
@@ -270,10 +270,17 @@ const ProjectFormComponent = () => {
   }
 
   const getDataTree = async () => {
+    const defaultValue = {
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    }
     try {
       const response = await getDataBaseTree()
-      setDatabases(response)
-      setInitDatabase(response)
+      const records = onFilterValue(defaultValue, response, 'tree')
+      setDatabases({...databasese, records: records as RecordDatabase[]})
+      setInitDatabases(response)
     } catch {}
   }
 
@@ -572,12 +579,20 @@ const ProjectFormComponent = () => {
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
+    if (!initDatabases) return
+    const filterValue = {
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    }
+    const records = onFilterValue(filterValue, initDatabases, 'tree')
     const data = onSort(
-      JSON.parse(JSON.stringify(initDatabase.records)),
-      orderByValue,
-      orderKey as OrderKey,
+        JSON.parse(JSON.stringify(records)),
+        orderByValue,
+        orderKey as OrderKey
     )
-    setDatabases({ ...databasese, records: data as RecordDatabase[] })
+    setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
     setOrdeBy(orderByValue)
   }
@@ -683,11 +698,11 @@ const ProjectFormComponent = () => {
   const handleClear = () => {
     setParams('')
     const data = onSort(
-        JSON.parse(JSON.stringify(initDatabase.records)),
+        JSON.parse(JSON.stringify(initDatabases.records)),
         orderBy,
         columnSort as OrderKey,
     )
-    setDatabases({...initDatabase, records: data as RecordDatabase[]})
+    setDatabases({...initDatabases, records: data as RecordDatabase[]})
   }
 
   return (
