@@ -121,10 +121,10 @@ async def get_html(filepath: str):
 
 @router.get("/outputs/image/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_image(
-    filepath: str,
-    start_index: Optional[int] = 0,
-    end_index: Optional[int] = 1
-):
+        filepath: str,
+        start_index: Optional[int] = 0,
+        end_index: Optional[int] = 1
+    ):
     filename, ext = os.path.splitext(os.path.basename(filepath))
     if ext in ACCEPT_TIFF_EXT:
         filepath = join_filepath([DIRPATH.INPUT_DIR, filepath])
@@ -166,7 +166,7 @@ async def get_csv(filepath: str):
     return JsonReader.read_as_output(json_filepath)
 
 
-@router.get('/outputs/nifti_image/{path: path}', response_class=FileResponse, tags=['outputs'])
+@router.get('/outputs/nifti_image/{path:path}', response_class=FileResponse, tags=['outputs'])
 async def get_nifti_image(path: str):
     """
     Get the image data saved in an NIfTI file.
@@ -191,7 +191,7 @@ async def get_nifti_image(path: str):
     )
 
 
-@router.get('/outputs/png_image/{path: path}', response_class=FileResponse, tags=['outputs'])
+@router.get('/outputs/png_image/{path:path}', response_class=FileResponse, tags=['outputs'])
 async def get_png_image(path: str):
     """
     Get the image data saved in a PNG file.

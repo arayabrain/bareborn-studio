@@ -21,7 +21,7 @@
 		"images": [
 			{ "id": "id_g", "path": "proj_root/mouse7/sub-mouse7_ses-20230507123456_rec-1_run-1_T2W.nii" },
 			{ "id": "id_h", "path": "proj_root/mouse8/sub-mouse8_ses-20230508123456_rec-1_run-1_T2W.nii" }],
-		"sub-list": [{
+		"sub_folders": [{
 			"folder_name": "within_factor_CC",
 			"images": [
 				{ "id": "id_i", "path": "proj_root/mouse9/sub-mouse9_ses-20230509123456_rec-1_run-1_T2W.nii" },

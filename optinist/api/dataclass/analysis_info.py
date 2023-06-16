@@ -104,7 +104,7 @@ class AnalysisInfo(BaseData):
         # filemap_path = os.path.join(project_root_dir, 'filemap.json')
         # Dummy
         dir_path = os.path.dirname(__file__)
-        filemap_path = os.path.join(dir_path, r'../../test_data/cjs/test_project/filemap.json')
+        filemap_path = os.path.join(dir_path, r'../../../sample_data/cjs/1/filemap.json')
 
         # Get the between-factor and within-factor from the filemap.json.
         factors_dict = {}
