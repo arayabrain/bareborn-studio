@@ -226,15 +226,21 @@ const ProjectFormComponent = () => {
   const [isEditName, setIsEditName] = useState(false)
 
   useEffect(() => {
-    if (!idEdit) return
     setLoading(true)
-    dispatch(getDatasetList({ project_id: idEdit }))
-    dispatch(
-      getProjectId({
-        project_id: idEdit,
-        callback: () => setLoading(false),
-      }),
-    )
+    if (!idEdit) {
+      getDataTree().then(() => setLoading(false))
+      return;
+    }
+    Promise.all([
+        dispatch(getDatasetList({ project_id: idEdit })),
+        dispatch(
+            getProjectId({
+              project_id: idEdit,
+              callback: () => setLoading(false),
+            }),
+        ),
+        getDataTree()
+    ]).then(() => setLoading(false))
     return () => {
       dispatch(resetCurrentProject())
       dispatch(reset())
@@ -259,11 +265,6 @@ const ProjectFormComponent = () => {
       setProjectType(currentProject.project_type)
     }
   }, [currentProject?.project_type])
-
-  useEffect(() => {
-    getDataTree().then()
-    //eslint-disable-next-line
-  }, [])
 
   const onFilter = (value: { [key: string]: string }) => {
     if (!initDatabase) return
