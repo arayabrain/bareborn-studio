@@ -151,8 +151,8 @@ const VisualizeNew = () => {
     const newArr = value.split(',')
     const checkArr = newArr.some((item: string) => !Number(item) && item !== '0')
     if (name === 'threshold') {
-      if (checkArr || newArr.length !== 2) {
-        return 'wrong format [float, float]'
+      if (checkArr || newArr.length !== 1) {
+        return 'wrong format [float]'
       }
       return ''
     }
