@@ -6,6 +6,7 @@ import {
   useState,
   useRef,
   useEffect,
+  CSSProperties,
 } from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
@@ -24,6 +25,7 @@ type Object = {
 
 export type Column = {
   width?: number
+  styleTitle?: CSSProperties
   title: string
   dataIndex?: string
   name?: string
@@ -559,6 +561,7 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                       minWidth: col.width,
                       width: col.width,
                       cursor: 'pointer',
+                      ...(col.styleTitle || {}),
                     }}
                     key={col.dataIndex || col.name || iCol}
                   >

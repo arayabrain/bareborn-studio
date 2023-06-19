@@ -117,7 +117,25 @@ const sortSubjectTree = (
   datasTable: RecordDatabase[],
   typeOrder?: 'ASC' | 'DESC',
 ) => {
-  return datasTable.map((element) => ({
+  const newDatas = datasTable.sort((dataA, dataB) => {
+    const subjectsA = dataA.subjects.sort((subA, subB) => {
+      if (typeOrder === 'DESC') {
+        return subA.label > subB.label ? -1 : 1
+      }
+      return subA.label < subB.label ? -1 : 1
+    })
+    const subjectsB = dataB.subjects.sort((subA, subB) => {
+      if (typeOrder === 'DESC') {
+        return subA.label > subB.label ? -1 : 1
+      }
+      return subA.label < subB.label ? -1 : 1
+    })
+    if (typeOrder === 'DESC') {
+      return subjectsA[0]?.label > subjectsB[0]?.label ? -1 : 1
+    }
+    return subjectsA[0]?.label < subjectsB[0]?.label ? -1 : 1
+  })
+  return newDatas.map((element) => ({
     ...element,
     subjects: element.subjects.sort((subA, subB) => {
       if (typeOrder === 'DESC') {
@@ -132,18 +150,78 @@ const sortSessionTree = (
   datasTable: RecordDatabase[],
   typeOrder?: 'ASC' | 'DESC',
 ) => {
-  const newDatas = datasTable.map((element) => ({
-    ...element,
-    subjects: element.subjects.map((sub) => ({
-      ...sub,
-      sessions: sub.sessions.sort((ssA, ssB) => {
-        if (typeOrder === 'DESC') {
-          return ssA.label > ssB.label ? -1 : 1
-        }
-        return ssA.label < ssB.label ? -1 : 1
-      }),
-    })),
-  }))
+  const newDatas = datasTable
+    .sort((dataA, dataB) => {
+      const sessionsA = dataA.subjects
+        .map((sub) => {
+          const subSess = sub.sessions.sort((sA, sB) => {
+            if (typeOrder === 'DESC') {
+              return sA.label > sB.label ? -1 : 1
+            }
+            return sA.label < sB.label ? -1 : 1
+          })
+          return subSess
+        })
+        .flat()
+        .sort((dataA, dataB) => {
+          if (typeOrder === 'DESC') {
+            return dataA.label > dataB.label ? -1 : 1
+          }
+          return dataA.label < dataB.label ? -1 : 1
+        })
+      const sessionsB = dataB.subjects
+        .map((sub) => {
+          const subSess = sub.sessions.sort((sA, sB) => {
+            if (typeOrder === 'DESC') {
+              return sA.label > sB.label ? -1 : 1
+            }
+            return sA.label < sB.label ? -1 : 1
+          })
+          return subSess
+        })
+        .flat()
+        .sort((dataA, dataB) => {
+          if (typeOrder === 'DESC') {
+            return dataA.label > dataB.label ? -1 : 1
+          }
+          return dataA.label < dataB.label ? -1 : 1
+        })
+      if (typeOrder === 'DESC') {
+        return sessionsA[0]?.label > sessionsB[0]?.label ? -1 : 1
+      }
+      return sessionsA[0]?.label < sessionsB[0]?.label ? -1 : 1
+    })
+    .map((element) => ({
+      ...element,
+      subjects: element.subjects
+        .sort((subA, subB) => {
+          const subSessA = subA.sessions.sort((sA, sB) => {
+            if (typeOrder === 'DESC') {
+              return sA.label > sB.label ? -1 : 1
+            }
+            return sA.label < sB.label ? -1 : 1
+          })
+          const subSessB = subB.sessions.sort((sA, sB) => {
+            if (typeOrder === 'DESC') {
+              return sA.label > sB.label ? -1 : 1
+            }
+            return sA.label < sB.label ? -1 : 1
+          })
+          if (typeOrder === 'DESC') {
+            return subSessA[0]?.label > subSessB[0]?.label ? -1 : 1
+          }
+          return subSessA[0]?.label < subSessB[0]?.label ? -1 : 1
+        })
+        .map((sub) => ({
+          ...sub,
+          sessions: sub.sessions.sort((ssA, ssB) => {
+            if (typeOrder === 'DESC') {
+              return ssA.label > ssB.label ? -1 : 1
+            }
+            return ssA.label < ssB.label ? -1 : 1
+          }),
+        })),
+    }))
   return newDatas
 }
 
@@ -328,7 +406,9 @@ export const onFilterValue = (
             ?.toLowerCase()
             .includes(value[key].toLowerCase?.())
         }
-        return !(item[key as keyof RecordList] as string)?.includes(value[key].toLowerCase?.())
+        return !(item[key as keyof RecordList] as string)?.includes(
+          value[key].toLowerCase?.(),
+        )
       })
     })
   }
