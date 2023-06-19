@@ -417,11 +417,23 @@ const ImageAlignment: FC<ImageViewProps> = ({
                   sx={{
                     flexDirection: 'column',
                     position: 'relative',
-                    gap: 15,
+                    gap: 8,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
+                  <FlexBox>
+                    <div>Origin: </div>
+                    <div>{`[${
+                      (refVoxel.current?.k || 0) + (paramAligment?.x_pos || 0)
+                    }]`}</div>
+                    <div>{`[${
+                      (refVoxel.current?.i || 0) + (paramAligment?.y_pos || 0)
+                    }]`}</div>
+                    <div>{`[${
+                      (refVoxel.current?.j || 0) + (paramAligment?.z_pos || 0)
+                    }]`}</div>
+                  </FlexBox>
                   <SwitchImage>
                     <span>Select Image</span>
                     <SwitchContent>
@@ -433,6 +445,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       urls.findIndex((item) => item.id === image?.id) + 1
                     }/${urls.length})`}</span>
                   </SwitchImage>
+
                   <Flex sx={{ gap: 5 }}>
                     <ButtonCanCel onClick={onClose}>CANCEL</ButtonCanCel>
                     <ButtonOk onClick={onOk}>OK</ButtonOk>
@@ -551,5 +564,13 @@ const ButtonCanCel = styled('button')({
 const CloseIconWrapper = styled(CloseIcon)({
   color: '#ffffff',
 })
+
+const FlexBox = styled(Box)(() => ({
+  display: 'flex',
+  width: '100%',
+  marginLeft: 30,
+  alignItems: 'center',
+  gap: 5,
+}))
 
 export default ImageAlignment
