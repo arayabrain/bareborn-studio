@@ -73,6 +73,7 @@ const columns: Column[] = [
   {
     title: 'Datatype',
     name: 'datatype',
+    styleTitle: { fontWeight: 400 },
     filter: true,
     width: 100,
   },
@@ -80,6 +81,7 @@ const columns: Column[] = [
     title: 'Image ID',
     name: 'id',
     width: 100,
+    styleTitle: { fontWeight: 400 },
     render: (record) => {
       if (!(record as ImagesDatabase).image_attributes) return
       return (
@@ -93,17 +95,20 @@ const columns: Column[] = [
     title: 'Type',
     name: 'image_attributes.image_type',
     filter: true,
+    styleTitle: { fontWeight: 400 },
     width: 70,
   },
   {
     title: 'Protocol',
     name: 'image_attributes.protocol',
     filter: true,
+    styleTitle: { fontWeight: 400 },
   },
   {
     title: 'Size',
     name: 'image_attributes.scale',
     filter: true,
+    styleTitle: { fontWeight: 400 },
     render: (_, value) => JSON.stringify(value),
   },
   {
@@ -111,6 +116,7 @@ const columns: Column[] = [
     name: 'image_attributes.voxel',
     filter: true,
     width: 110,
+    styleTitle: { fontWeight: 400 },
     render: (_, value) => JSON.stringify(value),
   },
 ]
@@ -224,17 +230,17 @@ const ProjectFormComponent = () => {
     setLoading(true)
     if (!idEdit) {
       getDataTree().then(() => setLoading(false))
-      return;
+      return
     }
     Promise.all([
-        dispatch(getDatasetList({ project_id: idEdit })),
-        dispatch(
-            getProjectId({
-              project_id: idEdit,
-              callback: () => setLoading(false),
-            }),
-        ),
-        getDataTree()
+      dispatch(getDatasetList({ project_id: idEdit })),
+      dispatch(
+        getProjectId({
+          project_id: idEdit,
+          callback: () => setLoading(false),
+        }),
+      ),
+      getDataTree(),
     ]).then(() => setLoading(false))
     return () => {
       dispatch(resetCurrentProject())
@@ -256,21 +262,25 @@ const ProjectFormComponent = () => {
   }, [currentProject?.project_name])
 
   useEffect(() => {
-    if(currentProject?.project_type) {
+    if (currentProject?.project_type) {
       setProjectType(currentProject.project_type as number)
     }
   }, [currentProject?.project_type])
 
   const onFilter = (value: { [key: string]: string }) => {
     if (!initDatabases) return
-    const records = onFilterValue(value, initDatabases, 'tree') as RecordDatabase[]
-    const data = onSort(
-        JSON.parse(JSON.stringify(records)),
-        orderBy,
-        columnSort as OrderKey,
-        "tree",
+    const records = onFilterValue(
+      value,
+      initDatabases,
+      'tree',
     ) as RecordDatabase[]
-    setDatabases({...initDatabases, records: data})
+    const data = onSort(
+      JSON.parse(JSON.stringify(records)),
+      orderBy,
+      columnSort as OrderKey,
+      'tree',
+    ) as RecordDatabase[]
+    setDatabases({ ...initDatabases, records: data })
     if (!Object.keys(value).length) return
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)
@@ -288,7 +298,7 @@ const ProjectFormComponent = () => {
     try {
       const response = await getDataBaseTree()
       const records = onFilterValue(defaultValue, response, 'tree')
-      setDatabases({...databasese, records: records as RecordDatabase[]})
+      setDatabases({ ...databasese, records: records as RecordDatabase[] })
       setInitDatabases(response)
     } catch {}
   }
@@ -603,9 +613,9 @@ const ProjectFormComponent = () => {
     }
     const records = onFilterValue(filterValue, initDatabases, 'tree')
     const data = onSort(
-        JSON.parse(JSON.stringify(records)),
-        orderByValue,
-        orderKey as OrderKey
+      JSON.parse(JSON.stringify(records)),
+      orderByValue,
+      orderKey as OrderKey,
     )
     setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
@@ -704,11 +714,11 @@ const ProjectFormComponent = () => {
   const handleClear = () => {
     setParams('')
     const data = onSort(
-        JSON.parse(JSON.stringify(initDatabases.records)),
-        orderBy,
-        columnSort as OrderKey,
+      JSON.parse(JSON.stringify(initDatabases.records)),
+      orderBy,
+      columnSort as OrderKey,
     )
-    setDatabases({...initDatabases, records: data as RecordDatabase[]})
+    setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
   }
 
   return (
@@ -844,13 +854,13 @@ const ProjectFormComponent = () => {
         </DragBox>
         <DropBox>
           <BoxFilter>
-            <Box sx={{display: 'flex', gap: 5}}>
+            <Box sx={{ display: 'flex', gap: 5 }}>
               <Button variant="contained" onClick={handleClear}>
                 Clear Filter
               </Button>
               <ButtonFilter
-                  onClick={() => setOpenFilter(true)}
-                  style={{ margin: '0 26px 0 0' }}
+                onClick={() => setOpenFilter(true)}
+                style={{ margin: '0 26px 0 0' }}
               >
                 Filter
               </ButtonFilter>
