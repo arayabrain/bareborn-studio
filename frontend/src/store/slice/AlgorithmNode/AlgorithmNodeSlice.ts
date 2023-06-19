@@ -76,7 +76,7 @@ export const algorithmNodeSlice = createSlice({
       })
       .addCase(importExperimentByUid.fulfilled, (_, action) => {
         const newState: AlgorithmNode = {}
-        Object.values(action.payload.nodeDict)
+        Object.values(action.payload.data.nodeDict)
           .filter(isAlgorithmNodePostData)
           .forEach((node) => {
             if (node.data != null) {
@@ -92,7 +92,7 @@ export const algorithmNodeSlice = createSlice({
       })
       .addCase(fetchExperiment.fulfilled, (state, action) => {
         const newState: AlgorithmNode = {}
-        Object.values(action.payload.nodeDict)
+        Object.values(action.payload.data.nodeDict)
           .filter(isAlgorithmNodePostData)
           .forEach((node) => {
             if (node.data != null) {

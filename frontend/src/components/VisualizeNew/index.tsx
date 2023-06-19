@@ -156,8 +156,8 @@ const VisualizeNew = () => {
       }
       return ''
     }
-    if(checkArr || newArr.length !== 5) {
-      return 'wrong format [int, int, int, int, int]'
+    if(checkArr || regexCutCoords.test(value)) {
+      return 'wrong format [int,...]'
     }
     return ''
   }

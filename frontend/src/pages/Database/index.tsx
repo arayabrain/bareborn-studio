@@ -243,6 +243,19 @@ export const columns = (
     width: 100,
   },
   {
+    title: 'Image ID',
+    name: 'id',
+    width: 100,
+    render: (record) => {
+      if (!(record as ImagesDatabase).image_attributes) return
+      return (
+        <div style={{ textAlign: 'center' }}>
+          {(record as ImagesDatabase).id}
+        </div>
+      )
+    },
+  },
+  {
     title: 'Type',
     name: 'image_attributes.image_type',
     filter: true,
@@ -301,7 +314,7 @@ export const columns = (
 
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
-  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
+  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '', id: '' })
   const [databases, setDatabases] = useState<DatabaseData | DatabaseListData>()
   const [openDelete, setOpenDelete] = useState(false)
   const [{ orderBy, type, columnSort }, setOrderByAndTypeAndSort] = useState<{
@@ -311,15 +324,14 @@ const Database = () => {
   }>({ orderBy: '', type: 'tree', columnSort: '' })
 
   // const [columnSort, setColumnSort] = useState<string>('')
-  const [initDataTable, setInitDataTable] =
+  const [initDatabases, setInitDatabases] =
     useState<DatabaseData>(defaultDatabase)
   const [disabled, setDisabled] = useState({ left: false, right: false })
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
   const [searchParams, setParams] = useSearchParams()
-
   const onCloseImageView = () => {
-    setViewer({ open: false, url: '' })
+    setViewer({ open: false, url: '', id: '' })
   }
 
   const fetchData = useCallback(async () => {
@@ -332,13 +344,19 @@ const Database = () => {
     setIsLoading(true)
     let data
     try {
-      data = type === 'tree' ? await getDataBaseTree() : await getDataBaseList()
-      onFilterValue(defaultValue, setDatabases, data, type)
-      setInitDataTable(data)
+      let api = getDataBaseList;
+      if(type === 'tree') {
+        api = getDataBaseTree
+      }
+      data = await api()
+      const records = onFilterValue(defaultValue, data, type)
+      setDatabases({...data, records})
+      setInitDatabases(data)
     } finally {
       setIsLoading(false)
     }
-  }, [type, searchParams])
+    //eslint-disable-next-line
+  }, [type])
 
   useEffect(() => {
     fetchData()
@@ -363,15 +381,21 @@ const Database = () => {
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
-    if (!databases) return
-
+    if (!initDatabases) return
+    const filterValue = {
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    }
+    const records = onFilterValue(filterValue, initDatabases, type)
     const data = onSort(
-      JSON.parse(JSON.stringify(initDataTable.records)),
-      orderByValue,
-      orderKey as OrderKey,
-      type,
+        JSON.parse(JSON.stringify(records)),
+        orderByValue,
+        orderKey as OrderKey,
+        type,
     )
-    setDatabases({ ...databases, records: data as any })
+    setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
     setOrderByAndTypeAndSort((pre) => ({
       ...pre,
       orderBy: orderByValue,
@@ -393,8 +417,15 @@ const Database = () => {
 
   const onFilter = (value: { [key: string]: string }) => {
     if (!databases) return
-    onFilterValue(value, setDatabases, initDataTable, type)
     if (!Object.keys(value).length) return
+    const records = onFilterValue(value, initDatabases, type)
+    const data = onSort(
+        JSON.parse(JSON.stringify(records)),
+        orderBy,
+        columnSort as OrderKey,
+        type,
+    )
+    setDatabases({...databases, records: data as RecordDatabase[]})
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)
       .join('&')
@@ -403,6 +434,17 @@ const Database = () => {
 
   const setType = (type: 'tree' | 'list') => {
     setOrderByAndTypeAndSort({ type, orderBy: '', columnSort: '' })
+  }
+
+  const handleClear = () => {
+    setParams('')
+    const data = onSort(
+        JSON.parse(JSON.stringify(initDatabases.records)),
+        orderBy,
+        columnSort as OrderKey,
+        type,
+    )
+    setDatabases({...initDatabases, records: data as RecordDatabase[]})
   }
 
   return (
@@ -416,16 +458,25 @@ const Database = () => {
       />
       <ProjectsTitle>
         <span>Database</span>
-        <ButtonFilter
-          onClick={() => setOpenPopup(true)}
-          style={{ margin: '0 26px 0 0' }}
-        >
-          Filter
-        </ButtonFilter>
+        <Box sx={{display: 'flex', gap: 5}}>
+          <Button variant="contained" onClick={handleClear}>
+            Clear Filter
+          </Button>
+          <ButtonFilter
+            onClick={() => setOpenPopup(true)}
+            style={{ margin: '0 26px 0 0' }}
+          >
+            Filter
+          </ButtonFilter>
+       </Box>
       </ProjectsTitle>
       <BoxSelectTypeView>
         <Box
-          onClick={() => setType('tree')}
+            onClick={() => {
+              if(type === 'tree') return
+              setType('tree')
+              setParams('')
+            }}
           style={{
             marginRight: 4,
             fontWeight: type === 'tree' ? 700 : 500,
@@ -437,7 +488,11 @@ const Database = () => {
         </Box>
         /
         <Box
-          onClick={() => setType('list')}
+          onClick={() => {
+            if(type === 'list') return
+            setType('list')
+            setParams('')
+    }}
           style={{
             marginLeft: 4,
             fontWeight: type === 'list' ? 700 : 500,

@@ -4,11 +4,12 @@ import { useSelector, useDispatch } from 'react-redux'
 import TableComponent, { Column } from 'components/Table'
 import { useNavigate } from 'react-router-dom'
 import ModalDeleteAccount from 'components/ModalDeleteAccount'
-import { selectProjectList } from 'store/slice/Project/ProjectSelector'
+import {selectLoadingProject, selectProjectList} from 'store/slice/Project/ProjectSelector'
 import {
   deleteProject,
   getProjectList,
 } from 'store/slice/Project/ProjectAction'
+import Loading from "../../components/common/Loading";
 
 export type DataProject = {
   id: number | string
@@ -25,6 +26,7 @@ const Projects = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const projects = useSelector(selectProjectList)
+  const loading = useSelector(selectLoadingProject)
   const [idDelete, setIdDelete] = useState<number | string | undefined>()
 
   useEffect(() => {
@@ -56,11 +58,11 @@ const Projects = () => {
     setIdDelete(id)
   }
 
-  const onDeleteSubmit = () => {
+  const onDeleteSubmit = async () => {
     const id = idDelete
     if (!id) return
-    setIdDelete(undefined)
-    dispatch(deleteProject({ project_id: Number(id) }))
+      await dispatch(deleteProject({ project_id: Number(id) }))
+      setIdDelete(undefined)
   }
 
   const handleCloseDelete = () => {
@@ -134,6 +136,9 @@ const Projects = () => {
         data={projects}
         columns={columns}
       />
+      {
+        loading ? <Loading /> : null
+      }
     </ProjectsWrapper>
   )
 }
