@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
-import {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react'
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import DatabaseTableComponent, { Column } from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -243,6 +243,19 @@ export const columns = (
     width: 100,
   },
   {
+    title: 'Image ID',
+    name: 'id',
+    width: 100,
+    render: (record) => {
+      if (!(record as ImagesDatabase).image_attributes) return
+      return (
+        <div style={{ textAlign: 'center' }}>
+          {(record as ImagesDatabase).id}
+        </div>
+      )
+    },
+  },
+  {
     title: 'Type',
     name: 'image_attributes.image_type',
     filter: true,
@@ -301,7 +314,7 @@ export const columns = (
 
 const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
-  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
+  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '', id: '' })
   const [databases, setDatabases] = useState<DatabaseData | DatabaseListData>()
   const [openDelete, setOpenDelete] = useState(false)
   const [{ orderBy, type, columnSort }, setOrderByAndTypeAndSort] = useState<{
@@ -317,6 +330,9 @@ const Database = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
   const [searchParams, setParams] = useSearchParams()
+  const onCloseImageView = () => {
+    setViewer({ open: false, url: '', id: '' })
+  }
 
   const queryFilter: {[key: string]: string } = useMemo(() => {
     return {
@@ -326,10 +342,6 @@ const Database = () => {
       protocol: searchParams.get('protocol') || '',
     }
   }, [searchParams])
-
-  const onCloseImageView = () => {
-    setViewer({ open: false, url: '' })
-  }
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
