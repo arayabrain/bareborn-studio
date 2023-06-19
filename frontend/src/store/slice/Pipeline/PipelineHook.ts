@@ -79,7 +79,12 @@ export function useRunPipeline() {
                   dayjs(dayjs(finished_at).format('YYYY-MM-DD HH:mm')),
                   'm',
                 ) > 0
-                imgsetUpdatedSinceLastRun && dispatch(setRunBtnOption({ runBtnOption: RUN_BTN_OPTIONS.RUN_NEW }))
+                imgsetUpdatedSinceLastRun && dispatch(
+                  setRunBtnOption({
+                    runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                    runAlreadyDisabled: true,
+                  }),
+                )
               })
               .catch((_) => {
                 appDispatch(

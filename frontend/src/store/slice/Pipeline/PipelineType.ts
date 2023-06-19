@@ -11,6 +11,7 @@ export type Pipeline = {
     uid: string
   }
   runBtn: RUN_BTN_TYPE
+  runAlreadyDisabled?: boolean
 }
 
 export const RUN_STATUS = {

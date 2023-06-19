@@ -700,7 +700,12 @@ const ProjectFormComponent = () => {
                 onCancle()
               }
             }
-            dispatch(setRunBtnOption({ runBtnOption: RUN_BTN_OPTIONS.RUN_NEW }))
+            dispatch(
+              setRunBtnOption({
+                runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                runAlreadyDisabled: true,
+              }),
+            )
             setLoading(false)
           },
         }),
@@ -714,7 +719,12 @@ const ProjectFormComponent = () => {
             if (isSuccess) {
               return onCancle()
             }
-            dispatch(setRunBtnOption({ runBtnOption: RUN_BTN_OPTIONS.RUN_NEW }))
+            dispatch(
+              setRunBtnOption({
+                runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                runAlreadyDisabled: true,
+              }),
+            )
             setLoading(false)
           },
         }),

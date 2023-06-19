@@ -82,7 +82,12 @@ const ImageAlignment: FC<ImageViewProps> = ({
           param: stateParams,
         }),
       )
-      dispatch(setRunBtnOption({ runBtnOption: RUN_BTN_OPTIONS.RUN_NEW }))
+      dispatch(
+        setRunBtnOption({
+          runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+          runAlreadyDisabled: true,
+        }),
+      )
     }
     onClose?.()
   }

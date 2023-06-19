@@ -32,14 +32,17 @@ export const pipelineSlice = createSlice({
   reducers: {
     cancelPipeline(state) {
       state.run.status = RUN_STATUS.CANCELED
+      state.runAlreadyDisabled = false
     },
     setRunBtnOption: (
       state,
       action: PayloadAction<{
         runBtnOption: RUN_BTN_TYPE
+        runAlreadyDisabled?: boolean
       }>,
     ) => {
       state.runBtn = action.payload.runBtnOption
+      state.runAlreadyDisabled = action.payload.runAlreadyDisabled ?? false
     },
   },
   extraReducers: (builder) => {
@@ -56,15 +59,20 @@ export const pipelineSlice = createSlice({
           if (runResultPendingList.length === 0) {
             // 終了
             state.run.status = RUN_STATUS.FINISHED
+            state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
+            state.runAlreadyDisabled = false
           }
         }
       })
       .addCase(pollRunResult.rejected, (state, action) => {
         state.run.status = RUN_STATUS.ABORTED
+        state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
+        state.runAlreadyDisabled = false
       })
       .addCase(importExperimentByUid.fulfilled, (state, action) => {
         if (action.meta.arg.uid === 'default') {
           state.runBtn = RUN_BTN_OPTIONS.RUN_NEW
+          state.runAlreadyDisabled = true
         } else {
           state.currentPipeline = {
             uid: action.meta.arg.uid,
@@ -80,6 +88,7 @@ export const pipelineSlice = createSlice({
           uid: action.payload.data.unique_id,
         }
         state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
+        state.runAlreadyDisabled = false
         state.run = {
           uid: action.payload.data.unique_id,
           status: RUN_STATUS.START_SUCCESS,
