@@ -212,6 +212,15 @@ const ProjectFormComponent = () => {
   const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
+  const queryFilter: {[key: string]: string } = useMemo(() => {
+    return {
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    }
+  }, [searchParams])
+
   useEffect(() => {
     if (!idEdit) return
     setLoading(true)
@@ -270,15 +279,9 @@ const ProjectFormComponent = () => {
   }
 
   const getDataTree = async () => {
-    const defaultValue = {
-      session_label: searchParams.get('session_label') || '',
-      datatypes_label: searchParams.get('datatypes_label') || '',
-      type: searchParams.get('type') || '',
-      protocol: searchParams.get('protocol') || '',
-    }
     try {
       const response = await getDataBaseTree()
-      const records = onFilterValue(defaultValue, response, 'tree')
+      const records = onFilterValue(queryFilter, response, 'tree')
       setDatabases({...databasese, records: records as RecordDatabase[]})
       setInitDatabases(response)
     } catch {}
@@ -709,12 +712,7 @@ const ProjectFormComponent = () => {
     <ProjectsWrapper>
       {openFilter && (
         <PopupSearch
-          defaultValue={{
-            session_label: searchParams.get('session_label') || '',
-            datatypes_label: searchParams.get('datatypes_label') || '',
-            type: searchParams.get('type') || '',
-            protocol: searchParams.get('protocol') || '',
-          }}
+          defaultValue={queryFilter}
           onFilter={onFilter}
           onClose={() => setOpenFilter(false)}
         />
@@ -839,9 +837,10 @@ const ProjectFormComponent = () => {
         <DropBox>
           <BoxFilter>
             <Box sx={{display: 'flex', gap: 5}}>
-              <Button variant="contained" onClick={handleClear}>
+              { Object.keys(queryFilter).some((key) => queryFilter[key]) &&
+                <Button variant="contained" onClick={handleClear}>
                 Clear Filter
-              </Button>
+              </Button>}
               <ButtonFilter
                   onClick={() => setOpenFilter(true)}
                   style={{ margin: '0 26px 0 0' }}

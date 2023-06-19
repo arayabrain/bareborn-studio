@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, styled, TextField } from '@mui/material'
-import { ChangeEvent, useCallback, useEffect, useState } from 'react'
+import {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react'
 import DatabaseTableComponent, { Column } from 'components/DatabaseTable'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -317,17 +317,21 @@ const Database = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useUser()
   const [searchParams, setParams] = useSearchParams()
-  const onCloseImageView = () => {
-    setViewer({ open: false, url: '' })
-  }
 
-  const fetchData = useCallback(async () => {
-    const defaultValue = {
+  const queryFilter: {[key: string]: string } = useMemo(() => {
+    return {
       session_label: searchParams.get('session_label') || '',
       datatypes_label: searchParams.get('datatypes_label') || '',
       type: searchParams.get('type') || '',
       protocol: searchParams.get('protocol') || '',
     }
+  }, [searchParams])
+
+  const onCloseImageView = () => {
+    setViewer({ open: false, url: '' })
+  }
+
+  const fetchData = useCallback(async () => {
     setIsLoading(true)
     let data
     try {
@@ -336,7 +340,7 @@ const Database = () => {
         api = getDataBaseTree
       }
       data = await api()
-      const records = onFilterValue(defaultValue, data, type)
+      const records = onFilterValue(queryFilter, data, type)
       setDatabases({...data, records})
       setInitDatabases(data)
     } finally {
@@ -369,13 +373,7 @@ const Database = () => {
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
     if (!initDatabases) return
-    const filterValue = {
-      session_label: searchParams.get('session_label') || '',
-      datatypes_label: searchParams.get('datatypes_label') || '',
-      type: searchParams.get('type') || '',
-      protocol: searchParams.get('protocol') || '',
-    }
-    const records = onFilterValue(filterValue, initDatabases, type)
+    const records = onFilterValue(queryFilter, initDatabases, type)
     const data = onSort(
         JSON.parse(JSON.stringify(records)),
         orderByValue,
@@ -446,9 +444,12 @@ const Database = () => {
       <ProjectsTitle>
         <span>Database</span>
         <Box sx={{display: 'flex', gap: 5}}>
-          <Button variant="contained" onClick={handleClear}>
-            Clear Filter
-          </Button>
+          {
+            Object.keys(queryFilter).some((key) => !!queryFilter[key]) &&
+              <Button variant="contained" onClick={handleClear}>
+                  Clear Filter
+              </Button>
+          }
           <ButtonFilter
             onClick={() => setOpenPopup(true)}
             style={{ margin: '0 26px 0 0' }}
@@ -493,12 +494,7 @@ const Database = () => {
       {openPopup && (
         <PopupSearch
           onClose={() => setOpenPopup(false)}
-          defaultValue={{
-            session_label: searchParams.get('session_label') || '',
-            datatypes_label: searchParams.get('datatypes_label') || '',
-            type: searchParams.get('type') || '',
-            protocol: searchParams.get('protocol') || '',
-          }}
+          defaultValue={queryFilter}
           onFilter={onFilter}
         />
       )}
