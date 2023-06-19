@@ -27,7 +27,7 @@ type ImageViewProps = {
   url?: string
   jsonData?: ObjectType
   disabled?: { left: boolean; right: boolean }
-  id: number
+  id?: number
   editAttribute?: boolean
 }
 
@@ -245,6 +245,7 @@ const ImageView: FC<ImageViewProps> = ({
   }
 
   const handleSaveAttributes = async () => {
+    if(!id) return
     setIsLoading(true)
     try {
       await editAttributes(id, textAttribute)
@@ -291,7 +292,9 @@ const ImageView: FC<ImageViewProps> = ({
               {opacity ? (
                 <Box sx={{ background: '#ffffff' }}>
                   <BoxContentData>
-                    <p style={{ margin: 0, paddingTop: 5 }}>[ID: {id}]</p>
+                    {
+                      id ? <p style={{ margin: 0, paddingTop: 5 }}>[ID: {id}]</p> : null
+                    }
                     <p style={{ margin: 0, padding: '20px 0' }}>
                       World Coordinates:
                     </p>
