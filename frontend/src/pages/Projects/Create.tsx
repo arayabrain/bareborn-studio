@@ -220,21 +220,23 @@ const ProjectFormComponent = () => {
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
   const [isEditName, setIsEditName] = useState(false)
 
+  const errorProjectEmpty = useMemo(() => !projectName, [projectName])
+
   useEffect(() => {
     setLoading(true)
     if (!idEdit) {
       getDataTree().then(() => setLoading(false))
-      return;
+      return
     }
     Promise.all([
-        dispatch(getDatasetList({ project_id: idEdit })),
-        dispatch(
-            getProjectId({
-              project_id: idEdit,
-              callback: () => setLoading(false),
-            }),
-        ),
-        getDataTree()
+      dispatch(getDatasetList({ project_id: idEdit })),
+      dispatch(
+        getProjectId({
+          project_id: idEdit,
+          callback: () => setLoading(false),
+        }),
+      ),
+      getDataTree(),
     ]).then(() => setLoading(false))
     return () => {
       dispatch(resetCurrentProject())
@@ -256,21 +258,25 @@ const ProjectFormComponent = () => {
   }, [currentProject?.project_name])
 
   useEffect(() => {
-    if(currentProject?.project_type) {
+    if (currentProject?.project_type) {
       setProjectType(currentProject.project_type as number)
     }
   }, [currentProject?.project_type])
 
   const onFilter = (value: { [key: string]: string }) => {
     if (!initDatabases) return
-    const records = onFilterValue(value, initDatabases, 'tree') as RecordDatabase[]
-    const data = onSort(
-        JSON.parse(JSON.stringify(records)),
-        orderBy,
-        columnSort as OrderKey,
-        "tree",
+    const records = onFilterValue(
+      value,
+      initDatabases,
+      'tree',
     ) as RecordDatabase[]
-    setDatabases({...initDatabases, records: data})
+    const data = onSort(
+      JSON.parse(JSON.stringify(records)),
+      orderBy,
+      columnSort as OrderKey,
+      'tree',
+    ) as RecordDatabase[]
+    setDatabases({ ...initDatabases, records: data })
     if (!Object.keys(value).length) return
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)
@@ -288,7 +294,7 @@ const ProjectFormComponent = () => {
     try {
       const response = await getDataBaseTree()
       const records = onFilterValue(defaultValue, response, 'tree')
-      setDatabases({...databasese, records: records as RecordDatabase[]})
+      setDatabases({ ...databasese, records: records as RecordDatabase[] })
       setInitDatabases(response)
     } catch {}
   }
@@ -603,9 +609,9 @@ const ProjectFormComponent = () => {
     }
     const records = onFilterValue(filterValue, initDatabases, 'tree')
     const data = onSort(
-        JSON.parse(JSON.stringify(records)),
-        orderByValue,
-        orderKey as OrderKey
+      JSON.parse(JSON.stringify(records)),
+      orderByValue,
+      orderKey as OrderKey,
     )
     setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
@@ -651,6 +657,17 @@ const ProjectFormComponent = () => {
   }
 
   const onOk = async () => {
+    if (errorProjectEmpty) return
+    if (
+      dataFactors.some((factor) => {
+        return (
+          !factor.name ||
+          (factor.within.length && factor.within.some((within) => !within.name))
+        )
+      })
+    ) {
+      return
+    }
     setLoading(true)
     const project = {
       project_name: projectName,
@@ -704,11 +721,11 @@ const ProjectFormComponent = () => {
   const handleClear = () => {
     setParams('')
     const data = onSort(
-        JSON.parse(JSON.stringify(initDatabases.records)),
-        orderBy,
-        columnSort as OrderKey,
+      JSON.parse(JSON.stringify(initDatabases.records)),
+      orderBy,
+      columnSort as OrderKey,
     )
-    setDatabases({...initDatabases, records: data as RecordDatabase[]})
+    setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
   }
 
   return (
@@ -739,12 +756,26 @@ const ProjectFormComponent = () => {
         />
       )}
       {isEditName ? (
-        <InputName
-          autoFocus
-          onBlur={() => setIsEditName(false)}
-          value={projectName}
-          onChange={onChangeName}
-        />
+        <Fragment>
+          <InputName
+            autoFocus
+            onBlur={() => {
+              if (errorProjectEmpty) return
+              setIsEditName(false)
+            }}
+            value={projectName}
+            onChange={onChangeName}
+            style={{
+              borderColor: errorProjectEmpty ? 'red' : '#000',
+              borderStyle: 'solid',
+            }}
+          />
+          {errorProjectEmpty && (
+            <span style={{ fontSize: 12, color: 'red' }}>
+              Project name can't empty
+            </span>
+          )}
+        </Fragment>
       ) : (
         <TextName onClick={() => setIsEditName(true)}>{projectName}</TextName>
       )}
@@ -777,28 +808,51 @@ const ProjectFormComponent = () => {
             return (
               <Fragment key={factor.id}>
                 <BoxFactor>
-                  <Input
-                    onChange={(e) => onChangeNameFactor(factor, e.target.value)}
-                    style={{ width: 'calc(100% - 64px)' }}
-                    value={generateName(factor.name, index, 'Between')}
-                  />
-                  <Button onClick={() => onDeleteFactor(factor)}>
-                    <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-                  </Button>
+                  <div>
+                    <Input
+                      error={!factor.name}
+                      onChange={(e) =>
+                        onChangeNameFactor(factor, e.target.value)
+                      }
+                      style={{ width: 'calc(100% - 64px)' }}
+                      value={generateName(factor.name, index, 'Between')}
+                    />
+                    <Button onClick={() => onDeleteFactor(factor)}>
+                      <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+                    </Button>
+                    {!factor.name && (
+                      <div style={{ fontSize: 12, color: 'red' }}>
+                        Factor name can't empty
+                      </div>
+                    )}
+                  </div>
                   {projectType === ProjectTypeValue.WITHIN_FACTOR ? (
                     factor.within.map((within, iWithin) => (
                       <BoxFactor key={within.id} style={{ marginLeft: 24 }}>
-                        <Input
-                          onChange={(e) => {
-                            const { value } = e.target
-                            onChangeNameWithinFactor(factor, within, value)
-                          }}
-                          style={{ width: 'calc(100% - 64px)' }}
-                          value={generateName(within.name, iWithin, 'Within')}
-                        />
-                        <Button onClick={() => onDeleteWithin(factor, within)}>
-                          <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-                        </Button>
+                        <div>
+                          <Input
+                            error={!within.name}
+                            onChange={(e) => {
+                              const { value } = e.target
+                              onChangeNameWithinFactor(factor, within, value)
+                            }}
+                            style={{ width: 'calc(100% - 64px)' }}
+                            value={generateName(within.name, iWithin, 'Within')}
+                          />
+                          <Button
+                            onClick={() => onDeleteWithin(factor, within)}
+                          >
+                            <DeleteIcon
+                              fontSize="small"
+                              sx={{ color: 'red' }}
+                            />
+                          </Button>
+                          {!within.name && (
+                            <div style={{ fontSize: 12, color: 'red' }}>
+                              Within factor name can't empty
+                            </div>
+                          )}
+                        </div>
                         {renderData(within.data, { marginLeft: 48 }, (row) => {
                           onDeleteDataWithin(factor, within, row)
                         })}
@@ -844,13 +898,13 @@ const ProjectFormComponent = () => {
         </DragBox>
         <DropBox>
           <BoxFilter>
-            <Box sx={{display: 'flex', gap: 5}}>
+            <Box sx={{ display: 'flex', gap: 5 }}>
               <Button variant="contained" onClick={handleClear}>
                 Clear Filter
               </Button>
               <ButtonFilter
-                  onClick={() => setOpenFilter(true)}
-                  style={{ margin: '0 26px 0 0' }}
+                onClick={() => setOpenFilter(true)}
+                style={{ margin: '0 26px 0 0' }}
               >
                 Filter
               </ButtonFilter>
@@ -909,6 +963,7 @@ const BoxItem = styled(Box)({
   borderBottom: '1px solid rgba(0,0,0,0.8)',
   paddingLeft: 16,
   marginBottom: 4,
+  justifyContent: 'space-between',
 })
 
 const TypographyBoxItem = styled(Box)({
