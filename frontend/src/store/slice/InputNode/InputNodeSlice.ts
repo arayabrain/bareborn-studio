@@ -31,7 +31,7 @@ import { getUrlFromSubfolder } from '../Dataset/DatasetSelector'
 import { NodeDict } from 'api/run/Run'
 import { SubFolder } from '../Dataset/DatasetType'
 
-const defaultValueParams = {
+export const defaultValueParams = {
   x_pos: 0,
   x_resize: 1,
   x_rotate: 0,

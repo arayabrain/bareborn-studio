@@ -3,7 +3,10 @@ import { ChangeEvent, FC, useEffect, useMemo, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { ObjectType } from 'pages/Database'
 import { useDispatch } from 'react-redux'
-import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
+import {
+  defaultValueParams,
+  setInputNodeParamAlignment,
+} from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
 import { DATABASE_URL_HOST } from 'const/API'
 import Loading from 'components/common/Loading'
@@ -94,6 +97,19 @@ const ImageAlignment: FC<ImageViewProps> = ({
     const index = urls.findIndex((item) => item.id === image?.id)
     if (index === urls.length - 1) return
     setUrl(urls[index + 1])
+  }
+
+  const resetOrigin = () => {
+    if (params?.nodeId && stateParams) {
+      const newParams = stateParams.map((align) => {
+        if (align.image_id === image?.id) {
+          return { ...defaultValueParams, image_id: align.image_id }
+        }
+        return align
+      })
+      setValueToBraibrowser({ ...defaultValueParams, image_id: image?.id })
+      setStateParams(newParams)
+    }
   }
 
   const setValueToBraibrowser = (valueParams?: Params) => {
@@ -391,6 +407,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       onClick={() => setValueToBraibrowser(paramAligment)}
                     >
                       Set Origin
+                    </ButtonSet>
+                    <ButtonSet style={{ marginLeft: 15 }} onClick={resetOrigin}>
+                      Reset
                     </ButtonSet>
                   </ContentSet>
                 </BoxSet>
