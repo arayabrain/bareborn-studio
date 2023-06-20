@@ -278,7 +278,7 @@ const VisualizeNew = () => {
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'true');
+      link.setAttribute('download', 'visualize-stat');
       link.click();
     }
     finally {
