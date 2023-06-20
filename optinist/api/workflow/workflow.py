@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 from pydantic import BaseModel
 
@@ -99,3 +99,37 @@ class RunItem(BaseModel):
     snakemakeParam: dict = {}
     nwbParam: dict = {}
     forceRunList: List[ForceRun]
+
+
+@dataclass
+class SubjectAnalysisInfo:
+    success: List[str]
+    output_path: List[str]
+    message: List[str]
+
+
+@dataclass
+class NodeInfo:
+    unique_id: str
+    name: str
+    success: str
+    outputs: List[str]
+
+
+@dataclass
+class SubjectInfo:
+    subject_id: str
+    name: str
+    function: Dict[str, NodeInfo]
+    nodeDict: Dict[str, Node]
+    edgeDict: Dict[str, Edge]
+
+
+@dataclass
+class ExptInfo:
+    started_at: str
+    finished_at: Optional[str]
+    unique_id: str
+    name: str
+    status: Optional[str]
+    results: List[SubjectInfo]

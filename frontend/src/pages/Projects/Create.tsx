@@ -57,6 +57,8 @@ import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
 import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
 import { reset } from 'store/slice/Dataset/DatasetSlice'
 import { setLoadingExpriment } from 'store/slice/Experiments/ExperimentsSlice'
+import { setRunBtnOption } from 'store/slice/Pipeline/PipelineSlice'
+import { RUN_BTN_OPTIONS } from 'store/slice/Pipeline/PipelineType'
 
 const columns: Column[] = [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
@@ -73,6 +75,7 @@ const columns: Column[] = [
   {
     title: 'Datatype',
     name: 'datatype',
+    styleTitle: { fontWeight: 400 },
     filter: true,
     width: 100,
   },
@@ -80,6 +83,7 @@ const columns: Column[] = [
     title: 'Image ID',
     name: 'id',
     width: 100,
+    styleTitle: { fontWeight: 400 },
     render: (record) => {
       if (!(record as ImagesDatabase).image_attributes) return
       return (
@@ -93,17 +97,20 @@ const columns: Column[] = [
     title: 'Type',
     name: 'image_attributes.image_type',
     filter: true,
+    styleTitle: { fontWeight: 400 },
     width: 70,
   },
   {
     title: 'Protocol',
     name: 'image_attributes.protocol',
     filter: true,
+    styleTitle: { fontWeight: 400 },
   },
   {
     title: 'Size',
     name: 'image_attributes.scale',
     filter: true,
+    styleTitle: { fontWeight: 400 },
     render: (_, value) => JSON.stringify(value),
   },
   {
@@ -111,6 +118,7 @@ const columns: Column[] = [
     name: 'image_attributes.voxel',
     filter: true,
     width: 110,
+    styleTitle: { fontWeight: 400 },
     render: (_, value) => JSON.stringify(value),
   },
 ]
@@ -701,12 +709,18 @@ const ProjectFormComponent = () => {
                 onCancle()
               }
             }
+            dispatch(
+              setRunBtnOption({
+                runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                runAlreadyDisabled: true,
+              }),
+            )
             setLoading(false)
           },
         }),
-      )
-    } else {
-      dispatch(
+        )
+      } else {
+        dispatch(
         createProject({
           project,
           dataset,
@@ -714,6 +728,12 @@ const ProjectFormComponent = () => {
             if (isSuccess) {
               return onCancle()
             }
+            dispatch(
+              setRunBtnOption({
+                runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                runAlreadyDisabled: true,
+              }),
+            )
             setLoading(false)
           },
         }),

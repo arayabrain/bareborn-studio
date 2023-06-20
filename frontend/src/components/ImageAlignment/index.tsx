@@ -6,6 +6,8 @@ import { useDispatch } from 'react-redux'
 import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
 import { DATABASE_URL_HOST } from 'const/API'
+import { setRunBtnOption } from 'store/slice/Pipeline/PipelineSlice'
+import { RUN_BTN_OPTIONS } from 'store/slice/Pipeline/PipelineType'
 import Loading from 'components/common/Loading'
 
 type ImageViewProps = {
@@ -78,6 +80,12 @@ const ImageAlignment: FC<ImageViewProps> = ({
         setInputNodeParamAlignment({
           nodeId: params.nodeId,
           param: stateParams,
+        }),
+      )
+      dispatch(
+        setRunBtnOption({
+          runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+          runAlreadyDisabled: true,
         }),
       )
     }

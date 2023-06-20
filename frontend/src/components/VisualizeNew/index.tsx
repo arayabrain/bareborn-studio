@@ -31,8 +31,7 @@ type AlertDialogProps = {
   onSaveParams: () => void
 }
 
-const regexThreshold = /[^0-9,.-]/
-const regexCutCoords = /[^0-9,-]/
+const regexInput = /[^0-9,.-]/
 
 const  AlertDialog = ({open, handleClose, onSaveParams}: AlertDialogProps) => {
   return (
@@ -151,13 +150,13 @@ const VisualizeNew = () => {
     const newArr = value.split(',')
     const checkArr = newArr.some((item: string) => !Number(item) && item !== '0')
     if (name === 'threshold') {
-      if (checkArr || newArr.length !== 2) {
-        return 'wrong format [float, float]'
+      if (checkArr || newArr.length !== 1) {
+        return 'wrong format [single float]'
       }
       return ''
     }
-    if(checkArr || regexCutCoords.test(value)) {
-      return 'wrong format [int,...]'
+    if(checkArr) {
+      return 'wrong format [float, ...]'
     }
     return ''
   }
@@ -166,14 +165,14 @@ const VisualizeNew = () => {
     let { value, name } = event.target
     if(name === 'threshold') setErrors({...errors, threshold: validateParams(value, name)})
     if(name !== 'threshold') setErrors({...errors, cut_coords: {...errors.cut_coords, [name]: validateParams(value, name)}})
-    if((name === 'threshold' && regexThreshold.test(value)) || (name !== 'threshold' && regexCutCoords.test(value))) {
+    if((name === 'threshold' && regexInput.test(value)) || (name !== 'threshold' && regexInput.test(value))) {
       const checkChar = (checkChar: any, value: string) => {
         const arrValue = value.split('')
         const index = arrValue.findIndex((item: string) => {
           if(name === 'threshold') {
-            return regexThreshold.test(item)
+            return regexInput.test(item)
           }
-          return regexCutCoords.test(item)
+          return regexInput.test(item)
         })
         if(index !== -1) {
           value = value.replace(value[index], '')

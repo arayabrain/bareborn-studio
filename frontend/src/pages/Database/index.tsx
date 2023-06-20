@@ -241,10 +241,12 @@ export const columns = (
     name: type === 'tree' ? 'datatype' : 'datatypes_label',
     filter: true,
     width: 100,
+    styleTitle: { fontWeight: 400 },
   },
   {
     title: 'Image ID',
     name: 'id',
+    styleTitle: { fontWeight: 400 },
     width: 100,
     render: (record) => {
       if (!(record as ImagesDatabase).image_attributes) return
@@ -260,22 +262,26 @@ export const columns = (
     name: 'image_attributes.image_type',
     filter: true,
     width: 70,
+    styleTitle: { fontWeight: 400 },
   },
   {
     title: 'Protocol',
     name: 'image_attributes.protocol',
     filter: true,
+    styleTitle: { fontWeight: 400 },
   },
   {
     title: 'Size',
     name: 'image_attributes.scale',
     filter: true,
+    styleTitle: { fontWeight: 400 },
     render: (_, v) => JSON.stringify(v),
   },
   {
     title: 'Voxel size',
     name: 'image_attributes.voxel',
     filter: true,
+    styleTitle: { fontWeight: 400 },
     width: 130,
     render: (_, v) => JSON.stringify(v),
   },
@@ -347,13 +353,13 @@ const Database = () => {
     setIsLoading(true)
     let data
     try {
-      let api = getDataBaseList;
-      if(type === 'tree') {
+      let api = getDataBaseList
+      if (type === 'tree') {
         api = getDataBaseTree
       }
       data = await api()
       const records = onFilterValue(queryFilter, data, type)
-      setDatabases({...data, records})
+      setDatabases({ ...data, records })
       setInitDatabases(data)
     } finally {
       setIsLoading(false)
@@ -387,10 +393,10 @@ const Database = () => {
     if (!initDatabases) return
     const records = onFilterValue(queryFilter, initDatabases, type)
     const data = onSort(
-        JSON.parse(JSON.stringify(records)),
-        orderByValue,
-        orderKey as OrderKey,
-        type,
+      JSON.parse(JSON.stringify(records)),
+      orderByValue,
+      orderKey as OrderKey,
+      type,
     )
     setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
     setOrderByAndTypeAndSort((pre) => ({
@@ -417,12 +423,12 @@ const Database = () => {
     if (!Object.keys(value).length) return
     const records = onFilterValue(value, initDatabases, type)
     const data = onSort(
-        JSON.parse(JSON.stringify(records)),
-        orderBy,
-        columnSort as OrderKey,
-        type,
+      JSON.parse(JSON.stringify(records)),
+      orderBy,
+      columnSort as OrderKey,
+      type,
     )
-    setDatabases({...databases, records: data as RecordDatabase[]})
+    setDatabases({ ...databases, records: data as RecordDatabase[] })
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)
       .join('&')
@@ -436,12 +442,12 @@ const Database = () => {
   const handleClear = () => {
     setParams('')
     const data = onSort(
-        JSON.parse(JSON.stringify(initDatabases.records)),
-        orderBy,
-        columnSort as OrderKey,
-        type,
+      JSON.parse(JSON.stringify(initDatabases.records)),
+      orderBy,
+      columnSort as OrderKey,
+      type,
     )
-    setDatabases({...initDatabases, records: data as RecordDatabase[]})
+    setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
   }
 
   return (
@@ -455,7 +461,7 @@ const Database = () => {
       />
       <ProjectsTitle>
         <span>Database</span>
-        <Box sx={{display: 'flex', gap: 5}}>
+        <Box sx={{ display: 'flex', gap: 5 }}>
           {
             Object.keys(queryFilter).some((key) => !!queryFilter[key]) &&
               <Button variant="contained" onClick={handleClear}>
@@ -468,15 +474,15 @@ const Database = () => {
           >
             Filter
           </ButtonFilter>
-       </Box>
+        </Box>
       </ProjectsTitle>
       <BoxSelectTypeView>
         <Box
-            onClick={() => {
-              if(type === 'tree') return
-              setType('tree')
-              setParams('')
-            }}
+          onClick={() => {
+            if (type === 'tree') return
+            setType('tree')
+            setParams('')
+          }}
           style={{
             marginRight: 4,
             fontWeight: type === 'tree' ? 700 : 500,
@@ -489,10 +495,10 @@ const Database = () => {
         /
         <Box
           onClick={() => {
-            if(type === 'list') return
+            if (type === 'list') return
             setType('list')
             setParams('')
-    }}
+          }}
           style={{
             marginLeft: 4,
             fontWeight: type === 'list' ? 700 : 500,

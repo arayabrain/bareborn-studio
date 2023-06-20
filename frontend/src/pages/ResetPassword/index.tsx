@@ -40,7 +40,7 @@ const ResetPassword = () => {
     const validateEmail = (value: string): string => {
         if(!value) return 'This field is required'
         if(value.length > 255) return 'The text may not be longer than 255 characters'
-        if(!regexEmail.test(value)) return 'This field is validate'
+        if(!regexEmail.test(value)) return 'The email is invalid'
         return ''
     }
 
@@ -85,7 +85,7 @@ const ResetPassword = () => {
                         alignItems="center"
                         justifyContent="space-between"
                     >
-                        <ButtonSignIn onClick={() => navigate('/login')}>SIGN IN</ButtonSignIn>
+                        <ButtonSignIn onClick={() => navigate('/login')}>Back to SIGN IN</ButtonSignIn>
                         <ButtonLogin type="submit">Reset Password</ButtonLogin>
                     </Stack>
                 </FormSignUp>
