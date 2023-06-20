@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  studio:
+  studio-be:
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -18,7 +18,7 @@ services:
       - ./.env:/app/.env
     ports:
       - "8000:8000"
-    command: python main.py --host 0.0.0.0 --port 8000
+    command: python main.py --reload --host 0.0.0.0 --port 8000
     environment:
       PYTHONPATH: /app/
       TZ: Asia/Tokyo
