@@ -85,7 +85,7 @@ const ResetPassword = () => {
                         alignItems="center"
                         justifyContent="space-between"
                     >
-                        <ButtonSignIn onClick={() => navigate('/login')}>SIGN IN</ButtonSignIn>
+                        <ButtonSignIn onClick={() => navigate('/login')}>Back to SIGN IN</ButtonSignIn>
                         <ButtonLogin type="submit">Reset Password</ButtonLogin>
                     </Stack>
                 </FormSignUp>
