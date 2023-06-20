@@ -3,7 +3,10 @@ import { ChangeEvent, FC, useEffect, useMemo, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { ObjectType } from 'pages/Database'
 import { useDispatch } from 'react-redux'
-import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
+import {
+  defaultValueParams,
+  setInputNodeParamAlignment,
+} from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
 import { DATABASE_URL_HOST } from 'const/API'
 import { setRunBtnOption } from 'store/slice/Pipeline/PipelineSlice'
@@ -49,6 +52,8 @@ const ImageAlignment: FC<ImageViewProps> = ({
   const paramAligment = useMemo(() => {
     return stateParams.find((param) => param.image_id === image?.id)
   }, [image?.id, stateParams])
+
+  const [originPreview, setOriginPreview] = useState({ i: 0, j: 0, k: 0 })
 
   useEffect(() => {
     if (open) {
@@ -104,6 +109,19 @@ const ImageAlignment: FC<ImageViewProps> = ({
     const index = urls.findIndex((item) => item.id === image?.id)
     if (index === urls.length - 1) return
     setUrl(urls[index + 1])
+  }
+
+  const resetOrigin = () => {
+    if (params?.nodeId && stateParams) {
+      const newParams = stateParams.map((align) => {
+        if (align.image_id === image?.id) {
+          return { ...defaultValueParams, image_id: align.image_id }
+        }
+        return align
+      })
+      setValueToBraibrowser({ ...defaultValueParams, image_id: image?.id })
+      setStateParams(newParams)
+    }
   }
 
   const setValueToBraibrowser = (valueParams?: Params) => {
@@ -203,6 +221,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
     volumes.current = volume
     if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
       const voxelGet = volume.getVoxelCoords()
+      setOriginPreview(voxelGet)
       if (!refVoxel.current || refVoxel.current?.url !== urlRef.current.url) {
         refVoxel.current = { ...voxelGet, url: urlRef.current.url }
       } else if (refVoxel.current?.url === urlRef.current.url) {
@@ -402,17 +421,26 @@ const ImageAlignment: FC<ImageViewProps> = ({
                     >
                       Set Origin
                     </ButtonSet>
+                    <ButtonSet style={{ marginLeft: 15 }} onClick={resetOrigin}>
+                      Reset
+                    </ButtonSet>
                   </ContentSet>
                 </BoxSet>
                 <Flex
                   sx={{
                     flexDirection: 'column',
                     position: 'relative',
-                    gap: 15,
+                    gap: 8,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
+                  <FlexBox>
+                    <div>Origin: </div>
+                    <div>{`[${originPreview.k}]`}</div>
+                    <div>{`[${originPreview.i}]`}</div>
+                    <div>{`[${originPreview.j}]`}</div>
+                  </FlexBox>
                   <SwitchImage>
                     <span>Select Image</span>
                     <SwitchContent>
@@ -424,6 +452,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       urls.findIndex((item) => item.id === image?.id) + 1
                     }/${urls.length})`}</span>
                   </SwitchImage>
+
                   <Flex sx={{ gap: 5 }}>
                     <ButtonCanCel onClick={onClose}>CANCEL</ButtonCanCel>
                     <ButtonOk onClick={onOk}>OK</ButtonOk>
@@ -542,5 +571,13 @@ const ButtonCanCel = styled('button')({
 const CloseIconWrapper = styled(CloseIcon)({
   color: '#ffffff',
 })
+
+const FlexBox = styled(Box)(() => ({
+  display: 'flex',
+  width: '100%',
+  marginLeft: 30,
+  alignItems: 'center',
+  gap: 5,
+}))
 
 export default ImageAlignment
