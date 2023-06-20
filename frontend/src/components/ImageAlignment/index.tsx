@@ -20,6 +20,7 @@ type ImageViewProps = {
   disabled?: { left: boolean; right: boolean }
   params?: { nodeId: string; alignments: Params[] }
   readOnly?: boolean
+  host?: string
 }
 
 const ImageAlignment: FC<ImageViewProps> = ({
@@ -28,6 +29,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
   urls,
   params = { nodeId: '', alignments: [] },
   readOnly = false,
+  host
 }) => {
   const viewerRef = useRef<any>()
   const [image, setUrl] = useState(urls[0])
@@ -53,7 +55,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
       setTimeout(loadFile, 200)
     }
     return () => {
-      viewerRef.current.clearVolumes?.()
+      viewerRef.current?.clearVolumes?.()
     }
     //eslint-disable-next-line
   }, [])
@@ -175,7 +177,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
       volumes: [
         {
           type: 'nifti1',
-          nii_url: `${DATABASE_URL_HOST}${image.url}`,
+          nii_url: `${host || DATABASE_URL_HOST}${image.url}`,
           template: {
             element_id: 'volume-ui-template',
             viewer_insert_className: 'volume-viewer-display',
@@ -251,7 +253,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
             volumes: [
               {
                 type: 'nifti1',
-                nii_url: `${DATABASE_URL_HOST}${image.url}`,
+                nii_url: `${host || DATABASE_URL_HOST}${image.url}`,
                 template: {
                   element_id: 'volume-ui-template',
                   viewer_insert_className: 'volume-viewer-display',
