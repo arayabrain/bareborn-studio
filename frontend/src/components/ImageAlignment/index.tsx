@@ -51,6 +51,8 @@ const ImageAlignment: FC<ImageViewProps> = ({
     return stateParams.find((param) => param.image_id === image?.id)
   }, [image?.id, stateParams])
 
+  const [originPreview, setOriginPreview] = useState({ i: 0, j: 0, k: 0 })
+
   useEffect(() => {
     if (open) {
       setTimeout(loadFile, 200)
@@ -217,6 +219,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
     volumes.current = volume
     if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
       const voxelGet = volume.getVoxelCoords()
+      setOriginPreview(voxelGet)
       if (!refVoxel.current || refVoxel.current?.url !== urlRef.current.url) {
         refVoxel.current = { ...voxelGet, url: urlRef.current.url }
       } else if (refVoxel.current?.url === urlRef.current.url) {
@@ -432,15 +435,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
                 >
                   <FlexBox>
                     <div>Origin: </div>
-                    <div>{`[${
-                      (refVoxel.current?.k || 0) + (paramAligment?.x_pos || 0)
-                    }]`}</div>
-                    <div>{`[${
-                      (refVoxel.current?.i || 0) + (paramAligment?.y_pos || 0)
-                    }]`}</div>
-                    <div>{`[${
-                      (refVoxel.current?.j || 0) + (paramAligment?.z_pos || 0)
-                    }]`}</div>
+                    <div>{`[${originPreview.k}]`}</div>
+                    <div>{`[${originPreview.i}]`}</div>
+                    <div>{`[${originPreview.j}]`}</div>
                   </FlexBox>
                   <SwitchImage>
                     <span>Select Image</span>
