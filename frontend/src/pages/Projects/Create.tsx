@@ -57,6 +57,8 @@ import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
 import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
 import { reset } from 'store/slice/Dataset/DatasetSlice'
 import { setLoadingExpriment } from 'store/slice/Experiments/ExperimentsSlice'
+import { setRunBtnOption } from 'store/slice/Pipeline/PipelineSlice'
+import { RUN_BTN_OPTIONS } from 'store/slice/Pipeline/PipelineType'
 
 const columns: Column[] = [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
@@ -698,12 +700,18 @@ const ProjectFormComponent = () => {
                 onCancle()
               }
             }
+            dispatch(
+              setRunBtnOption({
+                runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                runAlreadyDisabled: true,
+              }),
+            )
             setLoading(false)
           },
         }),
-      )
-    } else {
-      dispatch(
+        )
+      } else {
+        dispatch(
         createProject({
           project,
           dataset,
@@ -711,6 +719,12 @@ const ProjectFormComponent = () => {
             if (isSuccess) {
               return onCancle()
             }
+            dispatch(
+              setRunBtnOption({
+                runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                runAlreadyDisabled: true,
+              }),
+            )
             setLoading(false)
           },
         }),
