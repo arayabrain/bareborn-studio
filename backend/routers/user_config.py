@@ -8,14 +8,14 @@ from backend.models.user import User
 router = APIRouter()
 
 
-@router.get("", response_model=StatImageParam)
+@router.get("/stat_image", response_model=StatImageParam)
 async def get_stat_image_param(current_user: User = Depends(get_current_user)):
     user = auth.get_user(current_user['uid'])
     current_claims = user.custom_claims
     return StatImageParam(**current_claims)
 
 
-@router.post("", response_model=StatImageParam)
+@router.post("/stat_image", response_model=StatImageParam)
 async def set_stat_image_param(
     data: StatImageParam, current_user: User = Depends(get_current_user)
 ):
