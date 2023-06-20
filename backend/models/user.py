@@ -70,7 +70,7 @@ class User(BaseModel):
     email: EmailStr
     display_name: Optional[str]
     created_time: Optional[datetime] = None
-    role: int
+    role: Optional[int]
     lab: Optional[str]
     last_login_time: Optional[datetime] = None
 

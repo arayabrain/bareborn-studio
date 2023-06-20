@@ -99,3 +99,12 @@ class SnakemakeParams(BaseModel):
     forceall: bool
     forcetargets: bool
     lock: bool
+
+
+class ImageCreationParams(BaseModel):
+    """
+    Data model to generate images of the statistical analysis results.
+    """
+
+    threshold: list = [0.0, 0.0]
+    cut_coords: list = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]

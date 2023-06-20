@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from optinist.api.workflow.workflow import Edge, Node, OutputPath
+from optinist.api.workflow.workflow import Edge, Node, OutputPath, SubjectAnalysisInfo
 
 
 @dataclass
@@ -14,6 +14,7 @@ class ExptFunction:
     outputPaths: Optional[Dict[str, OutputPath]] = None
     started_at: Optional[str] = None
     finished_at: Optional[str] = None
+    subjects: Optional[Dict[str, SubjectAnalysisInfo]] = None  # CJS-3: Added.
 
 
 @dataclass
