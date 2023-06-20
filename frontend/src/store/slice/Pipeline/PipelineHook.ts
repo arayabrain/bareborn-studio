@@ -9,11 +9,11 @@ import {
   selectPipelineStatus,
 } from './PipelineSelectors'
 import { run, pollRunResult, runByCurrentUid } from './PipelineActions'
-import { cancelPipeline, setAllowRun } from './PipelineSlice'
+import { cancelPipeline, setRunBtnOption } from './PipelineSlice'
 import { selectFilePathIsUndefined } from '../InputNode/InputNodeSelectors'
 import { selectAlgorithmNodeNotExist } from '../AlgorithmNode/AlgorithmNodeSelectors'
 import { useSnackbar } from 'notistack'
-import { RUN_STATUS } from './PipelineType'
+import { RUN_BTN_OPTIONS, RUN_STATUS } from './PipelineType'
 import {
   fetchExperiment,
   getExperiments,
@@ -73,20 +73,23 @@ export function useRunPipeline() {
             appDispatch(fetchExperiment({ projectId, urls }))
               .unwrap()
               .then(({ data: { finished_at } }) => {
-                const diffMinus = dayjs(
+                const imgsetUpdatedSinceLastRun = dayjs(
                   dayjs(last_updated_time).format('YYYY-MM-DD HH:mm'),
                 ).diff(
                   dayjs(dayjs(finished_at).format('YYYY-MM-DD HH:mm')),
                   'm',
+                ) > 0
+                imgsetUpdatedSinceLastRun && dispatch(
+                  setRunBtnOption({
+                    runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                    runAlreadyDisabled: true,
+                  }),
                 )
-                dispatch(setAllowRun({ allowRun: diffMinus > 0 }))
               })
               .catch((_) => {
                 appDispatch(
                   importExperimentByUid({ uid: 'default', urls }),
-                ).then((_) => {
-                  dispatch(setAllowRun({ allowRun: true }))
-                })
+                )
               })
           })
       } else {
