@@ -1,5 +1,9 @@
+import sys
+import os
 import argparse
 import asyncio
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 
 from backend.models.user import UserUpdate
 from backend.service.firebase.crud_user import update_user, read_user

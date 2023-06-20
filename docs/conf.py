@@ -8,7 +8,7 @@ import os
 import sys
 from datetime import datetime
 sys.path.insert(0, os.path.abspath('../'))
-from studio.version import VERSION, VERSION_SHORT
+from optinist.version import VERSION, VERSION_SHORT
 
 # -- Path setup --------------------------------------------------------------
 
@@ -21,7 +21,7 @@ from studio.version import VERSION, VERSION_SHORT
 # -- Project information -----------------------------------------------------
 
 project = 'studio'
-copyright = f"{datetime.today().year}, OIST"
+copyright = f"{datetime.today().year}"
 author = ''
 version = VERSION_SHORT
 release = VERSION
