@@ -17,6 +17,7 @@ import { ExperimentStatusIcon } from './ExperimentStatusIcon'
 import {useNavigate} from "react-router-dom";
 import {Data} from "./Experiment";
 import dayjs from "dayjs";
+import {EXPERIMENTS_STATUS} from "../../store/slice/Experiments/ExperimentsType";
 
 export const ExperimentUidContext = React.createContext<string>('')
 
@@ -34,6 +35,8 @@ const TableImple = React.memo(({data}: ExperimentTableProps) => {
   const onClickBack = () => {
     navigate('/projects')
   }
+
+  const dataView = data?.[Object.keys(data)[0]]
 
   return (
     <>
@@ -56,11 +59,11 @@ const TableImple = React.memo(({data}: ExperimentTableProps) => {
                 Status:
               </Typography>
               <Box>
-                <ExperimentStatusIcon status={data['3a55fa37'].status}/>
+                <ExperimentStatusIcon status={dataView?.status as EXPERIMENTS_STATUS}/>
               </Box>
               <Box>
-                <Typography>Start time: {dayjs(data['3a55fa37'].started_at).format('YYYY-MM-DD HH:mm')}</Typography>
-                <Typography>Finish time: {dayjs(data['3a55fa37'].finished_at).format('YYYY-MM-DD HH:mm')}</Typography>
+                <Typography>Start time: {dayjs(dataView?.started_at).format('YYYY-MM-DD HH:mm')}</Typography>
+                <Typography>Finish time: {dayjs(dataView?.finished_at).format('YYYY-MM-DD HH:mm')}</Typography>
               </Box>
             </Box>
             <Paper
@@ -74,7 +77,7 @@ const TableImple = React.memo(({data}: ExperimentTableProps) => {
                 }}
             >
               {
-                data['3a55fa37'].results?.map((item) => {
+                dataView?.results?.map((item) => {
                   const { name, subject_id } = item
                   return (
                       <TableContainer key={subject_id} component={Paper} elevation={0}>

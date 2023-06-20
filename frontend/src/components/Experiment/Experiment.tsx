@@ -13,7 +13,7 @@ export type FunctionType = {
 }
 
 export type Data = {
-  "3a55fa37": {
+  [key: string]: {
     name: string
     unique_id: string
     results: {
@@ -50,6 +50,8 @@ const Experiment = React.memo(() => {
     fetchData()
     //eslint-disable-next-line
   }, [])
+
+  console.log('data', data)
 
   return (
     <div style={{ display: 'flex', height: 'calc(100% - 58px)' }}>
