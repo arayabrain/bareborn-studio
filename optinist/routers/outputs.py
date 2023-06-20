@@ -17,7 +17,8 @@ from optinist.api.dataclass.utils import check_path_format
 router = APIRouter()
 
 
-@router.get("/outputs/inittimedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/outputs/inittimedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
 async def get_inittimedata(dirpath: str):
     file_numbers = sorted([
         os.path.splitext(os.path.basename(x))[0]
@@ -65,7 +66,8 @@ async def get_inittimedata(dirpath: str):
     return return_data
 
 
-@router.get("/outputs/timedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/outputs/timedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
 async def get_timedata(dirpath: str, index: int):
     json_data = JsonReader.read_as_timeseries(
         join_filepath([
@@ -88,7 +90,8 @@ async def get_timedata(dirpath: str, index: int):
     return return_data
 
 
-@router.get("/outputs/alltimedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/outputs/alltimedata/{dirpath:path}", response_model=JsonTimeSeriesData, tags=['outputs'])
 async def get_alltimedata(dirpath: str):
     return_data = JsonTimeSeriesData(
         xrange=[],
@@ -109,17 +112,20 @@ async def get_alltimedata(dirpath: str):
     return return_data
 
 
-@router.get("/outputs/data/{filepath:path}", response_model=OutputData, tags=['outputs'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/outputs/data/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_file(filepath: str):
     return JsonReader.read_as_output(filepath)
 
 
-@router.get("/outputs/html/{filepath:path}", response_model=OutputData, tags=['outputs'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/outputs/html/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_html(filepath: str):
     return Reader.read_as_output(filepath)
 
 
-@router.get("/outputs/image/{filepath:path}", response_model=OutputData, tags=['outputs'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/outputs/image/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_image(
     filepath: str,
     start_index: Optional[int] = 0,
@@ -144,7 +150,8 @@ async def get_image(
     return JsonReader.read_as_output(json_filepath)
 
 
-@router.get("/outputs/csv/{filepath:path}", response_model=OutputData, tags=['outputs'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/outputs/csv/{filepath:path}", response_model=OutputData, tags=['outputs'])
 async def get_csv(filepath: str):
     filepath = join_filepath([DIRPATH.INPUT_DIR, filepath])
 

@@ -61,7 +61,8 @@ class DirTreeGetter:
         return files_list
 
 
-@router.get("/files", response_model=List[TreeNode], tags=['files'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/files", response_model=List[TreeNode], tags=['files'])
 async def get_files(file_type: str = None):
     if file_type == FILETYPE.IMAGE:
         return DirTreeGetter.get_tree(ACCEPT_TIFF_EXT)
@@ -71,7 +72,8 @@ async def get_files(file_type: str = None):
         return DirTreeGetter.get_tree(ACCEPT_HDF5_EXT)
 
 
-@router.post("/files/upload/{filename}", response_model=FilePath, tags=['files'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.post("/files/upload/{filename}", response_model=FilePath, tags=['files'])
 async def create_file(filename: str, file: UploadFile = File(...)):
     create_directory(DIRPATH.INPUT_DIR)
 

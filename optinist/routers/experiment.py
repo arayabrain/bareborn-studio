@@ -102,7 +102,8 @@ async def delete_experiment_list(deleteItem: DeleteItem):
         return False
 
 
-@router.get("/experiments/download/nwb/{unique_id}", tags=['experiments'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/experiments/download/nwb/{unique_id}", tags=['experiments'])
 async def download_nwb_experiment(unique_id: str):
     nwb_path_list = glob(join_filepath([
         DIRPATH.OUTPUT_DIR,
@@ -115,7 +116,8 @@ async def download_nwb_experiment(unique_id: str):
         return False
 
 
-@router.get("/experiments/download/nwb/{unique_id}/{function_id}", tags=['experiments'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/experiments/download/nwb/{unique_id}/{function_id}", tags=['experiments'])
 async def download_nwb_experiment(unique_id: str, function_id: str):
     nwb_path_list = glob(join_filepath([
         DIRPATH.OUTPUT_DIR,
@@ -129,7 +131,8 @@ async def download_nwb_experiment(unique_id: str, function_id: str):
         return False
 
 
-@router.get("/experiments/download/config/{unique_id}", tags=['experiments'])
+# NOTE: Not used in "MRIAnalysisStudio".
+# @router.get("/experiments/download/config/{unique_id}", tags=['experiments'])
 async def download_config_experiment(unique_id: str):
     config_filepath = join_filepath([
         DIRPATH.OUTPUT_DIR,
