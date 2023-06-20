@@ -12,6 +12,7 @@ from optinist.api.workflow.workflow import (
     NodePosition,
     OutputPath,
     Style,
+    SubjectAnalysisInfo
 )
 
 
@@ -46,6 +47,7 @@ class ExptConfigReader:
                 finished_at=value.get("finished_at"),
                 message=value.get("message"),
                 outputPaths=cls.read_output_paths(value.get("outputPaths")),
+                subjects=cls.read_subjects(value.get("subjects"))
             )
             for key, value in config.items()
         }
@@ -85,6 +87,20 @@ class ExptConfigReader:
             return {
                 key: OutputPath(
                     path=value["path"], type=value["type"], max_index=value["max_index"]
+                )
+                for key, value in config.items()
+            }
+        else:
+            return None
+
+    @classmethod
+    def read_subjects(cls, config) -> Dict[str, Dict[str, SubjectAnalysisInfo]]:
+        if config:
+            return {
+                key: SubjectAnalysisInfo(
+                    success=value["success"],
+                    output_path=value["output_path"],
+                    message=value["message"],
                 )
                 for key, value in config.items()
             }
