@@ -35,7 +35,6 @@ const TableImple = React.memo(({data}: ExperimentTableProps) => {
     navigate('/projects')
   }
 
-
   return (
     <>
       { data ?

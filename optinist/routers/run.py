@@ -2,7 +2,7 @@ from typing import Dict
 from fastapi import APIRouter, BackgroundTasks
 import uuid
 
-from optinist.api.workflow.workflow import NodeItem, RunItem, Message
+from optinist.api.workflow.workflow import NodeItem, RunItem, Message, ExptInfo
 from optinist.api.workflow.workflow_runner import WorkflowRunner
 from optinist.api.workflow.workflow_result import WorkflowResult
 
@@ -35,3 +35,20 @@ async def run_id(
 )
 async def run_result(project_id: str, uid: str, nodeDict: NodeItem):
     return WorkflowResult(project_id, uid).get(nodeDict.pendingNodeIdList)
+
+
+@router.get('/run_result/{project_id}', response_model=Dict[str, ExptInfo], tags=['run_result'])
+async def get_experiment_info(project_id: str):
+    """
+    Send the experiment info about all the workflow analyses associated with a given project.
+    """
+
+    # TODO: Get the all analysis IDs from <OUTPUT>/<project ID>, and iterate get_experiment_info() with those IDs.
+    # Dummy
+    analysis_id_list = ['3a55fa37']
+
+    experiment_info_list = {}
+    for analysis_id in analysis_id_list:
+        experiment_info_list[analysis_id] = WorkflowResult(project_id, analysis_id).get_experiment_info()
+
+    return experiment_info_list
