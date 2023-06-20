@@ -1,7 +1,6 @@
 from typing import Dict, Optional
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status
-from fastapi.responses import FileResponse
 
 import shutil
 from glob import glob
@@ -100,43 +99,6 @@ async def delete_experiment_list(deleteItem: DeleteItem):
         return True
     except Exception as e:
         return False
-
-
-@router.get("/experiments/download/nwb/{unique_id}", tags=['experiments'])
-async def download_nwb_experiment(unique_id: str):
-    nwb_path_list = glob(join_filepath([
-        DIRPATH.OUTPUT_DIR,
-        unique_id,
-        "*.nwb"
-    ]))
-    if len(nwb_path_list) > 0:
-        return FileResponse(nwb_path_list[0])
-    else:
-        return False
-
-
-@router.get("/experiments/download/nwb/{unique_id}/{function_id}", tags=['experiments'])
-async def download_nwb_experiment(unique_id: str, function_id: str):
-    nwb_path_list = glob(join_filepath([
-        DIRPATH.OUTPUT_DIR,
-        unique_id,
-        function_id,
-        "*.nwb"
-    ]))
-    if len(nwb_path_list) > 0:
-        return FileResponse(nwb_path_list[0])
-    else:
-        return False
-
-
-@router.get("/experiments/download/config/{unique_id}", tags=['experiments'])
-async def download_config_experiment(unique_id: str):
-    config_filepath = join_filepath([
-        DIRPATH.OUTPUT_DIR,
-        unique_id,
-        DIRPATH.SNAKEMAKE_CONFIG_YML
-    ])
-    return FileResponse(config_filepath)
 
 
 def get_last_experiment(project_id: str) -> Optional[ExptConfig]:
