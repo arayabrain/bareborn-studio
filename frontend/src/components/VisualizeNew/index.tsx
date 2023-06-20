@@ -10,8 +10,10 @@ import {
   DialogContentText
 } from "@mui/material";
 import { useCallback, useState } from "react";
-import { loadParams, saveParams } from "api/auth";
+import { downloadGenerate, loadParams, postGenerate, saveParams } from "api/visualize";
 import Loading from "../common/Loading";
+import { useSearchParams} from "react-router-dom";
+import { BASE_URL } from "../../const/API";
 
 type InputType = {
   text: string
@@ -20,8 +22,14 @@ type InputType = {
   error: string
 }
 
+type CutCoordsType = {
+  coronal: string
+  sagittal: string
+  horizontal: string
+}
+
 type ParamsType = {
-  cut_coords: any
+  cut_coords: CutCoordsType
   threshold: string
 }
 
@@ -29,6 +37,11 @@ type AlertDialogProps = {
   open: boolean
   handleClose: () => void
   onSaveParams: () => void
+}
+
+type GenerateProps = {
+  label: string
+  urlImage: string
 }
 
 const regexInput = /[^0-9,.-]/
@@ -76,9 +89,33 @@ const WrapperInput = ({text, value, onChange, error} : InputType) => {
     )
 }
 
+const WrapperGenerate = ({label, urlImage}: GenerateProps) => {
+  return (
+      <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center'
+          }}
+      >
+        <Typography
+            sx={{
+              fontSize: 25,
+              minWidth: 130
+            }}
+        >
+          {label}
+        </Typography>
+        <Image src={BASE_URL + urlImage} alt={''} />
+      </Box>
+  )
+}
+
 const VisualizeNew = () => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false)
+  const [searchParams] = useSearchParams()
+  const [urlImage, setUrlImage] = useState<string[]>()
+  const id = searchParams.get('id')
   const [dataParams, setDataParams] = useState<ParamsType>({
     cut_coords: {
       coronal: '',
@@ -202,13 +239,51 @@ const VisualizeNew = () => {
       threshold: validateParams(dataParams.threshold, 'threshold')
     })
     if( !coronal || ! sagittal || !horizontal || !dataParams.threshold ) return
-    if(Object.keys(cut_coords).some(item => !!cut_coords[item]) || errors.threshold) return
+    if(Object.keys(cut_coords).some((item) => !!(cut_coords as any)?.[item] || errors.threshold)) return
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
   };
+
+  const onGenarate = async () => {
+    if(!id) return
+    setIsLoading(true)
+    const { coronal, sagittal, horizontal} = dataParams.cut_coords
+    const newParams = {
+      threshold: toNumberArr(dataParams.threshold),
+      cut_coords: [toNumberArr(coronal), toNumberArr(sagittal), toNumberArr(horizontal)]
+    }
+    try {
+      const data = await postGenerate(newParams, id)
+      setUrlImage(data.image_urls)
+    }
+    finally {
+      setIsLoading(false)
+    }
+  }
+
+  const onDownload = async () => {
+    if(!id) return
+    const { coronal, sagittal, horizontal} = dataParams.cut_coords
+    const newParams = {
+      threshold: toNumberArr(dataParams.threshold),
+      cut_coords: [toNumberArr(coronal), toNumberArr(sagittal), toNumberArr(horizontal)]
+    }
+    setIsLoading(true)
+    try {
+      const {data: blob} = await downloadGenerate(newParams, id)
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'visualize-stat');
+      link.click();
+    }
+    finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
       <Container>
@@ -260,16 +335,21 @@ const VisualizeNew = () => {
             </Box>
           </VisualizeInputWrapper>
           <ButtonWrapper>
-              <VisualizeButton>GENERATE</VisualizeButton>
-              <VisualizeButton>DOWNLOAD</VisualizeButton>
+              <VisualizeButton onClick={onGenarate}>GENERATE</VisualizeButton>
+              <VisualizeButton onClick={onDownload}>DOWNLOAD</VisualizeButton>
           </ButtonWrapper>
-          <ImageWrapper>
-              <Image src={'/Images/image-visualize.png'} alt={''} />
-          </ImageWrapper>
-        {
-          isLoading &&
-          <Loading />
-        }
+          {
+              urlImage ?
+              <ImageWrapper>
+                 <WrapperGenerate label={'coronal'} urlImage={urlImage[0]}/>
+                 <WrapperGenerate label={'sagittal'} urlImage={urlImage[1]}/>
+                 <WrapperGenerate label={'horizontal'} urlImage={urlImage[2]}/>
+              </ImageWrapper> : null
+          }
+          {
+            isLoading &&
+            <Loading />
+          }
       </Container>
   )
 }
@@ -325,8 +405,12 @@ const SpanError = styled('span')({
 })
 
 const ImageWrapper = styled(Box)({
-    width: '80%',
-    margin: 'auto'
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+    width: '100%',
+    margin: 'auto',
+    paddingBottom: 70
 })
 
 const Image = styled('img')({
