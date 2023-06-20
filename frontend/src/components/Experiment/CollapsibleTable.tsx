@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import Box from '@mui/material/Box'
 import Collapse from '@mui/material/Collapse'
 import Table from '@mui/material/Table'
@@ -8,15 +8,17 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import {MouseType} from './ExperimentTable'
 import { ExperimentStatusIcon } from './ExperimentStatusIcon'
-import {Button} from "@mui/material";
-import ImageAlignment from "../ImageAlignment";
+import { Button } from "@mui/material";
+import { FunctionType } from "./Experiment";
+import { BASE_URL } from "../../const/API";
+import ImageView from "../ImageView";
+import { Viewer } from "../../pages/Database";
 
 
 export const CollapsibleTable = React.memo<{
   open: boolean
-  data?: MouseType[]
+  data?: object
 }>(({ open , data}) => {
   return (
     <TableRow>
@@ -25,9 +27,9 @@ export const CollapsibleTable = React.memo<{
           <Box margin={1}>
             <Table size="small" aria-label="purchases">
             <Head />
-            {data && data.map((item) => {
+            {data && Object.keys(data).map((item, index) => {
               return (
-                <Body key={item?.unique_id} data={item}/>
+                <Body key={index} data={(data as any)?.[item]}/>
               )
             })}
             </Table>
@@ -52,7 +54,7 @@ const Head = React.memo(() => {
 })
 
 const Body = React.memo<{
-    data: MouseType
+    data: object
 }>(({data}) => {
   return (
     <TableBody>
@@ -61,9 +63,40 @@ const Body = React.memo<{
   )
 })
 
-const TableRowOfFunction = ({ data } : {data: MouseType}) => {
-    const {name, success, unique_id} = data
-    const [popup, setPopup] = useState(false)
+const TableRowOfFunction = ({ data } : {data: object}) => {
+  const {name, success, unique_id, outputs} = data as FunctionType
+  const [disabled, setDisabled] = useState({ left: true, right: false })
+  const [viewer, setViewer] = useState<Viewer>({ open: false, url: '' })
+  const [index, setIndex] = useState(0)
+
+  const onCloseImageView = () => {
+    setViewer({ open: false, url: '' })
+  }
+
+  useEffect(() => {
+    if(viewer.open) {
+      onOpen()
+    }
+    //eslint-disable-next-line
+  }, [index])
+
+  const onNext = () => {
+    if (!viewer.open) return
+    setDisabled({ left: false, right: index === outputs.length - 2 })
+    setIndex(index + 1)
+  }
+
+  const onPrevious = () => {
+    if (!viewer.open) return
+    setDisabled({ left: index - 1 === 0, right: false })
+    setIndex(index - 1)
+  }
+
+  const onOpen = () => {
+    setViewer({ open: true, url: outputs[index] })
+
+  }
+
   return (
     <>
         <TableRow >
@@ -75,17 +108,21 @@ const TableRowOfFunction = ({ data } : {data: MouseType}) => {
                 <ExperimentStatusIcon status={success} />
             </TableCell>
             <TableCell>
-                <Button disabled={success === 'success'? false : true} onClick={() => setPopup(true)}>
+                <Button disabled={success !== 'success'} onClick={() => onOpen()}>
                     <OpenInNewIcon />
                 </Button>
             </TableCell>
         </TableRow>
-        <ImageAlignment
-            open={popup}
-            urls={[]}
-            onClose={() => setPopup(false)}
-            readOnly={true}
-        />
+      {viewer.open &&
+          <ImageView
+              editAttribute={false}
+              disabled={disabled}
+              url={viewer.url && `${BASE_URL}${viewer.url}`}
+              open={viewer.open}
+              onClose={onCloseImageView}
+              onNext={onNext}
+              onPrevious={onPrevious}
+          />}
     </>
   )
 }

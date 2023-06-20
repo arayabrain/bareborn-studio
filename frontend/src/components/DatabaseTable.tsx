@@ -6,10 +6,12 @@ import {
   useState,
   useRef,
   useEffect,
+  CSSProperties,
 } from 'react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import {
+  DatatypesDatabase,
   ImagesDatabase,
   RecordDatabase,
   RecordList,
@@ -23,6 +25,7 @@ type Object = {
 
 export type Column = {
   width?: number
+  styleTitle?: CSSProperties
   title: string
   dataIndex?: string
   name?: string
@@ -109,10 +112,75 @@ const renderCol = (
   return typeof value === 'object' || Array.isArray(value) ? null : value
 }
 
+const RenderChild: FC<{
+  columns: Column[]
+  type: DatatypesDatabase
+  propsColumn: RenderColumnProps
+  data: SessionsDatabase
+  recordIndex: number
+  indexChild: number
+}> = ({ columns, type, propsColumn, data, indexChild, recordIndex }) => {
+  const [openChild, setOpenChild] = useState(true)
+  return (
+    <Fragment>
+      <Tr
+        style={{
+          transition: 'all 0.3s',
+          backgroundColor: 'rgb(238, 238, 238)',
+        }}
+      >
+        {columns.map((column) => {
+          const key = column.name || column.dataIndex || ''
+          return (
+            <Td
+              key={`col_${column.name || column.dataIndex}`}
+              onClick={() => key === 'datatype' && setOpenChild(!openChild)}
+            >
+              {key === 'datatype' ? (
+                <BoxCenter>
+                  {type.label}
+                  {type.images?.length ? (
+                    <ArrowDropDownIcon
+                      style={{
+                        transform: `rotate(${!openChild ? -180 : 0}deg)`,
+                      }}
+                    />
+                  ) : null}
+                </BoxCenter>
+              ) : (
+                ''
+              )}
+            </Td>
+          )
+        })}
+      </Tr>
+      {openChild &&
+        type.images.map((image, index) => (
+          <RenderColumn
+            {...propsColumn}
+            key={`child_row_image_${image.id}_${index}`}
+            data={
+              {
+                ...image,
+                session_index: data.session_index,
+                subject_index: data.subject_index,
+                session_id: data.id,
+                datatype_index: indexChild,
+                image_index: index,
+                datatype_label: type.label,
+                subject_id: data.parent_id,
+                record_index: recordIndex,
+              } as unknown as ImagesDatabase
+            }
+          />
+        ))}
+    </Fragment>
+  )
+}
+
 const RenderColumn = (props: RenderColumnProps) => {
   const { columns, data, recordIndex, rowClick, drags, onMouseDown } = props
   const { draggable, onDrag } = props
-  const [openChild, setOpenChild] = useState(true)
   const [openChildParent, setOpenChildPrent] = useState(true)
   const [openSubjects, setOpenSubjects] = useState<string[]>(
     (data as RecordDatabase)?.subjects?.map?.((e) => e.id) || [],
@@ -230,7 +298,7 @@ const RenderColumn = (props: RenderColumnProps) => {
                   sub.sessions.map((session, session_index) => (
                     <RenderColumn
                       {...props}
-                      key={session.id}
+                      key={`session_${session.id}`}
                       data={
                         {
                           ...session,
@@ -247,65 +315,15 @@ const RenderColumn = (props: RenderColumnProps) => {
         {openChildParent &&
           (data as SessionsDatabase).datatypes?.map((type, ii) => {
             return (
-              <Fragment key={type.id}>
-                <Tr
-                  style={{
-                    transition: 'all 0.3s',
-                    backgroundColor: 'rgb(238, 238, 238)',
-                  }}
-                >
-                  {columns.map((column) => {
-                    const key = column.name || column.dataIndex || ''
-                    return (
-                      <Td
-                        key={`col_${column.name || column.dataIndex}`}
-                        onClick={() =>
-                          key === 'datatype' && setOpenChild(!openChild)
-                        }
-                      >
-                        {key === 'datatype' ? (
-                          <BoxCenter>
-                            {type.label}
-                            {type.images?.length ? (
-                              <ArrowDropDownIcon
-                                style={{
-                                  transform: `rotate(${
-                                    !openChild ? -180 : 0
-                                  }deg)`,
-                                }}
-                              />
-                            ) : null}
-                          </BoxCenter>
-                        ) : (
-                          ''
-                        )}
-                      </Td>
-                    )
-                  })}
-                </Tr>
-                {openChild &&
-                  type.images.map((image, index) => (
-                    <RenderColumn
-                      {...props}
-                      key={`row_image_${image.id}_${index}`}
-                      data={
-                        {
-                          ...image,
-                          session_index: (data as SessionsDatabase)
-                            .session_index,
-                          subject_index: (data as SessionsDatabase)
-                            .subject_index,
-                          session_id: data.id,
-                          datatype_index: ii,
-                          image_index: index,
-                          datatype_label: type.label,
-                          subject_id: (data as SessionsDatabase).parent_id,
-                          record_index: recordIndex,
-                        } as ImagesDatabase
-                      }
-                    />
-                  ))}
-              </Fragment>
+              <RenderChild
+                key={`data_types_${type.id}`}
+                type={type}
+                data={data as SessionsDatabase}
+                propsColumn={props}
+                columns={columns}
+                indexChild={ii}
+                recordIndex={recordIndex}
+              />
             )
           })}
       </Fragment>
@@ -535,12 +553,15 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                 const nameCol = col.name || col.dataIndex || ''
                 return (
                   <Th
-                    onClick={() => onSortHandle(nameCol)}
+                    onClick={() => {
+                      if (col.filter) onSortHandle(nameCol)
+                    }}
                     style={{
                       maxWidth: col.width,
                       minWidth: col.width,
                       width: col.width,
                       cursor: 'pointer',
+                      ...(col.styleTitle || {}),
                     }}
                     key={col.dataIndex || col.name || iCol}
                   >
@@ -600,9 +621,8 @@ const DatabaseTableComponent: FC<TableComponentProps> = (props) => {
                   <Box
                     key={`${rowId}_-${index}`}
                     style={{ width, padding: 16 }}
-                  >
-                    {td.html}
-                  </Box>
+                    dangerouslySetInnerHTML={{ __html: td.html }}
+                  />
                 )
               })}
             </BoxDrag>

@@ -10,8 +10,8 @@ A workflow algorithm node template to be used in the voxel-based morphometry (VB
 
 
 def vbm_template(
-        image: ImageData,
-        params: dict=None
+    image: ImageData,
+    params: dict=None
 ) -> dict(analysis_info_out=AnalysisInfo):
 
     print(image.params)

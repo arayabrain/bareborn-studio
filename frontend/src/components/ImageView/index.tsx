@@ -27,7 +27,7 @@ type ImageViewProps = {
   url?: string
   jsonData?: ObjectType
   disabled?: { left: boolean; right: boolean }
-  id: number
+  id?: number
   editAttribute?: boolean
 }
 
@@ -207,28 +207,30 @@ const ImageView: FC<ImageViewProps> = ({
         })
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
-        viewer.setDefaultPanelSize(256, 256)
-        viewer.render()
-        viewer.clearVolumes()
-        viewer.loadVolumes({
-          volumes: [
-            {
-              type: 'nifti1',
-              nii_url: url,
-              template: {
-                element_id: 'volume-ui-template',
-                viewer_insert_className: 'volume-viewer-display',
-              },
-              overlay: {
+        setTimeout(() => {
+          viewer.setDefaultPanelSize(256, 256)
+          viewer.render()
+          viewer.clearVolumes()
+          viewer.loadVolumes({
+            volumes: [
+              {
+                type: 'nifti1',
+                nii_url: url,
                 template: {
-                  element_id: 'overlay-ui-template',
-                  viewer_insert_className: 'overlay-viewer-display',
+                  element_id: 'volume-ui-template',
+                  viewer_insert_className: 'volume-viewer-display',
                 },
+                overlay: {
+                  template: {
+                    element_id: 'overlay-ui-template',
+                    viewer_insert_className: 'overlay-viewer-display',
+                  },
+                },
+                complete: function () {},
               },
-              complete: function () {},
-            },
-          ],
-        })
+            ],
+          })
+        }, 500)
       },
     )
   }
@@ -243,6 +245,7 @@ const ImageView: FC<ImageViewProps> = ({
   }
 
   const handleSaveAttributes = async () => {
+    if(!id) return
     setIsLoading(true)
     try {
       await editAttributes(id, textAttribute)
@@ -289,6 +292,9 @@ const ImageView: FC<ImageViewProps> = ({
               {opacity ? (
                 <Box sx={{ background: '#ffffff' }}>
                   <BoxContentData>
+                    {
+                      id ? <p style={{ margin: 0, paddingTop: 5 }}>[ID: {id}]</p> : null
+                    }
                     <p style={{ margin: 0, padding: '20px 0' }}>
                       World Coordinates:
                     </p>

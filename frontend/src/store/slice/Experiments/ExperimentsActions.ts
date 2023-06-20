@@ -31,12 +31,15 @@ export const getExperiments = createAsyncThunk<
   }
 })
 
-export const fetchExperiment = createAsyncThunk<ExperimentDTO, string>(
+export const fetchExperiment = createAsyncThunk<
+  { data: ExperimentDTO; urls: { id: number | string; url: string }[] },
+  { projectId: string; urls: { id: number | string; url: string }[] }
+>(
   `${EXPERIMENTS_SLICE_NAME}/fetchExperiment`,
-  async (projectId, thunkAPI) => {
+  async ({ projectId, urls }, thunkAPI) => {
     try {
       const response = await fetchExperimentApi(projectId)
-      return response
+      return { data: response, urls }
     } catch (e) {
       return thunkAPI.rejectWithValue(e)
     }
@@ -67,12 +70,15 @@ export const deleteExperimentByList = createAsyncThunk<boolean, string[]>(
   },
 )
 
-export const importExperimentByUid = createAsyncThunk<RunPostData, string>(
+export const importExperimentByUid = createAsyncThunk<
+  { data: RunPostData; urls: { id: number | string; url: string }[] },
+  { uid: string; urls: { id: number | string; url: string }[] }
+>(
   `${EXPERIMENTS_SLICE_NAME}/importExperimentByUid`,
-  async (uid, thunkAPI) => {
+  async ({ uid, urls }, thunkAPI) => {
     try {
       const response = await importExperimentByUidApi(uid)
-      return response
+      return { data: response, urls }
     } catch (e) {
       return thunkAPI.rejectWithValue(e)
     }
