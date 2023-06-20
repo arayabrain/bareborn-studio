@@ -81,6 +81,7 @@ export const AlgorithmTreeView = React.memo(() => {
       defaultCollapseIcon={<ExpandMoreIcon />}
       defaultExpandIcon={<ChevronRightIcon />}
     >
+      {/* NOTE: Not used in "MRIAnalysisStudio".
       <TreeItem nodeId="Data" label="Data">
         <InputNodeComponent
           fileName={'image'}
@@ -108,6 +109,8 @@ export const AlgorithmTreeView = React.memo(() => {
           fileType={FILE_TYPE_SET.BEHAVIOR}
         />
       </TreeItem>
+      */}
+
       <TreeItem nodeId="Algorithm" label="Algorithm">
         {Object.entries(algoList).map(([name, node], i) => (
           <AlgoNodeComponentRecursive
@@ -122,6 +125,8 @@ export const AlgorithmTreeView = React.memo(() => {
   )
 })
 
+// NOTE: Not used in "MRIAnalysisStudio".
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const InputNodeComponent = React.memo<{
   fileName: string
   nodeName: string
