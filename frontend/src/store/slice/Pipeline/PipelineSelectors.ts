@@ -24,9 +24,10 @@ export const selectPipelineRunBtn = (state: RootState) => {
   return state.pipeline.runBtn
 }
 
-export const selectAllowRunButton = (state: RootState) => {
-  return state.pipeline.allowRun
+export const selectRunAlreadyDisabled = (state: RootState) => {
+  return state.pipeline.runAlreadyDisabled ?? false
 }
+
 
 export const selectRunResultPendingList = (state: RootState) => {
   const pipeline = selectStartedPipeline(state)

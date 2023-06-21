@@ -50,18 +50,15 @@ import {
 import Loading from 'components/common/Loading'
 import { getDataBaseTree } from 'api/rawdb'
 import { DATABASE_URL_HOST } from 'const/API'
-import {
-  getUrlFromSubfolder,
-  selectDataset,
-} from 'store/slice/Dataset/DatasetSelector'
+import { selectDataset } from 'store/slice/Dataset/DatasetSelector'
 import { useSelector } from 'react-redux'
 import { Dataset } from 'store/slice/Dataset/DatasetType'
 import { selectCurrentProject } from 'store/slice/Project/ProjectSelector'
 import { resetCurrentProject } from 'store/slice/Project/ProjectSlice'
 import { reset } from 'store/slice/Dataset/DatasetSlice'
-import { setInputNodeFilePath } from 'store/slice/InputNode/InputNodeActions'
 import { setLoadingExpriment } from 'store/slice/Experiments/ExperimentsSlice'
-import { getDatasetListApi } from 'api/dataset'
+import { setRunBtnOption } from 'store/slice/Pipeline/PipelineSlice'
+import { RUN_BTN_OPTIONS } from 'store/slice/Pipeline/PipelineType'
 
 const columns: Column[] = [
   { title: 'Lab', name: 'lab_name', filter: true, width: 100 },
@@ -78,24 +75,42 @@ const columns: Column[] = [
   {
     title: 'Datatype',
     name: 'datatype',
+    styleTitle: { fontWeight: 400 },
     filter: true,
     width: 100,
+  },
+  {
+    title: 'Image ID',
+    name: 'id',
+    width: 100,
+    styleTitle: { fontWeight: 400 },
+    render: (record) => {
+      if (!(record as ImagesDatabase).image_attributes) return
+      return (
+        <div style={{ textAlign: 'center' }}>
+          {(record as ImagesDatabase).id}
+        </div>
+      )
+    },
   },
   {
     title: 'Type',
     name: 'image_attributes.image_type',
     filter: true,
+    styleTitle: { fontWeight: 400 },
     width: 70,
   },
   {
     title: 'Protocol',
     name: 'image_attributes.protocol',
     filter: true,
+    styleTitle: { fontWeight: 400 },
   },
   {
     title: 'Size',
     name: 'image_attributes.scale',
     filter: true,
+    styleTitle: { fontWeight: 400 },
     render: (_, value) => JSON.stringify(value),
   },
   {
@@ -103,6 +118,7 @@ const columns: Column[] = [
     name: 'image_attributes.voxel',
     filter: true,
     width: 110,
+    styleTitle: { fontWeight: 400 },
     render: (_, value) => JSON.stringify(value),
   },
 ]
@@ -187,12 +203,13 @@ const ProjectFormComponent = () => {
   const nodeId = searchParams.get('nodeId')
   const isPendingDrag = useRef(false)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const dataset = useSelector(selectDataset)
   const currentProject = useSelector(selectCurrentProject)
 
   const [databasese, setDatabases] = useState<DatabaseData>(defaultDatabase)
-  const [initDatabase, setInitDatabase] =
+  const [initDatabases, setInitDatabases] =
     useState<DatabaseData>(defaultDatabase)
   const [projectName, setProjectName] = useState(
     currentProject?.project_name || 'Prj Name 1',
@@ -209,19 +226,26 @@ const ProjectFormComponent = () => {
   const [imageIDs, setImageIDs] = useState<number[]>(ids)
 
   const timeoutClick = useRef<NodeJS.Timeout | undefined>()
-  const navigate = useNavigate()
   const [isEditName, setIsEditName] = useState(false)
 
+  const errorProjectEmpty = useMemo(() => !projectName, [projectName])
+
   useEffect(() => {
-    if (!idEdit) return
     setLoading(true)
-    dispatch(getDatasetList({ project_id: idEdit }))
-    dispatch(
-      getProjectId({
-        project_id: idEdit,
-        callback: () => setLoading(false),
-      }),
-    )
+    if (!idEdit) {
+      getDataTree().then(() => setLoading(false))
+      return
+    }
+    Promise.all([
+      dispatch(getDatasetList({ project_id: idEdit })),
+      dispatch(
+        getProjectId({
+          project_id: idEdit,
+          callback: () => setLoading(false),
+        }),
+      ),
+      getDataTree(),
+    ]).then(() => setLoading(false))
     return () => {
       dispatch(resetCurrentProject())
       dispatch(reset())
@@ -242,19 +266,25 @@ const ProjectFormComponent = () => {
   }, [currentProject?.project_name])
 
   useEffect(() => {
-    if (typeof currentProject?.project_type === 'number') {
-      setProjectType(currentProject.project_type)
+    if (currentProject?.project_type) {
+      setProjectType(currentProject.project_type as number)
     }
   }, [currentProject?.project_type])
 
-  useEffect(() => {
-    getDataTree().then()
-    //eslint-disable-next-line
-  }, [])
-
   const onFilter = (value: { [key: string]: string }) => {
-    if (!initDatabase) return
-    onFilterValue(value, setDatabases, initDatabase, 'tree')
+    if (!initDatabases) return
+    const records = onFilterValue(
+      value,
+      initDatabases,
+      'tree',
+    ) as RecordDatabase[]
+    const data = onSort(
+      JSON.parse(JSON.stringify(records)),
+      orderBy,
+      columnSort as OrderKey,
+      'tree',
+    ) as RecordDatabase[]
+    setDatabases({ ...initDatabases, records: data })
     if (!Object.keys(value).length) return
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)
@@ -263,10 +293,17 @@ const ProjectFormComponent = () => {
   }
 
   const getDataTree = async () => {
+    const defaultValue = {
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    }
     try {
       const response = await getDataBaseTree()
-      setDatabases(response)
-      setInitDatabase(response)
+      const records = onFilterValue(defaultValue, response, 'tree')
+      setDatabases({ ...databasese, records: records as RecordDatabase[] })
+      setInitDatabases(response)
     } catch {}
   }
 
@@ -521,8 +558,13 @@ const ProjectFormComponent = () => {
         style={style}
         onClick={() => rowDataClick(e)}
       >
+        <TypographyBoxItem style={{ minWidth: 40 }}>
+          {e.image_id}
+        </TypographyBoxItem>
         <TypographyBoxItem>{e.project_name}</TypographyBoxItem>
-        <TypographyBoxItem>{e.project_type}</TypographyBoxItem>
+        <TypographyBoxItem style={{ minWidth: 80 }}>
+          {e.project_type}
+        </TypographyBoxItem>
         <TypographyBoxItem>{e.protocol}</TypographyBoxItem>
         <Box style={{ display: 'flex', justifyContent: 'flex-end', width: 64 }}>
           <Button
@@ -560,17 +602,26 @@ const ProjectFormComponent = () => {
       open: true,
       url: row.image_url,
       jsonData: row.jsonData,
+      id: row.image_id,
     })
     setDisabled({ left: true, right: true })
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
+    if (!initDatabases) return
+    const filterValue = {
+      session_label: searchParams.get('session_label') || '',
+      datatypes_label: searchParams.get('datatypes_label') || '',
+      type: searchParams.get('type') || '',
+      protocol: searchParams.get('protocol') || '',
+    }
+    const records = onFilterValue(filterValue, initDatabases, 'tree')
     const data = onSort(
-      JSON.parse(JSON.stringify(initDatabase.records)),
+      JSON.parse(JSON.stringify(records)),
       orderByValue,
       orderKey as OrderKey,
     )
-    setDatabases({ ...databasese, records: data as RecordDatabase[] })
+    setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
     setColumnSort(orderKey)
     setOrdeBy(orderByValue)
   }
@@ -589,7 +640,7 @@ const ProjectFormComponent = () => {
 
   const onCancle = () => {
     if (routeGoback) {
-      navigate(`${routeGoback}&id=${idEdit}`, { state: { edited: true } })
+      navigate(`${routeGoback}&id=${idEdit}`, { state: { cancel: true } })
       dispatch(setLoadingExpriment({ loading: false }))
     } else {
       navigate('/projects')
@@ -614,6 +665,17 @@ const ProjectFormComponent = () => {
   }
 
   const onOk = async () => {
+    if (errorProjectEmpty) return
+    if (
+      dataFactors.some((factor) => {
+        return (
+          !factor.name ||
+          (factor.within.length && factor.within.some((within) => !within.name))
+        )
+      })
+    ) {
+      return
+    }
     setLoading(true)
     const project = {
       project_name: projectName,
@@ -636,29 +698,26 @@ const ProjectFormComponent = () => {
           callback: async (isSuccess: boolean) => {
             if (isSuccess) {
               if (nodeId) {
-                const response = await getDatasetListApi(idEdit)
-                let urls: { id: string | number; url: string }[] = []
-                getUrlFromSubfolder(response.records, urls)
-                await Promise.all([
-                  dispatch(setInputNodeFilePath({ nodeId, filePath: urls.map(({ url }) => url) })),
-                  dispatch(getDatasetList({ project_id: idEdit })),
-                  dispatch(setLoadingExpriment({ loading: false })),
-                ])
+                await dispatch(setLoadingExpriment({ loading: true }))
                 if (routeGoback) {
-                  navigate(`${routeGoback}&id=${idEdit}`, {
-                    state: { edited: true },
-                  })
+                  navigate(`${routeGoback}&id=${idEdit}`)
                 }
               } else {
                 onCancle()
               }
             }
+            dispatch(
+              setRunBtnOption({
+                runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                runAlreadyDisabled: true,
+              }),
+            )
             setLoading(false)
           },
         }),
-      )
-    } else {
-      dispatch(
+        )
+      } else {
+        dispatch(
         createProject({
           project,
           dataset,
@@ -666,11 +725,27 @@ const ProjectFormComponent = () => {
             if (isSuccess) {
               return onCancle()
             }
+            dispatch(
+              setRunBtnOption({
+                runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                runAlreadyDisabled: true,
+              }),
+            )
             setLoading(false)
           },
         }),
       )
     }
+  }
+
+  const handleClear = () => {
+    setParams('')
+    const data = onSort(
+      JSON.parse(JSON.stringify(initDatabases.records)),
+      orderBy,
+      columnSort as OrderKey,
+    )
+    setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
   }
 
   return (
@@ -701,12 +776,26 @@ const ProjectFormComponent = () => {
         />
       )}
       {isEditName ? (
-        <InputName
-          autoFocus
-          onBlur={() => setIsEditName(false)}
-          value={projectName}
-          onChange={onChangeName}
-        />
+        <Fragment>
+          <InputName
+            autoFocus
+            onBlur={() => {
+              if (errorProjectEmpty) return
+              setIsEditName(false)
+            }}
+            value={projectName}
+            onChange={onChangeName}
+            style={{
+              borderColor: errorProjectEmpty ? 'red' : '#000',
+              borderStyle: 'solid',
+            }}
+          />
+          {errorProjectEmpty && (
+            <span style={{ fontSize: 12, color: 'red' }}>
+              Project name can't empty
+            </span>
+          )}
+        </Fragment>
       ) : (
         <TextName onClick={() => setIsEditName(true)}>{projectName}</TextName>
       )}
@@ -739,28 +828,51 @@ const ProjectFormComponent = () => {
             return (
               <Fragment key={factor.id}>
                 <BoxFactor>
-                  <Input
-                    onChange={(e) => onChangeNameFactor(factor, e.target.value)}
-                    style={{ width: 'calc(100% - 64px)' }}
-                    value={generateName(factor.name, index, 'Between')}
-                  />
-                  <Button onClick={() => onDeleteFactor(factor)}>
-                    <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-                  </Button>
+                  <div>
+                    <Input
+                      error={!factor.name}
+                      onChange={(e) =>
+                        onChangeNameFactor(factor, e.target.value)
+                      }
+                      style={{ width: 'calc(100% - 64px)' }}
+                      value={generateName(factor.name, index, 'Between')}
+                    />
+                    <Button onClick={() => onDeleteFactor(factor)}>
+                      <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
+                    </Button>
+                    {!factor.name && (
+                      <div style={{ fontSize: 12, color: 'red' }}>
+                        Factor name can't empty
+                      </div>
+                    )}
+                  </div>
                   {projectType === ProjectTypeValue.WITHIN_FACTOR ? (
                     factor.within.map((within, iWithin) => (
                       <BoxFactor key={within.id} style={{ marginLeft: 24 }}>
-                        <Input
-                          onChange={(e) => {
-                            const { value } = e.target
-                            onChangeNameWithinFactor(factor, within, value)
-                          }}
-                          style={{ width: 'calc(100% - 64px)' }}
-                          value={generateName(within.name, iWithin, 'Within')}
-                        />
-                        <Button onClick={() => onDeleteWithin(factor, within)}>
-                          <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
-                        </Button>
+                        <div>
+                          <Input
+                            error={!within.name}
+                            onChange={(e) => {
+                              const { value } = e.target
+                              onChangeNameWithinFactor(factor, within, value)
+                            }}
+                            style={{ width: 'calc(100% - 64px)' }}
+                            value={generateName(within.name, iWithin, 'Within')}
+                          />
+                          <Button
+                            onClick={() => onDeleteWithin(factor, within)}
+                          >
+                            <DeleteIcon
+                              fontSize="small"
+                              sx={{ color: 'red' }}
+                            />
+                          </Button>
+                          {!within.name && (
+                            <div style={{ fontSize: 12, color: 'red' }}>
+                              Within factor name can't empty
+                            </div>
+                          )}
+                        </div>
                         {renderData(within.data, { marginLeft: 48 }, (row) => {
                           onDeleteDataWithin(factor, within, row)
                         })}
@@ -806,12 +918,17 @@ const ProjectFormComponent = () => {
         </DragBox>
         <DropBox>
           <BoxFilter>
-            <ButtonFilter
-              onClick={() => setOpenFilter(true)}
-              style={{ margin: '0 26px 0 0' }}
-            >
-              Filter
-            </ButtonFilter>
+            <Box sx={{ display: 'flex', gap: 5 }}>
+              <Button variant="contained" onClick={handleClear}>
+                Clear Filter
+              </Button>
+              <ButtonFilter
+                onClick={() => setOpenFilter(true)}
+                style={{ margin: '0 26px 0 0' }}
+              >
+                Filter
+              </ButtonFilter>
+            </Box>
           </BoxFilter>
           <DatabaseTableComponent
             addProject={true}
@@ -836,7 +953,12 @@ const ProjectFormComponent = () => {
           justifyContent: 'flex-end',
         }}
       >
-        <ButtonFilter onClick={onOk} sx={{ backgroundColor: 'limegreen !important' }}>{idEdit ? 'Ok' : 'Add'}</ButtonFilter>
+        <ButtonFilter
+          onClick={onOk}
+          sx={{ backgroundColor: 'limegreen !important' }}
+        >
+          {idEdit ? 'Ok' : 'Add'}
+        </ButtonFilter>
         <ButtonFilter onClick={onCancle}>Cancel</ButtonFilter>
       </Box>
       {loading && <Loading />}
@@ -861,6 +983,7 @@ const BoxItem = styled(Box)({
   borderBottom: '1px solid rgba(0,0,0,0.8)',
   paddingLeft: 16,
   marginBottom: 4,
+  justifyContent: 'space-between',
 })
 
 const TypographyBoxItem = styled(Box)({

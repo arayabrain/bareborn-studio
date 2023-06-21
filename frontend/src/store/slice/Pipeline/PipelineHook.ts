@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { selectRunPostData } from 'store/selectors/run/RunSelectors'
@@ -9,11 +9,11 @@ import {
   selectPipelineStatus,
 } from './PipelineSelectors'
 import { run, pollRunResult, runByCurrentUid } from './PipelineActions'
-import { cancelPipeline, setAllowRun } from './PipelineSlice'
+import { cancelPipeline, setRunBtnOption } from './PipelineSlice'
 import { selectFilePathIsUndefined } from '../InputNode/InputNodeSelectors'
 import { selectAlgorithmNodeNotExist } from '../AlgorithmNode/AlgorithmNodeSelectors'
 import { useSnackbar } from 'notistack'
-import { RUN_STATUS } from './PipelineType'
+import { RUN_BTN_OPTIONS, RUN_STATUS } from './PipelineType'
 import {
   fetchExperiment,
   getExperiments,
@@ -22,11 +22,11 @@ import {
 import { reset } from '../Dataset/DatasetSlice'
 import { getDatasetList } from '../Dataset/DatasetAction'
 import { AppDispatch } from 'store/store'
-import { setSelectedFilePath } from '../InputNode/InputNodeSlice'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone' // dependent on utc plugin
 import { setLoadingExpriment } from '../Experiments/ExperimentsSlice'
+import { getUrlFromSubfolder } from '../Dataset/DatasetSelector'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -58,38 +58,45 @@ export function useRunPipeline() {
     dispatch(runByCurrentUid({ runPostData }))
   }, [dispatch, runPostData])
   const location = useLocation()
-  const [isEdited] = useState<{ edited: boolean }>(
-    location.state as { edited: boolean },
-  )
+
   React.useEffect(() => {
     window.addEventListener('beforeunload', removeStateIsEdit)
     if (!projectId) {
       navigate('/projects')
     } else {
-      appDispatch(getDatasetList({ project_id: projectId }))
-        .unwrap()
-        .then(({ dataset, last_updated_time }) => {
-          if (!isEdited) {
-            appDispatch(fetchExperiment(projectId))
+      if (!location.state?.cancel) {
+        appDispatch(getDatasetList({ project_id: projectId }))
+          .unwrap()
+          .then(({ dataset, last_updated_time }) => {
+            let urls: { id: string | number; url: string }[] = []
+            getUrlFromSubfolder(dataset, urls)
+            appDispatch(fetchExperiment({ projectId, urls }))
               .unwrap()
-              .then(({ nodeDict, finished_at }) => {
-                const diffMinus = dayjs(
+              .then(({ data: { finished_at } }) => {
+                const imgsetUpdatedSinceLastRun = dayjs(
                   dayjs(last_updated_time).format('YYYY-MM-DD HH:mm'),
                 ).diff(
                   dayjs(dayjs(finished_at).format('YYYY-MM-DD HH:mm')),
                   'm',
+                ) > 0
+                imgsetUpdatedSinceLastRun && dispatch(
+                  setRunBtnOption({
+                    runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+                    runAlreadyDisabled: true,
+                  }),
                 )
-                dispatch(setAllowRun({ allowRun: diffMinus > 0 }))
-                dispatch(setSelectedFilePath({ dataset, nodeDict }))
               })
               .catch((_) => {
-                appDispatch(importExperimentByUid('default')).then((_) => {
-                  dispatch(setSelectedFilePath({ dataset }))
-                  dispatch(setAllowRun({ allowRun: true }))
-                })
+                appDispatch(
+                  importExperimentByUid({ uid: 'default', urls }),
+                )
               })
-          }
+          })
+      } else {
+        appDispatch(getDatasetList({ project_id: projectId })).then(() => {
+          dispatch(setLoadingExpriment({ loading: false }))
         })
+      }
     }
 
     return () => {

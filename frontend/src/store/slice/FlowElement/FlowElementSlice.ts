@@ -170,7 +170,7 @@ export const flowElementSlice = createSlice({
         state.flowPosition = initialFlowPosition
         state.elementCoord = initialElementCoord
         const newNodeList: Elements<NodeData> = Object.values(
-          action.payload.nodeDict,
+          action.payload.data.nodeDict,
         ).map((node) => {
           if (isInputNodePostData(node)) {
             return {
@@ -191,14 +191,14 @@ export const flowElementSlice = createSlice({
           }
         })
         state.flowElements = newNodeList.concat(
-          Object.values(action.payload.edgeDict),
+          Object.values(action.payload.data.edgeDict),
         )
       })
       .addCase(fetchExperiment.fulfilled, (state, action) => {
         state.flowPosition = initialFlowPosition
         state.elementCoord = initialElementCoord
         const newNodeList: Elements<NodeData> = Object.values(
-          action.payload.nodeDict,
+          action.payload.data.nodeDict,
         ).map((node) => {
           if (isInputNodePostData(node)) {
             return {
@@ -219,7 +219,7 @@ export const flowElementSlice = createSlice({
           }
         })
         state.flowElements = newNodeList.concat(
-          Object.values(action.payload.edgeDict),
+          Object.values(action.payload.data.edgeDict),
         )
       })
       .addCase(fetchExperiment.rejected, (_state, _action) => initialState),

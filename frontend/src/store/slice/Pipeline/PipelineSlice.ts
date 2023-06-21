@@ -24,7 +24,6 @@ const initialState: Pipeline = {
     status: RUN_STATUS.START_UNINITIALIZED,
   },
   runBtn: RUN_BTN_OPTIONS.RUN_NEW,
-  allowRun: true,
 }
 
 export const pipelineSlice = createSlice({
@@ -33,22 +32,17 @@ export const pipelineSlice = createSlice({
   reducers: {
     cancelPipeline(state) {
       state.run.status = RUN_STATUS.CANCELED
+      state.runAlreadyDisabled = false
     },
     setRunBtnOption: (
       state,
       action: PayloadAction<{
         runBtnOption: RUN_BTN_TYPE
+        runAlreadyDisabled?: boolean
       }>,
     ) => {
       state.runBtn = action.payload.runBtnOption
-    },
-    setAllowRun: (
-      state,
-      action: PayloadAction<{
-        allowRun: boolean
-      }>,
-    ) => {
-      state.allowRun = action.payload.allowRun
+      state.runAlreadyDisabled = action.payload.runAlreadyDisabled ?? false
     },
   },
   extraReducers: (builder) => {
@@ -65,18 +59,23 @@ export const pipelineSlice = createSlice({
           if (runResultPendingList.length === 0) {
             // 終了
             state.run.status = RUN_STATUS.FINISHED
+            state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
+            state.runAlreadyDisabled = false
           }
         }
       })
       .addCase(pollRunResult.rejected, (state, action) => {
         state.run.status = RUN_STATUS.ABORTED
+        state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
+        state.runAlreadyDisabled = false
       })
       .addCase(importExperimentByUid.fulfilled, (state, action) => {
-        if (action.meta.arg === 'default') {
+        if (action.meta.arg.uid === 'default') {
           state.runBtn = RUN_BTN_OPTIONS.RUN_NEW
+          state.runAlreadyDisabled = true
         } else {
           state.currentPipeline = {
-            uid: action.meta.arg,
+            uid: action.meta.arg.uid,
           }
           state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
         }
@@ -86,21 +85,22 @@ export const pipelineSlice = createSlice({
       })
       .addCase(fetchExperiment.fulfilled, (state, action) => {
         state.currentPipeline = {
-          uid: action.payload.unique_id,
+          uid: action.payload.data.unique_id,
         }
         state.runBtn = RUN_BTN_OPTIONS.RUN_ALREADY
+        state.runAlreadyDisabled = false
         state.run = {
-          uid: action.payload.unique_id,
+          uid: action.payload.data.unique_id,
           status: RUN_STATUS.START_SUCCESS,
           runResult: {
             ...convertToRunResult(
-              convertFunctionsToRunResultDTO(action.payload.function),
+              convertFunctionsToRunResultDTO(action.payload.data.function),
             ),
           },
           runPostData: {
-            name: action.payload.name,
-            nodeDict: action.payload.nodeDict,
-            edgeDict: action.payload.edgeDict,
+            name: action.payload.data.name,
+            nodeDict: action.payload.data.nodeDict,
+            edgeDict: action.payload.data.edgeDict,
             snakemakeParam: {},
             nwbParam: {},
             forceRunList: [],
@@ -137,7 +137,6 @@ export const pipelineSlice = createSlice({
           state.currentPipeline = {
             uid: action.payload,
           }
-          state.allowRun = false
         },
       )
       .addMatcher(
@@ -151,7 +150,6 @@ export const pipelineSlice = createSlice({
   },
 })
 
-export const { cancelPipeline, setRunBtnOption, setAllowRun } =
-  pipelineSlice.actions
+export const { cancelPipeline, setRunBtnOption } = pipelineSlice.actions
 
 export default pipelineSlice.reducer

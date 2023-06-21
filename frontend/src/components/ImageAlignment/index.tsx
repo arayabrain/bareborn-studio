@@ -3,9 +3,15 @@ import { ChangeEvent, FC, useEffect, useMemo, useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { ObjectType } from 'pages/Database'
 import { useDispatch } from 'react-redux'
-import { setInputNodeParamAlignment } from 'store/slice/InputNode/InputNodeSlice'
+import {
+  defaultValueParams,
+  setInputNodeParamAlignment,
+} from 'store/slice/InputNode/InputNodeSlice'
 import { Params } from 'store/slice/InputNode/InputNodeType'
 import { DATABASE_URL_HOST } from 'const/API'
+import { setRunBtnOption } from 'store/slice/Pipeline/PipelineSlice'
+import { RUN_BTN_OPTIONS } from 'store/slice/Pipeline/PipelineType'
+import Loading from 'components/common/Loading'
 
 type ImageViewProps = {
   open: boolean
@@ -17,6 +23,7 @@ type ImageViewProps = {
   disabled?: { left: boolean; right: boolean }
   params?: { nodeId: string; alignments: Params[] }
   readOnly?: boolean
+  host?: string
 }
 
 const ImageAlignment: FC<ImageViewProps> = ({
@@ -25,28 +32,35 @@ const ImageAlignment: FC<ImageViewProps> = ({
   urls,
   params = { nodeId: '', alignments: [] },
   readOnly = false,
+  host
 }) => {
   const viewerRef = useRef<any>()
   const [image, setUrl] = useState(urls[0])
-  const [isLoadFile, setIsLoadFile] = useState(false)
-  const [loadedSuccess, setLoadedSuccess] = useState(false)
+  const [loading, setLoading] = useState({
+    file: false,
+    loaded: false,
+    error: false,
+  })
+  const refVoxel = useRef<
+    undefined | { i: number; j: number; k: number; url: string }
+  >()
   const volumes = useRef<any>()
   const dispatch = useDispatch()
-
   const urlRef = useRef(image)
-
   const [stateParams, setStateParams] = useState<Params[]>(params.alignments)
 
   const paramAligment = useMemo(() => {
-    return stateParams.find((param) => param.image_id === image.id)
-  }, [image.id, stateParams])
+    return stateParams.find((param) => param.image_id === image?.id)
+  }, [image?.id, stateParams])
+
+  const [originPreview, setOriginPreview] = useState({ i: 0, j: 0, k: 0 })
 
   useEffect(() => {
     if (open) {
       setTimeout(loadFile, 200)
     }
     return () => {
-      viewerRef.current.clearVolumes?.()
+      viewerRef.current?.clearVolumes?.()
     }
     //eslint-disable-next-line
   }, [])
@@ -58,14 +72,14 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }, [image])
 
   useEffect(() => {
-    if (loadedSuccess) {
+    if (loading.loaded) {
       const paramInit = params.alignments?.find(
-        (param) => param.image_id === image.id,
+        (param) => param.image_id === image?.id,
       )
       setValueToBraibrowser(paramInit)
     }
     //eslint-disable-next-line
-  }, [loadedSuccess, image.id])
+  }, [loading.loaded, image?.id])
 
   const onOk = () => {
     if (params?.nodeId && stateParams) {
@@ -75,24 +89,43 @@ const ImageAlignment: FC<ImageViewProps> = ({
           param: stateParams,
         }),
       )
+      dispatch(
+        setRunBtnOption({
+          runBtnOption: RUN_BTN_OPTIONS.RUN_NEW,
+          runAlreadyDisabled: true,
+        }),
+      )
     }
     onClose?.()
   }
 
   const onPreImage = () => {
-    const index = urls.findIndex((item) => item.id === image.id)
+    const index = urls.findIndex((item) => item.id === image?.id)
     if (index === 0) return
     setUrl(urls[index - 1])
   }
 
   const onNextImage = () => {
-    const index = urls.findIndex((item) => item.id === image.id)
+    const index = urls.findIndex((item) => item.id === image?.id)
     if (index === urls.length - 1) return
     setUrl(urls[index + 1])
   }
 
+  const resetOrigin = () => {
+    if (params?.nodeId && stateParams) {
+      const newParams = stateParams.map((align) => {
+        if (align.image_id === image?.id) {
+          return { ...defaultValueParams, image_id: align.image_id }
+        }
+        return align
+      })
+      setValueToBraibrowser({ ...defaultValueParams, image_id: image?.id })
+      setStateParams(newParams)
+    }
+  }
+
   const setValueToBraibrowser = (valueParams?: Params) => {
-    if (valueParams) {
+    if (valueParams && refVoxel.current) {
       volumes.current.setResize({
         x: Number(valueParams.x_resize),
         y: Number(valueParams.y_resize),
@@ -104,9 +137,9 @@ const ImageAlignment: FC<ImageViewProps> = ({
         Number(valueParams.z_rotate),
       )
       volumes.current.setVoxelCoords(
-        Number(valueParams.y_pos),
-        Number(valueParams.z_pos),
-        Number(valueParams.x_pos),
+        Number(Number(valueParams.y_pos) + refVoxel.current.i),
+        Number(Number(valueParams.z_pos) + refVoxel.current.j),
+        Number(Number(valueParams.x_pos) + refVoxel.current.k),
       )
       viewerRef.current.redrawVolumes()
     }
@@ -116,7 +149,19 @@ const ImageAlignment: FC<ImageViewProps> = ({
     const { name, value } = e.target
     if (params?.nodeId && stateParams) {
       const newParams = stateParams.map((align) =>
-        align.image_id === image.id ? { ...align, [name]: value } : align,
+        align.image_id === image?.id ? { ...align, [name]: value } : align,
+      )
+      setStateParams(newParams)
+    }
+  }
+
+  const onBlurValue = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    if (params?.nodeId && stateParams) {
+      const newParams = stateParams.map((align) =>
+        align.image_id === image?.id
+          ? { ...align, [name]: Number(value || 0) }
+          : align,
       )
       setStateParams(newParams)
     }
@@ -134,22 +179,23 @@ const ImageAlignment: FC<ImageViewProps> = ({
     }
     if (params?.nodeId && stateParams) {
       const newParams = stateParams.map((align) =>
-        align.image_id === image.id ? { ...align, [name]: valueRadian } : align,
+        align.image_id === image?.id
+          ? { ...align, [name]: valueRadian }
+          : align,
       )
       setStateParams(newParams)
     }
   }
 
   const loadFileIndex = () => {
-    if (!image?.url || isLoadFile || !viewerRef.current) return
-    setIsLoadFile(true)
-    setLoadedSuccess(false)
+    if (!image?.url || loading.file || !viewerRef.current) return
+    setLoading((pre) => ({ ...pre, file: true }))
     viewerRef.current.clearVolumes()
     viewerRef.current.loadVolumes({
       volumes: [
         {
           type: 'nifti1',
-          nii_url: `${DATABASE_URL_HOST}${image.url}`,
+          nii_url: `${host || DATABASE_URL_HOST}${image.url}`,
           template: {
             element_id: 'volume-ui-template',
             viewer_insert_className: 'volume-viewer-display',
@@ -162,44 +208,39 @@ const ImageAlignment: FC<ImageViewProps> = ({
           },
         },
       ],
-      complete: () => setValueToBraibrowser(paramAligment),
+      complete: () => {
+        setValueToBraibrowser(paramAligment)
+        setLoading((pre) => ({ ...pre, file: false, loaded: true }))
+      },
     })
   }
 
-  const volumeLoaded = (event: any, isLoaded?: boolean) => {
+  const volumeLoaded = (event: any) => {
     const brainbrowser = (window as any).BrainBrowser
     const { volume } = event
     volumes.current = volume
-    const paramsNode: Params = {
-      image_id: urlRef.current.id,
-      x_pos: 0,
-      y_pos: 0,
-      z_pos: 0,
-      x_rotate: volume.header.xspace.radian,
-      y_rotate: volume.header.yspace.radian,
-      z_rotate: volume.header.zspace.radian,
-      x_resize: volume.header.xspace.step,
-      y_resize: volume.header.yspace.step,
-      z_resize: volume.header.zspace.step,
-    }
     if (brainbrowser.utils.isFunction(volume.getVoxelCoords)) {
-      const voxel = volume.getVoxelCoords()
-      paramsNode.x_pos = voxel.k
-      paramsNode.y_pos = voxel.i
-      paramsNode.z_pos = voxel.j
-    }
-    const newParams = (pre: Params[]) => {
-      if (pre.find((align) => align.image_id === urlRef.current.id)) {
-        return pre.map((align) => {
-          if (align.image_id === urlRef.current.id) return paramsNode
-          return align
-        })
+      const voxelGet = volume.getVoxelCoords()
+      setOriginPreview(voxelGet)
+      if (!refVoxel.current || refVoxel.current?.url !== urlRef.current.url) {
+        refVoxel.current = { ...voxelGet, url: urlRef.current.url }
+      } else if (refVoxel.current?.url === urlRef.current.url) {
+        setStateParams((params) =>
+          params.map((param) => {
+            if (param.image_id === urlRef.current.id) {
+              return {
+                ...param,
+                x_pos: voxelGet.k - (refVoxel.current?.k || 0),
+                y_pos: voxelGet.i - (refVoxel.current?.i || 0),
+                z_pos: voxelGet.j - (refVoxel.current?.j || 0),
+              }
+            }
+            return param
+          }),
+        )
       }
-      return [...pre, paramsNode]
     }
-    setStateParams(newParams)
-    setIsLoadFile(false)
-    setLoadedSuccess(true)
+    setLoading((pre) => ({ ...pre, file: false, error: false, loaded: true }))
   }
 
   const gerenateValueNumber = (value?: number) => {
@@ -208,48 +249,44 @@ const ImageAlignment: FC<ImageViewProps> = ({
   }
 
   const loadFile = () => {
-    if (!image.url || isLoadFile) return
-    setIsLoadFile(true)
-    setLoadedSuccess(false)
+    if (!image.url || (loading.file && !loading.error)) return
+    setLoading((pre) => ({ ...pre, file: true, loaded: false }))
     const brainbrowser = (window as any).BrainBrowser
     const color_map_config = brainbrowser.config.get('color_maps')[2]
     viewerRef.current = brainbrowser.VolumeViewer.start(
       'brainbrowser',
       (viewer: any) => {
-        viewer.addEventListener('volumeloaded', (e: any) =>
-          volumeLoaded(e, true),
-        )
+        viewer.addEventListener('volumeloaded', volumeLoaded)
         viewer.addEventListener('sliceupdate', volumeLoaded)
         viewer.addEventListener('error', () => {
-          setIsLoadFile(false)
+          setLoading((pre) => ({ ...pre, error: false }))
           setTimeout(loadFile, 200)
         })
         const { url: urlColor, cursor_color } = color_map_config
         viewer.loadDefaultColorMapFromURL(urlColor, cursor_color)
-        viewer.setDefaultPanelSize(256, 256)
-        viewer.render()
-        viewer.clearVolumes()
-        viewer.loadVolumes({
-          volumes: [
-            {
-              type: 'nifti1',
-              nii_url: `${DATABASE_URL_HOST}${image.url}`,
-              template: {
-                element_id: 'volume-ui-template',
-                viewer_insert_className: 'volume-viewer-display',
-              },
-              overlay: {
+        setTimeout(() => {
+          viewer.setDefaultPanelSize(256, 256)
+          viewer.render()
+          viewer.clearVolumes()
+          viewer.loadVolumes({
+            volumes: [
+              {
+                type: 'nifti1',
+                nii_url: `${host || DATABASE_URL_HOST}${image.url}`,
                 template: {
-                  element_id: 'overlay-ui-template',
-                  viewer_insert_className: 'overlay-viewer-display',
+                  element_id: 'volume-ui-template',
+                  viewer_insert_className: 'volume-viewer-display',
+                },
+                overlay: {
+                  template: {
+                    element_id: 'overlay-ui-template',
+                    viewer_insert_className: 'overlay-viewer-display',
+                  },
                 },
               },
-              complete: function () {
-                setIsLoadFile(false)
-              },
-            },
-          ],
-        })
+            ],
+          })
+        }, 500)
       },
     )
   }
@@ -278,7 +315,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                 style={{
                   minWidth: 768,
                   minHeight: 256,
-                  background: '#ffffff',
+                  background: '#000',
                 }}
               >
                 <div id="brainbrowser"></div>
@@ -293,6 +330,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="x_pos"
                         value={gerenateValueNumber(paramAligment?.x_pos)}
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -303,6 +341,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="y_pos"
                         value={gerenateValueNumber(paramAligment?.y_pos)}
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -313,6 +352,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="z_pos"
                         value={gerenateValueNumber(paramAligment?.z_pos)}
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -352,6 +392,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         name="x_resize"
                         value={gerenateValueNumber(paramAligment?.x_resize)}
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -361,6 +402,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={gerenateValueNumber(paramAligment?.y_resize)}
                         name="y_resize"
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -370,6 +412,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
                         value={gerenateValueNumber(paramAligment?.z_resize)}
                         name="z_resize"
                         onChange={onChangeValue}
+                        onBlur={onBlurValue}
                         readOnly={readOnly}
                       />
                     </Flex>
@@ -378,17 +421,26 @@ const ImageAlignment: FC<ImageViewProps> = ({
                     >
                       Set Origin
                     </ButtonSet>
+                    <ButtonSet style={{ marginLeft: 15 }} onClick={resetOrigin}>
+                      Reset
+                    </ButtonSet>
                   </ContentSet>
                 </BoxSet>
                 <Flex
                   sx={{
                     flexDirection: 'column',
                     position: 'relative',
-                    gap: 15,
+                    gap: 8,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
+                  <FlexBox>
+                    <div>Origin: </div>
+                    <div>{`[${originPreview.k}]`}</div>
+                    <div>{`[${originPreview.i}]`}</div>
+                    <div>{`[${originPreview.j}]`}</div>
+                  </FlexBox>
                   <SwitchImage>
                     <span>Select Image</span>
                     <SwitchContent>
@@ -397,9 +449,10 @@ const ImageAlignment: FC<ImageViewProps> = ({
                       <ButtonNext onClick={onNextImage}>{'>'}</ButtonNext>
                     </SwitchContent>
                     <span>{`(${
-                      urls.findIndex((item) => item.id === image.id) + 1
+                      urls.findIndex((item) => item.id === image?.id) + 1
                     }/${urls.length})`}</span>
                   </SwitchImage>
+
                   <Flex sx={{ gap: 5 }}>
                     <ButtonCanCel onClick={onClose}>CANCEL</ButtonCanCel>
                     <ButtonOk onClick={onOk}>OK</ButtonOk>
@@ -408,6 +461,7 @@ const ImageAlignment: FC<ImageViewProps> = ({
               </Flex>
             </div>
           </div>
+          {loading.file && <Loading />}
           <ButtonClose onClick={onClose}>
             <CloseIconWrapper />
           </ButtonClose>
@@ -423,7 +477,7 @@ const ButtonClose = styled(IconButton)({
   position: 'absolute',
   right: '10%',
   top: '10%',
-  zIndex: 9999,
+  zIndex: 100001,
   background: 'rgba(0, 0, 0, 0.6)',
   '&:hover': {
     background: 'rgba(0, 0, 0, 0.8)',
@@ -517,5 +571,13 @@ const ButtonCanCel = styled('button')({
 const CloseIconWrapper = styled(CloseIcon)({
   color: '#ffffff',
 })
+
+const FlexBox = styled(Box)(() => ({
+  display: 'flex',
+  width: '100%',
+  marginLeft: 30,
+  alignItems: 'center',
+  gap: 5,
+}))
 
 export default ImageAlignment

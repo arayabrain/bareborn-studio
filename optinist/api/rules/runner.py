@@ -14,6 +14,8 @@ from optinist.api.pickle.pickle_reader import PickleReader
 from optinist.api.pickle.pickle_writer import PickleWriter
 from optinist.api.utils.filepath_creater import join_filepath
 from optinist.api.nwb.nwb_creater import merge_nwbfile, save_nwb
+from optinist.api.dataclass.dataclass import AnalysisInfo
+from optinist.api.experiment.experiment import ExptFunction
 
 
 class Runner:
@@ -39,6 +41,11 @@ class Runner:
                 __rule.params,
                 input_info
             )
+
+            if 'analysis_info_out' in output_info.keys():
+                # The function was added just after the node analysis, which updates experiment.yaml
+                # with the node analysis info such as output file paths and status.
+                cls.set_node_analysis_info(os.path.dirname(__rule.output), output_info['analysis_info_out'])
 
             # nwbfileの設定
             output_info['nwbfile'] = cls.save_func_nwb(
@@ -68,6 +75,67 @@ class Runner:
                 __rule.output,
                 list(traceback.TracebackException.from_exception(e).format())[-2:],
             )
+
+    @classmethod
+    def set_node_analysis_info(cls, output_dirpath: str, analysis_info: AnalysisInfo):
+        """
+        Update the experiment.yaml with the node analysis info such as output file paths and status.
+        """
+
+        # Get the ExptConfig data from the experiment.yaml.
+        workflow_dirpath = os.path.dirname(output_dirpath)
+        node_id = os.path.basename(output_dirpath)
+        expt_file_path = join_filepath([workflow_dirpath, DIRPATH.EXPERIMENT_YML])
+        expt_config = ExptConfigReader.read(expt_file_path)
+
+        # Extract the info about the output files and subjects from the AnalysisInfo object of the node output.
+        output_path_dict = {}
+        subject_dict = {}
+        for wf_input_path in analysis_info.workflow_input_file_path_list:
+            # For "outputPaths".
+            output_file_paths = analysis_info.get_output_file_paths(wf_input_path)
+            for output_file_path in output_file_paths:
+                file_name = os.path.splitext(os.path.basename(output_file_path))[0]
+                output_path_dict[file_name] = {
+                    'path': output_file_path,
+                    'type': 'images',
+                    'max_index': None
+                }
+
+            # For "subjects".
+            # All the data are held in a form of List to support multiple workflow input files for a single subject.
+            subject = analysis_info.get_subject(wf_input_path)
+            if subject in subject_dict.keys():
+                subject_dict[subject]['success'].append(analysis_info.get_unit_analysis_status(wf_input_path))
+                subject_dict[subject]['output_path'].append(output_file_paths)
+                subject_dict[subject]['message'].append(analysis_info.get_message(wf_input_path))
+            else:
+                subject_dict[subject] = {
+                    'success': [analysis_info.get_unit_analysis_status(wf_input_path)],
+                    'output_path': [output_file_paths],
+                    'message': [analysis_info.get_message(wf_input_path)]
+                }
+
+        # Create an ExptFunction object for the node, and update the ExptConfig data.
+        expt_function = expt_config.function
+        expt_config.function[node_id] = ExptFunction(
+            unique_id=expt_function[node_id].unique_id,
+            name=expt_function[node_id].name,
+            success=analysis_info.get_node_analysis_status(),
+            hasNWB=expt_function[node_id].hasNWB,
+            message=analysis_info.get_node_analysis_status(),
+            outputPaths=output_path_dict,
+            started_at=analysis_info.analysis_start_time,
+            finished_at=analysis_info.analysis_end_time,
+            subjects=subject_dict
+        )
+
+        # Overwrite the experiment.yaml with updated ExptConfig data.
+        ConfigWriter.write(
+            dirname=workflow_dirpath,
+            filename=DIRPATH.EXPERIMENT_YML,
+            config=asdict(expt_config)
+        )
 
     @classmethod
     def set_func_start_timestamp(cls, output_dirpath):
