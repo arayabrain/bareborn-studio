@@ -89,3 +89,8 @@ export async function downloadExperimentConfigApi(uid: string) {
   )
   return response.data
 }
+
+export const getResultProject = async (id: string) => {
+  const response = await axios.get(`${BASE_URL}/run_result/${id}`)
+  return response.data
+}

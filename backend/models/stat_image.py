@@ -4,9 +4,9 @@ from pydantic import BaseModel
 
 
 class CutCoordParam(BaseModel):
-    coronal: List[int] = []
-    sagittal: List[int] = []
-    horizontal: List[int] = []
+    coronal: List[float] = []
+    sagittal: List[float] = []
+    horizontal: List[float] = []
 
 
 class StatImageParam(BaseModel):
