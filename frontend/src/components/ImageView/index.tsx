@@ -333,7 +333,7 @@ const ImageView: FC<ImageViewProps> = ({
                       onChange={onChangeBrightness}
                     />
                   </BoxContentData>
-                  <WrapperButton sx={{ justifyContent: 'flex-end' }}>
+                  <WrapperButton sx={{ justifyContent: 'flex-end', marginTop: 0 }}>
                     <ButtonCanCel onClick={onClose}>Close</ButtonCanCel>
                   </WrapperButton>
                 </Box>
