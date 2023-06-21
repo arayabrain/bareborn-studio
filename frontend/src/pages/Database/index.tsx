@@ -15,7 +15,7 @@ import {
 } from 'utils/database'
 import { User, useUser } from 'providers'
 import { isReseacher } from 'utils/auth'
-import { getDataBaseList, getDataBaseTree } from 'api/rawdb'
+import { deleteRawDb, getDataBaseList, getDataBaseTree } from 'api/rawdb'
 import { DATABASE_URL_HOST } from 'const/API'
 import Loading from 'components/common/Loading'
 import { useSearchParams } from 'react-router-dom'
@@ -307,7 +307,7 @@ export const columns = (
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
-              setOpenDelete?.(true)
+              setOpenDelete?.(true, data?.id)
             }}
           >
             <DeleteIcon fontSize="small" sx={{ color: 'red' }} />
@@ -322,7 +322,13 @@ const Database = () => {
   const [openPopup, setOpenPopup] = useState(false)
   const [viewer, setViewer] = useState<Viewer>({ open: false, url: '', id: '' })
   const [databases, setDatabases] = useState<DatabaseData | DatabaseListData>()
-  const [openDelete, setOpenDelete] = useState(false)
+  const [{ openDelete, idDelete }, setOpenDelete] = useState<{
+    openDelete: boolean
+    idDelete: number | string
+  }>({
+    openDelete: false,
+    idDelete: '',
+  })
   const [{ orderBy, type, columnSort }, setOrderByAndTypeAndSort] = useState<{
     orderBy: 'ASC' | 'DESC' | ''
     type: 'tree' | 'list'
@@ -379,11 +385,14 @@ const Database = () => {
   }
 
   const handleCloseDelete = () => {
-    setOpenDelete(false)
+    setOpenDelete({ openDelete: false, idDelete: '' })
   }
 
-  const onDelete = () => {
-    setOpenDelete(false)
+  const onDelete = async () => {
+    handleCloseDelete()
+    setIsLoading(true)
+    await deleteRawDb(idDelete)
+    fetchData()
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
@@ -451,6 +460,10 @@ const Database = () => {
       type,
     )
     setDatabases({ ...initDatabases, records: data as RecordDatabase[] })
+  }
+
+  const onDeleteImage = (flag: boolean, idRemove: string | number) => {
+    setOpenDelete({ openDelete: flag, idDelete: idRemove })
   }
 
   return (
@@ -529,7 +542,7 @@ const Database = () => {
         orderKey={columnSort}
         orderBy={orderBy}
         data={databases && databases.records}
-        columns={columns(rowClick, setOpenDelete, type, user)}
+        columns={columns(rowClick, onDeleteImage, type, user)}
       />
       {viewer.url && viewer.open && (
         <ImageView
