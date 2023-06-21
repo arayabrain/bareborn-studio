@@ -344,8 +344,8 @@ const VisualizeNew = () => {
               flexDirection: 'column',
               gap: 2
             }}>
-              <ParamsButton onClick={handleClickOpen}>Save Params</ParamsButton>
               <ParamsButton onClick={onLoadParams}>Load Params</ParamsButton>
+              <ParamsButton onClick={handleClickOpen}>Save Params</ParamsButton>
             </Box>
           </VisualizeInputWrapper>
           <ButtonWrapper>
