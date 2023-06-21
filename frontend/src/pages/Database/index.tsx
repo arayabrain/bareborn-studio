@@ -391,8 +391,12 @@ const Database = () => {
   const onDelete = async () => {
     handleCloseDelete()
     setIsLoading(true)
-    await deleteRawDb(idDelete)
-    fetchData()
+    try {
+      await deleteRawDb(idDelete)
+      fetchData()
+    } catch {
+      setIsLoading(false)
+    }
   }
 
   const handleSort = (orderKey: string, orderByValue: 'DESC' | 'ASC' | '') => {
