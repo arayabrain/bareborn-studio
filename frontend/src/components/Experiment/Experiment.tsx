@@ -7,7 +7,7 @@ import Loading from "../common/Loading";
 
 export type FunctionType = {
   name: string
-  message: string
+  message?: string
   outputs: string[]
   success: EXPERIMENTS_STATUS
   unique_id: string

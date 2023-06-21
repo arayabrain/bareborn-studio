@@ -126,9 +126,9 @@ const TableRowOfFunction = ({ data } : {data: object}) => {
                       disableFocusListener
                       disableHoverListener
                       disableTouchListener
-                      title={message}
+                      title={message || ''}
                   >
-                    <Button onClick={handleTooltipOpen}>
+                    <Button onClick={handleTooltipOpen} disabled={!message}>
                       <ExperimentStatusIcon status={success} />
                     </Button>
                   </LightTooltip>
