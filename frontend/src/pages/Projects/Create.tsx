@@ -298,7 +298,7 @@ const ProjectFormComponent = () => {
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)
       .join('&')
-    idEdit ? setParams(`id=${idEdit}&${newParams}&back=${routeGoback}`) : setParams(newParams)
+    idEdit ? setParams(`id=${idEdit}&${newParams}${routeGoback ? `&back=${routeGoback}` : ''}`) : setParams(newParams)
   }
 
   const getDataTree = async () => {
