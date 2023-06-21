@@ -51,8 +51,6 @@ const Experiment = React.memo(() => {
     //eslint-disable-next-line
   }, [])
 
-  console.log('data', data)
-
   return (
     <div style={{ display: 'flex', height: 'calc(100% - 58px)' }}>
       <main

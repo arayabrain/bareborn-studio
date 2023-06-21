@@ -298,7 +298,7 @@ const ProjectFormComponent = () => {
     const newParams = Object.keys(value)
       .map((key) => value[key] && `${key}=${value[key]}`)
       .join('&')
-    idEdit ? setParams(`id=${idEdit}&${newParams}${routeGoback ? `&back=${routeGoback}` : ''}`) : setParams(newParams)
+    idEdit ? setParams(`id=${idEdit}&${newParams}${nodeId ? `&nodeId=${nodeId}` : ''}${routeGoback ? `&back=${routeGoback}` : ''}`) : setParams(newParams)
   }
 
   const getDataTree = async () => {
@@ -742,7 +742,7 @@ const ProjectFormComponent = () => {
   }
 
   const handleClear = () => {
-    idEdit ? setParams(`id=${idEdit}&back=${routeGoback}`) : setParams('')
+    idEdit ? setParams(`id=${idEdit}${nodeId ? `&nodeId=${nodeId}` : ''}${routeGoback ? `&back=${routeGoback}` : ''}`) : setParams('')
     const data = onSort(
       JSON.parse(JSON.stringify(initDatabases.records)),
       orderBy,
