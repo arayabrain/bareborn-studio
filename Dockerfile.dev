@@ -2,8 +2,6 @@ FROM --platform=linux/amd64 python:3.8.16-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-
 RUN mkdir -p /root/miniconda3 && \
     apt-get --allow-releaseinfo-change update && \
     apt-get install --no-install-recommends -y wget && \
@@ -18,8 +16,8 @@ RUN mkdir -p /root/miniconda3 && \
 
 ENV PATH $PATH:/root/miniconda3/bin
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt .
 
-COPY firebase_config.json firebase_private.json .env ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
