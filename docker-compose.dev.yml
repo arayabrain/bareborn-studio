@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  studio-be:
+  studio-dev-be:
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -12,10 +12,7 @@ services:
       - ./frontend/build:/app/frontend/build
       - ./backend:/app/backend
       - ./sample_data:/app/sample_data
-      - ./firebase_config.json:/app/firebase_config.json
-      - ./firebase_private.json:/app/firebase_private.json
       - ./main.py:/app/main.py
-      - ./.env:/app/.env
     ports:
       - "8000:8000"
     command: python main.py --reload --host 0.0.0.0 --port 8000
@@ -23,7 +20,7 @@ services:
       PYTHONPATH: /app/
       TZ: Asia/Tokyo
 
-  studio-fe:
+  studio-dev-fe:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
