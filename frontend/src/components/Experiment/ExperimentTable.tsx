@@ -9,7 +9,7 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import Typography from '@mui/material/Typography'
 
 import { CollapsibleTable } from './CollapsibleTable'
@@ -44,9 +44,9 @@ const TableImple = React.memo(({data}: ExperimentTableProps) => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <Button
               onClick={onClickBack}
-              sx={{width: 'fit-content', textTransform: 'unset', fontSize: 20}}
+              sx={{width: 'fit-content', textTransform: 'unset', fontSize: '1rem'}}
             >
-              <KeyboardBackspaceIcon /> Projects
+              <ArrowBackIosIcon /> PROJECTS
             </Button>
             <Box sx={{
               display: 'flex',
