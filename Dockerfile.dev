@@ -20,4 +20,18 @@ ENV PATH $PATH:/root/miniconda3/bin
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY optinist ./optinist
+
+COPY backend ./backend
+
+COPY frontend/build ./frontend/build
+
+COPY sample_data ./sample_data
+
+COPY firebase_config.json ./firebase_config.json
+COPY firebase_private.json ./firebase_private.json
+
+COPY main.py ./main.py
+COPY .env ./.env
+
 EXPOSE 8000
