@@ -1,6 +1,6 @@
 edgeDict:
-  ? reactflow__edge-input_0input_0--image--ImageData-suite2p_file_convert_pi2bgrsd6msuite2p_file_convert_pi2bgrsd6m--image--ImageData
-  : animated: false
+  reactflow__edge-input_0input_0--image--ImageData-suite2p_file_convert_pi2bgrsd6msuite2p_file_convert_pi2bgrsd6m--image--ImageData:
+    animated: false
     id: reactflow__edge-input_0input_0--image--ImageData-suite2p_file_convert_pi2bgrsd6msuite2p_file_convert_pi2bgrsd6m--image--ImageData
     source: input_0
     sourceHandle: input_0--image--ImageData
@@ -13,8 +13,8 @@ edgeDict:
     target: suite2p_file_convert_pi2bgrsd6m
     targetHandle: suite2p_file_convert_pi2bgrsd6m--image--ImageData
     type: buttonedge
-  ? reactflow__edge-suite2p_file_convert_pi2bgrsd6msuite2p_file_convert_pi2bgrsd6m--ops--Suite2pData-suite2p_roi_m6v8o3dctgsuite2p_roi_m6v8o3dctg--ops--Suite2pData
-  : animated: false
+  reactflow__edge-suite2p_file_convert_pi2bgrsd6msuite2p_file_convert_pi2bgrsd6m--ops--Suite2pData-suite2p_roi_m6v8o3dctgsuite2p_roi_m6v8o3dctg--ops--Suite2pData:
+    animated: false
     id: reactflow__edge-suite2p_file_convert_pi2bgrsd6msuite2p_file_convert_pi2bgrsd6m--ops--Suite2pData-suite2p_roi_m6v8o3dctgsuite2p_roi_m6v8o3dctg--ops--Suite2pData
     source: suite2p_file_convert_pi2bgrsd6m
     sourceHandle: suite2p_file_convert_pi2bgrsd6m--ops--Suite2pData
@@ -44,6 +44,7 @@ function:
     unique_id: suite2p_roi_m6v8o3dctg
     hasNWB: False
 name: New flow
+project_id: TEST
 nodeDict:
   input_0:
     data:
@@ -52,7 +53,7 @@ nodeDict:
       label: data_endoscope.tif
       param: {}
       path:
-      - /tmp/optinist/input/data_endoscope/data_endoscope.tif
+        - /tmp/optinist/input/data_endoscope/data_endoscope.tif
       type: input
     id: input_0
     position:
