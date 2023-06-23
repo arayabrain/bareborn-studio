@@ -17,7 +17,7 @@ def test_register(monkeypatch):
     monkeypatch.setattr(client, "post", mock)
     response = client.post(
         "/auth/register",
-        json={'email': 'test@reactplus.jp', 'password': 'test@reactplus.jp'},
+        json={'email': 'test@reactplus.jp', 'password': 'test123@reactplus.jp'},
     )
     assert response['id'] == 'lhJOxYjLVITaB2O0EeqP8mzltjb2'
 
@@ -33,6 +33,6 @@ def test_login(monkeypatch):
     monkeypatch.setattr(client, "post", mock)
     response = client.post(
         "/auth/login",
-        json={'email': 'test@reactplus.jp', 'password': 'test@reactplus.jp'},
+        json={'email': 'test@reactplus.jp', 'password': 'test123@reactplus.jp'},
     )
     assert response['access_token'] == 'test_access_token'
