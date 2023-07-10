@@ -39,7 +39,7 @@ dependencies = [
   "psutil",
   "nbstripout",
   "snakemake>=7.24,<7.31",
-  "jinja2==3.0.*",
+  "jinja2>=3.0,<3.2",
   "firebase_admin",
   "pyrebase4==4.7.1",
   "pydantic[email]",
