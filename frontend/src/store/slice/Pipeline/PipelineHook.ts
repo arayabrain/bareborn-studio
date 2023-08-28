@@ -8,8 +8,7 @@ import {
   selectPipelineLatestUid,
   selectPipelineStatus,
 } from './PipelineSelectors'
-import { run, pollRunResult, runByCurrentUid } from './PipelineActions'
-import { cancelPipeline } from './PipelineSlice'
+import {run, pollRunResult, runByCurrentUid, cancelResult} from './PipelineActions'
 import { selectFilePathIsUndefined } from '../InputNode/InputNodeSelectors'
 import { selectAlgorithmNodeNotExist } from '../AlgorithmNode/AlgorithmNodeSelectors'
 import { getExperiments } from '../Experiments/ExperimentsActions'
@@ -39,7 +38,7 @@ export function useRunPipeline() {
   }, [dispatch, runPostData])
   const handleCancelPipeline = React.useCallback(() => {
     if (uid != null) {
-      dispatch(cancelPipeline())
+      dispatch(cancelResult({uid}))
     }
   }, [dispatch, uid])
   React.useEffect(() => {
