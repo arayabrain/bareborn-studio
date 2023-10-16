@@ -50,7 +50,7 @@ dependencies = [
   "sqlmodel==0.0.8",
   "pymysql==1.0.2",
   "fastapi_pagination==0.12.5",
-  "plotly==5.15.0",
+  "plotly==5.17.0",
   "kaleido==0.2.1",
   "filelock",
 ]
