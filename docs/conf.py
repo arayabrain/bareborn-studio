@@ -5,6 +5,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import os
+import sys
 from datetime import datetime
 
 from sphinx_pyproject import SphinxConfig
@@ -15,6 +16,8 @@ from sphinx_pyproject import SphinxConfig
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+
+sys.path.insert(0, os.path.abspath("../studio"))
 
 
 # -- Project information -----------------------------------------------------
@@ -96,3 +99,45 @@ html_theme_options = {
     "includehidden": True,
     "titles_only": False,
 }
+
+
+# include_modules = [
+#     # CaImAn
+#     "caiman_cnmf",
+#     "caiman_cnmfe",
+#     "caiman_mc",
+#     "foobar",
+#     # Suite2p
+#     "suite2p_file_convert",
+#     "suite2p_registration",
+#     "suite2p_roi",
+#     "suite2p_spike_deconv",
+#     # LCCD
+#     "lccd_detect",
+#     # OptiNiSt: Basic neural analysis
+#     "ETA",
+#     # OptiNiSt: Dimension reduction
+#     "CCA",
+#     "dpca_fit",
+#     "PCA",
+#     "TSNE",
+#     # OptiNiSt: Neural decoding
+#     "GLM",
+#     "LDA",
+#     "SVM",
+#     # OptiNiSt: Neural population analysis
+#     "correlation",
+#     "cross_correlation",
+#     "Granger",
+# ]
+
+
+# def skip(app, what, name, obj, would_skip, options):
+#     if name in include_modules:
+#         return False
+#     else:
+#         return True
+
+
+# def setup(app):
+#     app.connect("autodoc-skip-member", skip)
