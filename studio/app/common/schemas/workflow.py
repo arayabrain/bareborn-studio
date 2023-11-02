@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 from typing import Dict, Optional
+
+from pydantic.dataclasses import dataclass
 
 from studio.app.common.core.experiment.experiment import ExptFunction
 from studio.app.common.core.workflow.workflow import Edge, Node

@@ -1,10 +1,10 @@
 from typing import Dict
 
+from studio.app.common.core.param.param_utils import ParamUtils
 from studio.app.common.core.snakemake.smk import Rule
 from studio.app.common.core.snakemake.smk_builder import RuleBuilder
 from studio.app.common.core.utils.filepath_creater import get_pickle_file
 from studio.app.common.core.workflow.workflow import Edge, Node, NodeType
-from studio.app.common.core.workflow.workflow_params import get_typecheck_params
 
 
 class SmkRule:
@@ -76,7 +76,12 @@ class SmkRule:
 
                 return_arg_names[return_name] = arg_name
 
-        params = get_typecheck_params(self._node.data.param, self._node.data.label)
+        params = ParamUtils.get_key_value_params(
+            ParamUtils.get_type_fixed_params(
+                ParamUtils.convert_to_plane_dict(self._node.data.param),
+                self._node.data.label,
+            )
+        )
         algo_output = get_pickle_file(
             self._workspace_id, self._unique_id, self._node.id, self._node.data.label
         )

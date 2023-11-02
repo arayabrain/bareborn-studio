@@ -6,7 +6,7 @@ import {
   SnakemakeType,
   SNAKEMAKE_SLICE_NAME,
 } from "store/slice/Snakemake/SnakemakeType"
-import { convertToParamMap, getChildParam } from "utils/param/ParamUtils"
+import { getChildParam } from "utils/param/ParamUtils"
 
 const initialState: SnakemakeType = {
   params: {},
@@ -33,7 +33,7 @@ export const SnakemakeSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getSnakemakeParams.fulfilled, (state, action) => {
-        state.params = convertToParamMap(action.payload)
+        state.params = action.payload
       })
       .addCase(clearFlowElements, () => initialState)
   },

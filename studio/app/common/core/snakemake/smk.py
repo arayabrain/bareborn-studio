@@ -1,7 +1,9 @@
-from dataclasses import dataclass, field
 from typing import Dict, List, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic.dataclasses import dataclass
+
+from studio.app.common.core.param.param import Param
 
 
 @dataclass
@@ -34,4 +36,14 @@ class SmkParam:
     forceall: bool
     forcetargets: bool
     lock: bool
-    forcerun: List[ForceRun] = field(default_factory=list)
+    forcerun: List[ForceRun] = Field(default_factory=list)
+
+
+class SnakemakeParams:
+    PARAMS = [
+        Param(name="use_conda", type=bool, default=True),
+        Param(name="cores", type=int, default=2),
+        Param(name="forceall", type=bool, default=False),
+        Param(name="forcetargets", type=bool, default=True),
+        Param(name="lock", type=bool, default=False),
+    ]

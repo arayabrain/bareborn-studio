@@ -1,8 +1,9 @@
-from dataclasses import dataclass
 from typing import Dict, List, Union
 
 from pydantic import BaseModel
+from pydantic.dataclasses import dataclass
 
+from studio.app.common.core.param.param import ParamChild, ParamParent
 from studio.app.common.core.snakemake.smk import ForceRun
 
 
@@ -52,7 +53,7 @@ class Message:
 @dataclass
 class NodeData:
     label: str
-    param: dict
+    param: Dict[str, Union[ParamParent, ParamChild]]
     path: Union[str, List]
     type: str
     fileType: str = None

@@ -12,7 +12,7 @@ from studio.app.common.core.workflow.workflow_reader import WorkflowConfigReader
 from studio.app.common.core.workspace.workspace_dependencies import (
     is_workspace_available,
 )
-from studio.app.common.schemas.workflow import WorkflowConfig, WorkflowWithResults
+from studio.app.common.schemas.workflow import WorkflowWithResults
 from studio.app.dir_path import DIRPATH
 
 router = APIRouter(prefix="/workflow", tags=["workflow"])
@@ -84,6 +84,6 @@ async def import_workflow_config(file: UploadFile = File(...)):
         contents = yaml.safe_load(await file.read())
         if contents is None:
             raise HTTPException(status_code=400, detail="Invalid yaml file")
-        return WorkflowConfig(**contents)
+        return WorkflowConfigReader.read_binary(contents)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Parsing yaml failed: {str(e)}")

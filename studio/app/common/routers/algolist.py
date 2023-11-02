@@ -1,10 +1,10 @@
-import inspect
-from typing import Dict, List, ValuesView
+from typing import Dict, List
 
 from fastapi import APIRouter
 
+from studio.app.common.core.param.param import Param
+from studio.app.common.core.wrapper.wrapper import Wrapper
 from studio.app.common.schemas.algolist import Algo, AlgoList, Arg, Return
-from studio.app.const import NOT_DISPLAY_ARGS_LIST
 from studio.app.wrappers import wrapper_dict
 
 router = APIRouter()
@@ -12,7 +12,7 @@ router = APIRouter()
 
 class NestDictGetter:
     @classmethod
-    def get_nest_dict(cls, parent_value, parent_key: str) -> Dict[str, Algo]:
+    def get_nest_dict(cls, parent_value, parent_key: str) -> AlgoList:
         algo_dict = {}
         for key, value in parent_value.items():
             algo_dict[key] = {}
@@ -21,35 +21,25 @@ class NestDictGetter:
                     value, cls._parent_key(parent_key, key)
                 )
             else:
-                sig = inspect.signature(value["function"])
-                returns_list = None
-                if sig.return_annotation is not inspect._empty:
-                    returns_list = cls._return_list(sig.return_annotation.items())
+                wrapper: Wrapper = value["function"]
 
                 algo_dict[key] = Algo(
-                    args=cls._args_list(sig.parameters.values()),
-                    returns=returns_list,
-                    parameter=value["parameter"] if "parameter" in value else None,
+                    args=cls._args_list(wrapper._INPUT_NODES),
+                    returns=cls._return_list(wrapper._OUTPUT_NODES),
                     path=cls._parent_key(parent_key, key),
                 )
 
         return algo_dict
 
     @classmethod
-    def _args_list(cls, arg_params: ValuesView[inspect.Parameter]) -> List[Arg]:
+    def _args_list(cls, arg_params: List[Param]) -> List[Arg]:
         return [
-            Arg(
-                name=x.name,
-                type=x.annotation.__name__,
-                isNone=x.default is None,
-            )
-            for x in arg_params
-            if x.name not in NOT_DISPLAY_ARGS_LIST
+            Arg(name=x.name, type=x.type.__name__, isNone=x.is_none) for x in arg_params
         ]
 
     @classmethod
-    def _return_list(cls, return_params: ValuesView[inspect.Parameter]) -> List[Return]:
-        return [Return(name=k, type=v.__name__) for k, v in return_params]
+    def _return_list(cls, return_params: List[Param]) -> List[Return]:
+        return [Return(name=x.name, type=x.type.__name__) for x in return_params]
 
     @classmethod
     def _parent_key(cls, parent_key: str, key: str) -> str:

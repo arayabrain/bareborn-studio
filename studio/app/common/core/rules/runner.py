@@ -8,6 +8,7 @@ from datetime import datetime
 from filelock import FileLock
 
 from studio.app.common.core.experiment.experiment_reader import ExptConfigReader
+from studio.app.common.core.param.param_utils import ParamUtils
 from studio.app.common.core.snakemake.smk import Rule
 from studio.app.common.core.utils.config_handler import ConfigWriter
 from studio.app.common.core.utils.filepath_creater import join_filepath
@@ -122,11 +123,14 @@ class Runner:
     @classmethod
     def execute_function(cls, path, params, nwb_params, output_dir, input_info):
         wrapper = cls.dict2leaf(wrapper_dict, path.split("/"))
-        func = copy.deepcopy(wrapper["function"])
-        output_info = func(
-            params=params, nwbfile=nwb_params, output_dir=output_dir, **input_info
+        wrapper = copy.deepcopy(wrapper["function"])
+        flatten_params = ParamUtils.get_flatten_params(params)
+        output_info = (
+            wrapper.set_output_dir(output_dir)
+            .set_nwb_params(nwb_params)
+            .func(**flatten_params, **input_info)
         )
-        del func
+        del wrapper
         gc.collect()
 
         return output_info

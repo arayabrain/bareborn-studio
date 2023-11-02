@@ -1,9 +1,9 @@
-from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
-from studio.app.common.core.snakemake.smk import SmkParam
+from pydantic.dataclasses import dataclass
+
+from studio.app.common.core.param.param import ParamChild, ParamParent
 from studio.app.common.core.workflow.workflow import OutputPath
-from studio.app.optinist.schemas.nwb import NWBParams
 
 
 @dataclass
@@ -28,5 +28,5 @@ class ExptConfig:
     success: Optional[str]
     hasNWB: bool
     function: Dict[str, ExptFunction]
-    nwb: NWBParams
-    snakemake: SmkParam
+    nwb: Dict[str, Union[ParamChild, ParamParent]]
+    snakemake: Dict[str, Union[ParamChild, ParamParent]]

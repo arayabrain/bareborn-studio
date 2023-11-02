@@ -1,5 +1,4 @@
 import os
-from enum import Enum
 
 _DEFAULT_DIR = "/tmp/studio"
 _ENV_DIR = os.environ.get("OPTINIST_DIR")
@@ -35,8 +34,3 @@ class DIRPATH:
 
     FIREBASE_PRIVATE_PATH = f"{CONFIG_DIR}/auth/firebase_private.json"
     FIREBASE_CONFIG_PATH = f"{CONFIG_DIR}/auth/firebase_config.json"
-
-
-class CORE_PARAM_PATH(Enum):
-    nwb = f"{DIRPATH.APP_DIR}/optinist/core/nwb/nwb.yaml"
-    snakemake = f"{DIRPATH.APP_DIR}/common/core/snakemake/snakemake.yaml"

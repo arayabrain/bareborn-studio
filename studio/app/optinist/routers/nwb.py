@@ -1,24 +1,25 @@
 from glob import glob
+from typing import Dict, Union
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 
-from studio.app.common.core.utils.config_handler import ConfigReader
+from studio.app.common.core.param.param import ParamChild, ParamParent
+from studio.app.common.core.param.param_utils import ParamUtils
 from studio.app.common.core.utils.filepath_creater import join_filepath
-from studio.app.common.core.utils.filepath_finder import find_param_filepath
 from studio.app.common.core.workspace.workspace_dependencies import (
     is_workspace_available,
 )
 from studio.app.dir_path import DIRPATH
-from studio.app.optinist.schemas.nwb import NWBParams
 
 router = APIRouter()
 
 
-@router.get("/nwb", response_model=NWBParams, tags=["params"])
+@router.get(
+    "/nwb", tags=["params"], response_model=Dict[str, Union[ParamChild, ParamParent]]
+)
 async def get_nwb_params():
-    filepath = find_param_filepath("nwb")
-    return ConfigReader.read(filepath)
+    return ParamUtils.get_default_params("nwb")
 
 
 @router.get(

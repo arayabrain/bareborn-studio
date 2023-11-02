@@ -1,8 +1,11 @@
 import gc
 
 import numpy as np
+from hdmf.utils import docval, popargs
 
+from studio.app.common.core.param.param import Param
 from studio.app.common.core.utils.filepath_creater import join_filepath
+from studio.app.common.core.wrapper.wrapper import Wrapper
 from studio.app.common.dataclass import ImageData
 from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import CaimanCnmfData, FluoData, IscellData, RoiData
@@ -63,204 +66,293 @@ def get_roi(A, thr, thr_method, swap_dim, dims):
     return ims
 
 
-def caiman_cnmf(
-    images: ImageData, output_dir: str, params: dict = None, **kwargs
-) -> dict(fluorescence=FluoData, iscell=IscellData):
-    import scipy
-    from caiman import local_correlations, stop_server
-    from caiman.cluster import setup_cluster
-    from caiman.mmapping import prepare_shape
-    from caiman.paths import memmap_frames_filename
-    from caiman.source_extraction.cnmf import cnmf
-    from caiman.source_extraction.cnmf.params import CNMFParams
+class CaimanCnmf(Wrapper):
+    _INPUT_NODES = [Param(name="images", type=ImageData)]
+    _OUTPUT_NODES = [
+        Param(name="fluorescence", type=FluoData),
+        Param(name="iscell", type=IscellData),
+    ]
+    _DEFAULT_PARAMS = [
+        # TODO: need to support 2D array type.
+        Param(
+            name="Ain",
+            type=list,
+            default=None,
+            section="init_params",
+            doc="possibility to seed with predetermined binary masks",
+        ),
+        Param(name="do_refit", type=bool, default=False, section="init_params"),
+        Param(
+            name="K",
+            type=int,
+            default=4,
+            section="init_params",
+            doc="upper bound on number of components per patch, in general None",
+        ),
+        Param(
+            name="gSig",
+            type=list,
+            default=[4, 4],
+            section="init_params",
+            doc="gaussian width of a 2D gaussian kernel, which approximates a neuron",
+        ),
+        Param(
+            name="ssub",
+            type=int,
+            default=1,
+            section="init_params",
+            doc=(
+                "downsampling factor in space for initialization. "
+                "Increase if you have memory problems. "
+                "You can pass them here as boolean vectors."
+            ),
+        ),
+        Param(
+            name="tsub",
+            type=int,
+            default=1,
+            section="init_params",
+            doc=(
+                "downsampling factor in time for initialization. "
+                "Increase if you have memory problems."
+            ),
+        ),
+        Param(
+            name="nb",
+            type=int,
+            default=2,
+            section="init_params",
+            doc=(
+                "number of background components (rank) if positive, "
+                "else exact ring model with following settings. "
+                "gnb= 0: Return background as b and W "
+                "gnb=-1: Return full rank background B "
+                "gnb<-1: Don't return background"
+            ),
+        ),
+        Param(
+            name="method_init", type=str, default="greedy_roi", section="init_params"
+        ),
+        Param(
+            name="p",
+            type=int,
+            default=1,
+            section="preprocess_params",
+            doc="order of the autoregressive system",
+        ),
+        Param(name="rf", type=[int, list], default=None, section="patch_params"),
+        Param(name="stride", type=int, default=6, section="patch_params"),
+        Param(name="thr", type=float, default=0.9, section="merge_params"),
+        Param(
+            name="merge_thr",
+            type=float,
+            default=0.85,
+            section="merge_params",
+            doc="merging threshold, max correlation allowed",
+        ),
+    ]
 
-    function_id = output_dir.split("/")[-1]
-    print("start caiman_cnmf:", function_id)
+    @docval(*Wrapper.docval_params([*_INPUT_NODES, *_DEFAULT_PARAMS]))
+    def func(self, **kwargs):
+        """caiman_cnmf
 
-    # flatten params segments.
-    params_flatten = {}
-    for params_segment in params.values():
-        params_flatten.update(params_segment)
-    params = params_flatten
+        TODO: Add documentation for this function
+        """
+        import scipy
+        from caiman import local_correlations, stop_server
+        from caiman.cluster import setup_cluster
+        from caiman.mmapping import prepare_shape
+        from caiman.paths import memmap_frames_filename
+        from caiman.source_extraction.cnmf import cnmf
+        from caiman.source_extraction.cnmf.params import CNMFParams
 
-    Ain = params.pop("Ain", None)
-    do_refit = params.pop("do_refit", None)
-    thr = params.pop("thr", None)
+        print("start caiman_cnmf:", self.function_id)
 
-    file_path = images.path
-    if isinstance(file_path, list):
-        file_path = file_path[0]
+        Ain, do_refit, thr, images = popargs("Ain", "do_refit", "thr", "images", kwargs)
 
-    images = images.data
+        file_path = images.path
+        if isinstance(file_path, list):
+            file_path = file_path[0]
 
-    # np.arrayをmmapへ変換
-    order = "C"
-    dims = images.shape[1:]
-    T = images.shape[0]
-    shape_mov = (np.prod(dims), T)
+        images = images.data
 
-    dir_path = join_filepath(file_path.split("/")[:-1])
-    basename = file_path.split("/")[-1]
-    fname_tot = memmap_frames_filename(basename, dims, T, order)
+        # np.arrayをmmapへ変換
+        order = "C"
+        dims = images.shape[1:]
+        T = images.shape[0]
+        shape_mov = (np.prod(dims), T)
 
-    mmap_images = np.memmap(
-        join_filepath([dir_path, fname_tot]),
-        mode="w+",
-        dtype=np.float32,
-        shape=prepare_shape(shape_mov),
-        order=order,
-    )
+        dir_path = join_filepath(file_path.split("/")[:-1])
+        basename = file_path.split("/")[-1]
+        fname_tot = memmap_frames_filename(basename, dims, T, order)
 
-    mmap_images = np.reshape(mmap_images.T, [T] + list(dims), order="F")
-    mmap_images[:] = images[:]
-
-    del images
-    gc.collect()
-
-    nwbfile = kwargs.get("nwbfile", {})
-    fr = nwbfile.get("imaging_plane", {}).get("imaging_rate", 30)
-
-    if params is None:
-        ops = CNMFParams()
-    else:
-        ops = CNMFParams(params_dict={**params, "fr": fr})
-
-    if "dview" in locals():
-        stop_server(dview=dview)  # noqa: F821
-
-    c, dview, n_processes = setup_cluster(
-        backend="local", n_processes=None, single_thread=True
-    )
-
-    cnm = cnmf.CNMF(n_processes=n_processes, dview=dview, Ain=Ain, params=ops)
-    cnm = cnm.fit(mmap_images)
-
-    if do_refit:
-        cnm = cnm.refit(mmap_images, dview=dview)
-
-    stop_server(dview=dview)
-
-    # contours plot
-    Cn = local_correlations(mmap_images.transpose(1, 2, 0))
-    Cn[np.isnan(Cn)] = 0
-
-    thr_method = "nrg"
-    swap_dim = False
-
-    iscell = np.concatenate(
-        [
-            np.ones(cnm.estimates.A.shape[-1]),
-            np.zeros(cnm.estimates.b.shape[-1] if cnm.estimates.b is not None else 0),
-        ]
-    ).astype(bool)
-
-    ims = get_roi(cnm.estimates.A, thr, thr_method, swap_dim, dims)
-    ims = np.stack(ims)
-    cell_roi = np.nanmax(ims, axis=0).astype(float)
-    cell_roi[cell_roi == 0] = np.nan
-    cell_roi -= 1
-
-    if cnm.estimates.b is not None and cnm.estimates.b.size != 0:
-        non_cell_roi_ims = get_roi(
-            scipy.sparse.csc_matrix(cnm.estimates.b), thr, thr_method, swap_dim, dims
+        mmap_images = np.memmap(
+            join_filepath([dir_path, fname_tot]),
+            mode="w+",
+            dtype=np.float32,
+            shape=prepare_shape(shape_mov),
+            order=order,
         )
-        non_cell_roi_ims = np.stack(non_cell_roi_ims)
-        non_cell_roi = np.nanmax(non_cell_roi_ims, axis=0).astype(float)
-    else:
-        non_cell_roi_ims = None
-        non_cell_roi = np.zeros(dims)
-    non_cell_roi[non_cell_roi == 0] = np.nan
 
-    all_roi = np.nanmax(np.stack([cell_roi, non_cell_roi]), axis=0)
+        mmap_images = np.reshape(mmap_images.T, [T] + list(dims), order="F")
+        mmap_images[:] = images[:]
 
-    # NWBの追加
-    nwbfile = {}
-    # NWBにROIを追加
-    roi_list = []
-    n_cells = cnm.estimates.A.shape[-1]
-    for i in range(n_cells):
-        kargs = {}
-        kargs["image_mask"] = cnm.estimates.A.T[i].T.toarray().reshape(dims)
-        if hasattr(cnm.estimates, "accepted_list"):
-            kargs["accepted"] = i in cnm.estimates.accepted_list
-        if hasattr(cnm.estimates, "rejected_list"):
-            kargs["rejected"] = i in cnm.estimates.rejected_list
-        roi_list.append(kargs)
+        del images
+        gc.collect()
 
-    # backgroundsを追加
-    if cnm.estimates.b is not None:
-        for bg in cnm.estimates.b.T:
+        fr = self.nwb_params.get("imaging_plane", {}).get("imaging_rate", 30)
+
+        if kwargs is None:
+            ops = CNMFParams()
+        else:
+            ops = CNMFParams(params_dict={**kwargs, "fr": fr})
+
+        if "dview" in locals():
+            stop_server(dview=dview)  # noqa: F821
+
+        c, dview, n_processes = setup_cluster(
+            backend="local", n_processes=None, single_thread=True
+        )
+
+        cnm = cnmf.CNMF(n_processes=n_processes, dview=dview, Ain=Ain, params=ops)
+        cnm = cnm.fit(mmap_images)
+
+        if do_refit:
+            cnm = cnm.refit(mmap_images, dview=dview)
+
+        stop_server(dview=dview)
+
+        # contours plot
+        Cn = local_correlations(mmap_images.transpose(1, 2, 0))
+        Cn[np.isnan(Cn)] = 0
+
+        thr_method = "nrg"
+        swap_dim = False
+
+        iscell = np.concatenate(
+            [
+                np.ones(cnm.estimates.A.shape[-1]),
+                np.zeros(
+                    cnm.estimates.b.shape[-1] if cnm.estimates.b is not None else 0
+                ),
+            ]
+        ).astype(bool)
+
+        ims = get_roi(cnm.estimates.A, thr, thr_method, swap_dim, dims)
+        ims = np.stack(ims)
+        cell_roi = np.nanmax(ims, axis=0).astype(float)
+        cell_roi[cell_roi == 0] = np.nan
+        cell_roi -= 1
+
+        if cnm.estimates.b is not None and cnm.estimates.b.size != 0:
+            non_cell_roi_ims = get_roi(
+                scipy.sparse.csc_matrix(cnm.estimates.b),
+                thr,
+                thr_method,
+                swap_dim,
+                dims,
+            )
+            non_cell_roi_ims = np.stack(non_cell_roi_ims)
+            non_cell_roi = np.nanmax(non_cell_roi_ims, axis=0).astype(float)
+        else:
+            non_cell_roi_ims = None
+            non_cell_roi = np.zeros(dims)
+        non_cell_roi[non_cell_roi == 0] = np.nan
+
+        all_roi = np.nanmax(np.stack([cell_roi, non_cell_roi]), axis=0)
+
+        # NWBの追加
+        nwbfile = {}
+        # NWBにROIを追加
+        roi_list = []
+        n_cells = cnm.estimates.A.shape[-1]
+        for i in range(n_cells):
             kargs = {}
-            kargs["image_mask"] = bg.reshape(dims)
+            kargs["image_mask"] = cnm.estimates.A.T[i].T.toarray().reshape(dims)
             if hasattr(cnm.estimates, "accepted_list"):
-                kargs["accepted"] = False
+                kargs["accepted"] = i in cnm.estimates.accepted_list
             if hasattr(cnm.estimates, "rejected_list"):
-                kargs["rejected"] = False
+                kargs["rejected"] = i in cnm.estimates.rejected_list
             roi_list.append(kargs)
 
-    nwbfile[NWBDATASET.ROI] = {function_id: roi_list}
+        # backgroundsを追加
+        if cnm.estimates.b is not None:
+            for bg in cnm.estimates.b.T:
+                kargs = {}
+                kargs["image_mask"] = bg.reshape(dims)
+                if hasattr(cnm.estimates, "accepted_list"):
+                    kargs["accepted"] = False
+                if hasattr(cnm.estimates, "rejected_list"):
+                    kargs["rejected"] = False
+                roi_list.append(kargs)
 
-    # iscellを追加
-    nwbfile[NWBDATASET.COLUMN] = {
-        function_id: {
-            "name": "iscell",
-            "discription": "two columns - iscell & probcell",
-            "data": iscell,
-        }
-    }
+        nwbfile[NWBDATASET.ROI] = {self.function_id: roi_list}
 
-    # Fluorescence
-    n_rois = len(cnm.estimates.C)
-    n_bg = len(cnm.estimates.f) if cnm.estimates.f is not None else 0
-
-    fluorescence = (
-        np.concatenate(
-            [
-                cnm.estimates.C,
-                cnm.estimates.f,
-            ]
-        )
-        if cnm.estimates.f is not None
-        else cnm.estimates.C
-    )
-
-    nwbfile[NWBDATASET.FLUORESCENCE] = {
-        function_id: {
-            "Fluorescence": {
-                "table_name": "ROIs",
-                "region": list(range(n_rois + n_bg)),
-                "name": "Fluorescence",
-                "data": fluorescence,
-                "unit": "lumens",
+        # iscellを追加
+        nwbfile[NWBDATASET.COLUMN] = {
+            self.function_id: {
+                "name": "iscell",
+                "discription": "two columns - iscell & probcell",
+                "data": iscell,
             }
         }
-    }
 
-    cnmf_data = {}
-    cnmf_data["fluorescence"] = fluorescence
-    cnmf_data["im"] = (
-        np.concatenate([ims, non_cell_roi_ims], axis=0)
-        if non_cell_roi_ims is not None
-        else ims
-    )
-    cnmf_data["is_cell"] = iscell.astype(bool)
-    cnmf_data["images"] = mmap_images
+        # Fluorescence
+        n_rois = len(cnm.estimates.C)
+        n_bg = len(cnm.estimates.f) if cnm.estimates.f is not None else 0
 
-    info = {
-        "images": ImageData(
-            np.array(Cn * 255, dtype=np.uint8),
-            output_dir=output_dir,
-            file_name="images",
-        ),
-        "fluorescence": FluoData(fluorescence, file_name="fluorescence"),
-        "iscell": IscellData(iscell, file_name="iscell"),
-        "all_roi": RoiData(all_roi, output_dir=output_dir, file_name="all_roi"),
-        "cell_roi": RoiData(cell_roi, output_dir=output_dir, file_name="cell_roi"),
-        "non_cell_roi": RoiData(
-            non_cell_roi, output_dir=output_dir, file_name="non_cell_roi"
-        ),
-        "nwbfile": nwbfile,
-        "cnmf_data": CaimanCnmfData(cnmf_data),
-    }
+        fluorescence = (
+            np.concatenate(
+                [
+                    cnm.estimates.C,
+                    cnm.estimates.f,
+                ]
+            )
+            if cnm.estimates.f is not None
+            else cnm.estimates.C
+        )
 
-    return info
+        nwbfile[NWBDATASET.FLUORESCENCE] = {
+            self.function_id: {
+                "Fluorescence": {
+                    "table_name": "ROIs",
+                    "region": list(range(n_rois + n_bg)),
+                    "name": "Fluorescence",
+                    "data": fluorescence,
+                    "unit": "lumens",
+                }
+            }
+        }
+
+        cnmf_data = {}
+        cnmf_data["fluorescence"] = fluorescence
+        cnmf_data["im"] = (
+            np.concatenate([ims, non_cell_roi_ims], axis=0)
+            if non_cell_roi_ims is not None
+            else ims
+        )
+        cnmf_data["is_cell"] = iscell.astype(bool)
+        cnmf_data["images"] = mmap_images
+
+        info = {
+            "images": ImageData(
+                np.array(Cn * 255, dtype=np.uint8),
+                output_dir=self.output_dir,
+                file_name="images",
+            ),
+            "fluorescence": FluoData(fluorescence, file_name="fluorescence"),
+            "iscell": IscellData(iscell, file_name="iscell"),
+            "all_roi": RoiData(
+                all_roi, output_dir=self.output_dir, file_name="all_roi"
+            ),
+            "cell_roi": RoiData(
+                cell_roi, output_dir=self.output_dir, file_name="cell_roi"
+            ),
+            "non_cell_roi": RoiData(
+                non_cell_roi, output_dir=self.output_dir, file_name="non_cell_roi"
+            ),
+            "nwbfile": nwbfile,
+            "cnmf_data": CaimanCnmfData(cnmf_data),
+        }
+
+        return info

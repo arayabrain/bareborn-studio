@@ -2,6 +2,7 @@ from dataclasses import asdict
 from typing import Dict, List
 
 from studio.app.common.core.experiment.experiment_writer import ExptConfigWriter
+from studio.app.common.core.param.param_utils import ParamUtils
 from studio.app.common.core.snakemake.smk import FlowConfig, Rule, SmkParam
 from studio.app.common.core.snakemake.snakemake_executor import (
     delete_dependencies,
@@ -11,7 +12,6 @@ from studio.app.common.core.snakemake.snakemake_reader import SmkParamReader
 from studio.app.common.core.snakemake.snakemake_rule import SmkRule
 from studio.app.common.core.snakemake.snakemake_writer import SmkConfigWriter
 from studio.app.common.core.workflow.workflow import NodeType, RunItem
-from studio.app.common.core.workflow.workflow_params import get_typecheck_params
 from studio.app.common.core.workflow.workflow_reader import WorkflowConfigReader
 from studio.app.common.core.workflow.workflow_writer import WorkflowConfigWriter
 
@@ -35,15 +35,17 @@ class WorkflowRunner:
             self.workspace_id,
             self.unique_id,
             self.runItem.name,
-            nwbfile=get_typecheck_params(self.runItem.nwbParam, "nwb"),
-            snakemake=get_typecheck_params(self.runItem.snakemakeParam, "snakemake"),
+            nwbfile=ParamUtils.get_type_fixed_params(self.runItem.nwbParam, "nwb"),
+            snakemake=ParamUtils.get_type_fixed_params(
+                self.runItem.snakemakeParam, "snakemake"
+            ),
         ).write()
 
     def run_workflow(self, background_tasks):
         self.set_smk_config()
 
-        snakemake_params: SmkParam = get_typecheck_params(
-            self.runItem.snakemakeParam, "snakemake"
+        snakemake_params: SmkParam = ParamUtils.get_key_value_params(
+            ParamUtils.get_type_fixed_params(self.runItem.snakemakeParam, "snakemake")
         )
         snakemake_params = SmkParamReader.read(snakemake_params)
         snakemake_params.forcerun = self.runItem.forceRunList
@@ -72,7 +74,9 @@ class WorkflowRunner:
     def rulefile(self):
         endNodeList = self.get_endNodeList()
 
-        nwbfile = get_typecheck_params(self.runItem.nwbParam, "nwb")
+        nwbfile = ParamUtils.get_key_value_params(
+            ParamUtils.get_type_fixed_params(self.runItem.nwbParam, "nwb")
+        )
 
         rule_dict: Dict[str, Rule] = {}
         last_outputs = []

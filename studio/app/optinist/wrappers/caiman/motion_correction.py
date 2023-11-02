@@ -1,86 +1,120 @@
+from hdmf.utils import docval, popargs
+
+from studio.app.common.core.param.param import Param
+from studio.app.common.core.wrapper.wrapper import Wrapper
 from studio.app.common.dataclass import ImageData
 from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import RoiData
 
 
-def caiman_mc(
-    image: ImageData, output_dir: str, params: dict = None, **kwargs
-) -> dict(mc_images=ImageData):
-    import numpy as np
-    from caiman import load_memmap, save_memmap, stop_server
-    from caiman.base.rois import extract_binary_masks_from_structural_channel
-    from caiman.cluster import setup_cluster
-    from caiman.motion_correction import MotionCorrect
-    from caiman.source_extraction.cnmf.params import CNMFParams
+class CaimanMc(Wrapper):
+    _INPUT_NODES = [Param(name="image", type=ImageData)]
+    _OUTPUT_NODES = [Param(name="mc_images", type=ImageData)]
+    _DEFAULT_PARAMS = [
+        Param(name="border_nan", type=str, default="copy"),
+        Param(name="gSig_filt", type=list, default=None),
+        Param(name="is3D", type=bool, default=False),
+        Param(name="max_deviation_rigid", type=int, default=3),
+        Param(name="max_shifts", type=list, default=[6, 6]),
+        Param(name="min_mov", type=float, default=None),
+        Param(name="niter_rig", type=int, default=1),
+        Param(name="nonneg_movie", type=bool, default=True),
+        Param(name="num_frames_split", type=int, default=80),
+        Param(name="num_splits_to_process_els", type=int, default=None),
+        Param(name="num_splits_to_process_rig", type=int, default=None),
+        Param(name="overlaps", type=list, default=[32, 32]),
+        Param(name="pw_rigid", type=bool, default=False),
+        Param(name="shifts_opencv", type=bool, default=True),
+        Param(name="splits_els", type=int, default=14),
+        Param(name="splits_rig", type=int, default=14),
+        Param(name="strides", type=list, default=[96, 96]),
+        Param(name="upsample_factor_grid", type=int, default=4),
+        Param(name="use_cuda", type=bool, default=False),
+    ]
 
-    function_id = output_dir.split("/")[-1]
-    print("start caiman motion_correction:", function_id)
+    @docval(*Wrapper.docval_params([*_INPUT_NODES, *_DEFAULT_PARAMS]))
+    def func(self, **kwargs):
+        """caiman_mc
 
-    opts = CNMFParams()
+        TODO: Add documentation for this function
+        """
+        import numpy as np
+        from caiman import load_memmap, save_memmap, stop_server
+        from caiman.base.rois import extract_binary_masks_from_structural_channel
+        from caiman.cluster import setup_cluster
+        from caiman.motion_correction import MotionCorrect
+        from caiman.source_extraction.cnmf.params import CNMFParams
 
-    if params is not None:
-        opts.change_params(params_dict=params)
+        print("start caiman motion_correction:", self.function_id)
 
-    c, dview, n_processes = setup_cluster(
-        backend="local", n_processes=None, single_thread=True
-    )
+        image = popargs("image", kwargs)
+        opts = CNMFParams()
 
-    mc = MotionCorrect(image.path, dview=dview, **opts.get_group("motion"))
+        if kwargs is not None:
+            opts.change_params(params_dict=kwargs)
 
-    mc.motion_correct(save_movie=True)
-    border_to_0 = 0 if mc.border_nan == "copy" else mc.border_to_0
+        c, dview, n_processes = setup_cluster(
+            backend="local", n_processes=None, single_thread=True
+        )
 
-    # memory mapping
-    fname_new = save_memmap(
-        mc.mmap_file, base_name="memmap_", order="C", border_to_0=border_to_0
-    )
+        mc = MotionCorrect(image.path, dview=dview, **opts.get_group("motion"))
 
-    stop_server(dview=dview)
+        mc.motion_correct(save_movie=True)
+        border_to_0 = 0 if mc.border_nan == "copy" else mc.border_to_0
 
-    # now load the file
-    Yr, dims, T = load_memmap(fname_new)
+        # memory mapping
+        fname_new = save_memmap(
+            mc.mmap_file, base_name="memmap_", order="C", border_to_0=border_to_0
+        )
 
-    images = np.array(Yr.T.reshape((T,) + dims, order="F"))
+        stop_server(dview=dview)
 
-    meanImg = images.mean(axis=0)
-    rois = (
-        extract_binary_masks_from_structural_channel(
-            meanImg, gSig=7, expand_method="dilation"
-        )[0]
-        .reshape(meanImg.shape[0], meanImg.shape[1], -1)
-        .transpose(2, 0, 1)
-    )
+        # now load the file
+        Yr, dims, T = load_memmap(fname_new)
 
-    rois = rois.astype(np.float)
+        images = np.array(Yr.T.reshape((T,) + dims, order="F"))
 
-    for i, _ in enumerate(rois):
-        rois[i] *= i + 1
+        meanImg = images.mean(axis=0)
+        rois = (
+            extract_binary_masks_from_structural_channel(
+                meanImg, gSig=7, expand_method="dilation"
+            )[0]
+            .reshape(meanImg.shape[0], meanImg.shape[1], -1)
+            .transpose(2, 0, 1)
+        )
 
-    rois = np.nanmax(rois, axis=0)
-    rois[rois == 0] = np.nan
-    rois -= 1
+        rois = rois.astype(np.float)
 
-    xy_trans_data = (
-        (np.array(mc.x_shifts_els), np.array(mc.y_shifts_els))
-        if params["pw_rigid"]
-        else np.array(mc.shifts_rig)
-    )
+        for i, _ in enumerate(rois):
+            rois[i] *= i + 1
 
-    mc_images = ImageData(images, output_dir=output_dir, file_name="mc_images")
+        rois = np.nanmax(rois, axis=0)
+        rois[rois == 0] = np.nan
+        rois -= 1
 
-    nwbfile = {}
-    nwbfile[NWBDATASET.MOTION_CORRECTION] = {
-        function_id: {
-            "mc_data": mc_images,
-            "xy_trans_data": xy_trans_data,
+        xy_trans_data = (
+            (np.array(mc.x_shifts_els), np.array(mc.y_shifts_els))
+            if kwargs.get("pw_rigid", False)
+            else np.array(mc.shifts_rig)
+        )
+
+        mc_images = ImageData(images, output_dir=self.output_dir, file_name="mc_images")
+
+        nwbfile = {}
+        nwbfile[NWBDATASET.MOTION_CORRECTION] = {
+            self.function_id: {
+                "mc_data": mc_images,
+                "xy_trans_data": xy_trans_data,
+            }
         }
-    }
 
-    info = {
-        "mc_images": mc_images,
-        "meanImg": ImageData(meanImg, output_dir=output_dir, file_name="meanImg"),
-        "rois": RoiData(rois, output_dir=output_dir, file_name="rois"),
-        "nwbfile": nwbfile,
-    }
+        info = {
+            "mc_images": mc_images,
+            "meanImg": ImageData(
+                meanImg, output_dir=self.output_dir, file_name="meanImg"
+            ),
+            "rois": RoiData(rois, output_dir=self.output_dir, file_name="rois"),
+            "nwbfile": nwbfile,
+        }
 
-    return info
+        return info

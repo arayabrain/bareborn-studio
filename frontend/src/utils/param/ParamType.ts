@@ -13,6 +13,9 @@ export type ParamParent = {
 
 export type ParamChild = {
   type: "child"
+  // FIXME: remove ? after update test code
+  dataType?: string | string[]
+  doc?: string
   value: unknown
   path: string
 }

@@ -1,7 +1,7 @@
-from dataclasses import dataclass
 from typing import Dict, List, Union
 
 from pydantic import BaseModel
+from pydantic.dataclasses import dataclass
 
 
 @dataclass
@@ -21,7 +21,6 @@ class Return:
 class Algo:
     args: List[Arg]
     returns: List[Return]
-    parameter: str = None
     path: str = None
 
 
@@ -36,7 +35,6 @@ class AlgoList(BaseModel):
                 "caiman_mc": {
                     "args": [{"name": "image", "type": "ImageData", "isNone": False}],
                     "returns": [{"name": "mc_images", "type": "ImageData"}],
-                    "parameter": None,
                     "path": "caiman/caiman_mc",
                 }
             }
