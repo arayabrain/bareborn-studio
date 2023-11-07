@@ -51,9 +51,9 @@ class NWBParams:
         ),
         Param(name="imaging_rate", type=float, default=30.0, section="imaging_plane"),
         Param(
-            name="excitation_lambda", type=float, default=600.0, section="imaging_plane"
+            name="excitation_lambda", type=float, default=900.0, section="imaging_plane"
         ),
-        Param(name="indicator", type=str, default="GCaMap", section="imaging_plane"),
+        Param(name="indicator", type=str, default="GCaMP", section="imaging_plane"),
         Param(name="location", type=str, default="V1", section="imaging_plane"),
         Param(name="starting_time", type=int, default=0, section="image_series"),
         Param(

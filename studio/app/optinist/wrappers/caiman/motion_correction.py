@@ -1,6 +1,12 @@
+import shutil
+
 from hdmf.utils import docval, popargs
 
 from studio.app.common.core.param.param import Param
+from studio.app.common.core.utils.filepath_creater import (
+    create_directory,
+    join_filepath,
+)
 from studio.app.common.core.wrapper.wrapper import Wrapper
 from studio.app.common.dataclass import ImageData
 from studio.app.optinist.core.nwb.nwb import NWBDATASET
@@ -64,7 +70,7 @@ class CaimanMc(Wrapper):
 
         # memory mapping
         fname_new = save_memmap(
-            mc.mmap_file, base_name="memmap_", order="C", border_to_0=border_to_0
+            mc.mmap_file, base_name=self.function_id, order="C", border_to_0=border_to_0
         )
 
         stop_server(dview=dview)
@@ -116,5 +122,12 @@ class CaimanMc(Wrapper):
             "rois": RoiData(rois, output_dir=self.output_dir, file_name="rois"),
             "nwbfile": nwbfile,
         }
+
+        # Clean up temporary files
+        mmap_output_dir = join_filepath([self.output_dir, "mmap"])
+        create_directory(mmap_output_dir)
+        for mmap_file in mc.mmap_file:
+            shutil.move(mmap_file, mmap_output_dir)
+        shutil.move(fname_new, mmap_output_dir)
 
         return info
