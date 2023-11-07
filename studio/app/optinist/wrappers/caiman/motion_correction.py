@@ -38,7 +38,10 @@ class CaimanMc(Wrapper):
         Param(name="use_cuda", type=bool, default=False),
     ]
 
-    @docval(*Wrapper.docval_params([*_INPUT_NODES, *_DEFAULT_PARAMS]))
+    @docval(
+        *Wrapper.docval_params([*_INPUT_NODES, *_DEFAULT_PARAMS]),
+        **Wrapper.docval_returns(_OUTPUT_NODES),
+    )
     def func(self, **kwargs):
         """caiman_mc
 

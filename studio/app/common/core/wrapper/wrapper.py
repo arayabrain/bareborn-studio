@@ -22,6 +22,20 @@ class Wrapper(ABC):
     def docval_params(params: List[Param]):
         return [param.docval_dict() for param in params]
 
+    @staticmethod
+    def docval_returns(returns: List[Param]):
+        return {
+            "returns": ",".join([r.name for r in returns]),
+            "rtype": ",".join(
+                [
+                    ",".join([t.__name__ for t in r.type])
+                    if isinstance(r.type, List)
+                    else r.type.__name__
+                    for r in returns
+                ]
+            ),
+        }
+
     @abstractmethod
     def func(self, **kwargs):
         pass
