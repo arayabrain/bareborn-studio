@@ -6,6 +6,7 @@ from studio.app.common.core.experiment.experiment import ExptConfig, ExptFunctio
 from studio.app.common.core.param.param import ParamChild, ParamParent
 from studio.app.common.core.param.param_utils import ParamUtils
 from studio.app.common.core.workflow.workflow import OutputPath
+from studio.app.const import FUNC_KEY
 
 
 class ExptConfigReader:
@@ -22,7 +23,7 @@ class ExptConfigReader:
             finished_at=config.get("finished_at"),
             success=config.get("success", "running"),
             hasNWB=config["hasNWB"],
-            function=cls.read_function(config["function"]),
+            function=cls.read_function(config[FUNC_KEY]),
             nwb=cls.read_params(config.get("nwb"), "nwb"),
             snakemake=cls.read_params(config.get("snakemake"), "snakemake"),
         )
@@ -129,7 +130,7 @@ class ExptConfigReader:
             finished_at=config.get("finished_at"),
             success=config.get("success", "running"),
             hasNWB=config["hasNWB"],
-            function=cls.read_function(config["function"]),
+            function=cls.read_function(config[FUNC_KEY]),
             nwb=config.get("nwb"),
             snakemake=config.get("snakemake"),
         )

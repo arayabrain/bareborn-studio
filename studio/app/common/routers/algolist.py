@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from studio.app.common.core.param.param import Param
 from studio.app.common.core.wrapper.wrapper import Wrapper
 from studio.app.common.schemas.algolist import Algo, AlgoList, Arg, Return
+from studio.app.const import FUNC_KEY
 from studio.app.wrappers import wrapper_dict
 
 router = APIRouter()
@@ -16,12 +17,12 @@ class NestDictGetter:
         algo_dict = {}
         for key, value in parent_value.items():
             algo_dict[key] = {}
-            if isinstance(value, dict) and "function" not in value:
+            if isinstance(value, dict) and FUNC_KEY not in value:
                 algo_dict[key]["children"] = cls.get_nest_dict(
                     value, cls._parent_key(parent_key, key)
                 )
             else:
-                wrapper: Wrapper = value["function"]
+                wrapper: Wrapper = value[FUNC_KEY]
 
                 algo_dict[key] = Algo(
                     args=cls._args_list(wrapper._INPUT_NODES),

@@ -13,6 +13,7 @@ from studio.app.common.core.utils.filepath_creater import join_filepath
 from studio.app.common.core.utils.filepath_finder import find_condaenv_filepath
 from studio.app.common.core.utils.pickle_handler import PickleReader, PickleWriter
 from studio.app.common.dataclass.base import BaseData
+from studio.app.const import FUNC_KEY
 from studio.app.dir_path import DIRPATH
 from studio.app.optinist.core.edit_ROI.wrappers import edit_roi_wrapper_dict
 from studio.app.optinist.core.nwb.nwb_creater import overwrite_nwb
@@ -85,7 +86,7 @@ class EditRoiUtils:
         action = config["action"]
         params = config["params"]
 
-        func = copy.deepcopy(edit_roi_wrapper_dict[algo]["function"][action])
+        func = copy.deepcopy(edit_roi_wrapper_dict[algo][FUNC_KEY][action])
         output_info = func(node_dirpath, **params)
         del func
         gc.collect()

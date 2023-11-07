@@ -13,7 +13,7 @@ from studio.app.common.core.snakemake.smk import Rule
 from studio.app.common.core.utils.config_handler import ConfigWriter
 from studio.app.common.core.utils.filepath_creater import join_filepath
 from studio.app.common.core.utils.pickle_handler import PickleReader, PickleWriter
-from studio.app.const import DATE_FORMAT
+from studio.app.const import DATE_FORMAT, FUNC_KEY
 from studio.app.dir_path import DIRPATH
 from studio.app.optinist.core.nwb.nwb_creater import (
     merge_nwbfile,
@@ -123,7 +123,7 @@ class Runner:
     @classmethod
     def execute_function(cls, path, params, nwb_params, output_dir, input_info):
         wrapper = cls.dict2leaf(wrapper_dict, path.split("/"))
-        wrapper = copy.deepcopy(wrapper["function"])
+        wrapper = copy.deepcopy(wrapper[FUNC_KEY])
         flatten_params = ParamUtils.get_flatten_params(params)
         output_info = (
             wrapper.set_output_dir(output_dir)
