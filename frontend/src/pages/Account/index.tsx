@@ -99,7 +99,7 @@ const Account = () => {
       return
     }
     if (!e.target.value) {
-      handleClickVariant('error', "Full name cann't empty!")
+      handleClickVariant('error', "Full name can't empty!")
       setIsName(user?.name)
     } else {
       const data = await dispatch(

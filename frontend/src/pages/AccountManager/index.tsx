@@ -106,14 +106,14 @@ const ModalComponent = ({
     if (errorLength) {
       return errorLength
     }
-    let datas = values || formData
+    let data = values || formData
     if (!regexPassword.test(value) && value) {
       return 'Your password must be at least 6 characters long and must contain at least one letter, number, and special character'
     }
     if (regexIgnoreS.test(value)) {
       return 'Allowed special characters (!#$%&()*+,-./@_|)'
     }
-    if (isConfirm && datas.password !== value && value) {
+    if (isConfirm && data.password !== value && value) {
       return 'password is not match'
     }
     return ''
