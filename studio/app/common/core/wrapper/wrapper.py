@@ -1,9 +1,10 @@
+from abc import ABC, abstractmethod
 from typing import List
 
 from studio.app.common.core.param.param import Param
 
 
-class Wrapper:
+class Wrapper(ABC):
     _INPUT_NODES: List[Param] = []
     _OUTPUT_NODES: List[Param] = []
     _DEFAULT_PARAMS: List[Param] = []
@@ -21,5 +22,6 @@ class Wrapper:
     def docval_params(params: List[Param]):
         return [param.docval_dict() for param in params]
 
+    @abstractmethod
     def func(self, **kwargs):
         pass
