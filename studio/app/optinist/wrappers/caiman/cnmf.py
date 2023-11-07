@@ -11,61 +11,6 @@ from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import CaimanCnmfData, FluoData, IscellData, RoiData
 
 
-def get_roi(A, thr, thr_method, swap_dim, dims):
-    from scipy.ndimage import binary_fill_holes
-    from skimage.measure import find_contours
-
-    d, nr = np.shape(A)
-
-    # for each patches
-    ims = []
-    coordinates = []
-    for i in range(nr):
-        pars = dict()
-        # we compute the cumulative sum of the energy of the Ath component
-        # that has been ordered from least to highest
-        patch_data = A.data[A.indptr[i] : A.indptr[i + 1]]
-        indx = np.argsort(patch_data)[::-1]
-
-        if thr_method == "nrg":
-            cumEn = np.cumsum(patch_data[indx] ** 2)
-            if len(cumEn) == 0:
-                pars = dict(
-                    coordinates=np.array([]),
-                    CoM=np.array([np.NaN, np.NaN]),
-                    neuron_id=i + 1,
-                )
-                coordinates.append(pars)
-                continue
-            else:
-                # we work with normalized values
-                cumEn /= cumEn[-1]
-                Bvec = np.ones(d)
-                # we put it in a similar matrix
-                Bvec[A.indices[A.indptr[i] : A.indptr[i + 1]][indx]] = cumEn
-        else:
-            Bvec = np.zeros(d)
-            Bvec[A.indices[A.indptr[i] : A.indptr[i + 1]]] = (
-                patch_data / patch_data.max()
-            )
-
-        if swap_dim:
-            Bmat = np.reshape(Bvec, dims, order="C")
-        else:
-            Bmat = np.reshape(Bvec, dims, order="F")
-
-        r_mask = np.zeros_like(Bmat, dtype="bool")
-        contour = find_contours(Bmat, thr)
-        for c in contour:
-            r_mask[np.round(c[:, 0]).astype("int"), np.round(c[:, 1]).astype("int")] = 1
-
-        # Fill in the hole created by the contour boundary
-        r_mask = binary_fill_holes(r_mask)
-        ims.append(r_mask + (i * r_mask))
-
-    return ims
-
-
 class CaimanCnmf(Wrapper):
     _INPUT_NODES = [Param(name="images", type=ImageData)]
     _OUTPUT_NODES = [
@@ -241,14 +186,14 @@ class CaimanCnmf(Wrapper):
             ]
         ).astype(bool)
 
-        ims = get_roi(cnm.estimates.A, thr, thr_method, swap_dim, dims)
+        ims = self.get_roi(cnm.estimates.A, thr, thr_method, swap_dim, dims)
         ims = np.stack(ims)
         cell_roi = np.nanmax(ims, axis=0).astype(float)
         cell_roi[cell_roi == 0] = np.nan
         cell_roi -= 1
 
         if cnm.estimates.b is not None and cnm.estimates.b.size != 0:
-            non_cell_roi_ims = get_roi(
+            non_cell_roi_ims = self.get_roi(
                 scipy.sparse.csc_matrix(cnm.estimates.b),
                 thr,
                 thr_method,
@@ -359,3 +304,59 @@ class CaimanCnmf(Wrapper):
         }
 
         return info
+
+    def get_roi(self, A, thr, thr_method, swap_dim, dims):
+        from scipy.ndimage import binary_fill_holes
+        from skimage.measure import find_contours
+
+        d, nr = np.shape(A)
+
+        # for each patches
+        ims = []
+        coordinates = []
+        for i in range(nr):
+            pars = dict()
+            # we compute the cumulative sum of the energy of the Ath component
+            # that has been ordered from least to highest
+            patch_data = A.data[A.indptr[i] : A.indptr[i + 1]]
+            indx = np.argsort(patch_data)[::-1]
+
+            if thr_method == "nrg":
+                cumEn = np.cumsum(patch_data[indx] ** 2)
+                if len(cumEn) == 0:
+                    pars = dict(
+                        coordinates=np.array([]),
+                        CoM=np.array([np.NaN, np.NaN]),
+                        neuron_id=i + 1,
+                    )
+                    coordinates.append(pars)
+                    continue
+                else:
+                    # we work with normalized values
+                    cumEn /= cumEn[-1]
+                    Bvec = np.ones(d)
+                    # we put it in a similar matrix
+                    Bvec[A.indices[A.indptr[i] : A.indptr[i + 1]][indx]] = cumEn
+            else:
+                Bvec = np.zeros(d)
+                Bvec[A.indices[A.indptr[i] : A.indptr[i + 1]]] = (
+                    patch_data / patch_data.max()
+                )
+
+            if swap_dim:
+                Bmat = np.reshape(Bvec, dims, order="C")
+            else:
+                Bmat = np.reshape(Bvec, dims, order="F")
+
+            r_mask = np.zeros_like(Bmat, dtype="bool")
+            contour = find_contours(Bmat, thr)
+            for c in contour:
+                r_mask[
+                    np.round(c[:, 0]).astype("int"), np.round(c[:, 1]).astype("int")
+                ] = 1
+
+            # Fill in the hole created by the contour boundary
+            r_mask = binary_fill_holes(r_mask)
+            ims.append(r_mask + (i * r_mask))
+
+        return ims
