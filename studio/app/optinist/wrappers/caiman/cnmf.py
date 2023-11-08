@@ -5,13 +5,13 @@ from hdmf.utils import docval, popargs
 
 from studio.app.common.core.param.param import Param
 from studio.app.common.core.utils.filepath_creater import join_filepath
-from studio.app.common.core.wrapper.wrapper import Wrapper
+from studio.app.common.core.wrapper.algo import AlgoTemplate
 from studio.app.common.dataclass import ImageData
 from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import CaimanCnmfData, FluoData, IscellData, RoiData
 
 
-class CaimanCnmf(Wrapper):
+class CaimanCnmf(AlgoTemplate):
     _INPUT_NODES = [Param(name="images", type=ImageData)]
     _OUTPUT_NODES = [
         Param(name="fluorescence", type=FluoData),
@@ -98,8 +98,8 @@ class CaimanCnmf(Wrapper):
     ]
 
     @docval(
-        *Wrapper.docval_params([*_INPUT_NODES, *_DEFAULT_PARAMS]),
-        **Wrapper.docval_returns([*_OUTPUT_NODES]),
+        *AlgoTemplate.docval_params([*_INPUT_NODES, *_DEFAULT_PARAMS]),
+        **AlgoTemplate.docval_returns([*_OUTPUT_NODES]),
     )
     def func(self, **kwargs):
         """caiman_cnmf

@@ -7,13 +7,13 @@ from studio.app.common.core.utils.filepath_creater import (
     create_directory,
     join_filepath,
 )
-from studio.app.common.core.wrapper.wrapper import Wrapper
+from studio.app.common.core.wrapper.algo import AlgoTemplate
 from studio.app.common.dataclass import ImageData
 from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import RoiData
 
 
-class CaimanMc(Wrapper):
+class CaimanMc(AlgoTemplate):
     _INPUT_NODES = [Param(name="image", type=ImageData)]
     _OUTPUT_NODES = [Param(name="mc_images", type=ImageData)]
     _DEFAULT_PARAMS = [
@@ -39,8 +39,8 @@ class CaimanMc(Wrapper):
     ]
 
     @docval(
-        *Wrapper.docval_params([*_INPUT_NODES, *_DEFAULT_PARAMS]),
-        **Wrapper.docval_returns(_OUTPUT_NODES),
+        *AlgoTemplate.docval_params([*_INPUT_NODES, *_DEFAULT_PARAMS]),
+        **AlgoTemplate.docval_returns(_OUTPUT_NODES),
     )
     def func(self, **kwargs):
         """caiman_mc

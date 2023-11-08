@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from studio.app.common.core.param.param import ParamChild, ParamParent
 from studio.app.common.core.snakemake.smk import SnakemakeParams
-from studio.app.common.core.wrapper.wrapper_utils import WrapperUtils
+from studio.app.common.core.wrapper.algo_utils import AlgoUtils
 from studio.app.optinist.core.nwb.nwb import NWBParams
 
 
@@ -14,7 +14,7 @@ class ParamUtils:
         elif name == "nwb":
             params = NWBParams.PARAMS
         else:
-            wrapper = WrapperUtils.find_wrapper_by_name(name=name)
+            wrapper = AlgoUtils.find_algo_by_name(name=name)
             if wrapper is None:
                 return None
             params = wrapper._DEFAULT_PARAMS

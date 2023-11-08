@@ -4,7 +4,7 @@ from typing import List
 from studio.app.common.core.param.param import Param
 
 
-class Wrapper(ABC):
+class AlgoTemplate(ABC):
     _INPUT_NODES: List[Param] = []
     _OUTPUT_NODES: List[Param] = []
     _DEFAULT_PARAMS: List[Param] = []

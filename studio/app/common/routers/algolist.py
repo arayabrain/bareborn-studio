@@ -3,7 +3,7 @@ from typing import Dict, List
 from fastapi import APIRouter
 
 from studio.app.common.core.param.param import Param
-from studio.app.common.core.wrapper.wrapper import Wrapper
+from studio.app.common.core.wrapper.algo import AlgoTemplate
 from studio.app.common.schemas.algolist import Algo, AlgoList, Arg, Return
 from studio.app.const import FUNC_KEY
 from studio.app.wrappers import wrapper_dict
@@ -22,7 +22,7 @@ class NestDictGetter:
                     value, cls._parent_key(parent_key, key)
                 )
             else:
-                wrapper: Wrapper = value[FUNC_KEY]
+                wrapper: AlgoTemplate = value[FUNC_KEY]
 
                 algo_dict[key] = Algo(
                     args=cls._args_list(wrapper._INPUT_NODES),
