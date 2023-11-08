@@ -305,7 +305,8 @@ class CaimanCnmf(Wrapper):
 
         return info
 
-    def get_roi(self, A, thr, thr_method, swap_dim, dims):
+    @classmethod
+    def get_roi(cls, A, thr, thr_method, swap_dim, dims):
         from scipy.ndimage import binary_fill_holes
         from skimage.measure import find_contours
 
