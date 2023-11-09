@@ -240,7 +240,7 @@ class CaimanCnmf(AlgoTemplate):
         nwbfile[NWBDATASET.COLUMN] = {
             self.function_id: {
                 "name": "iscell",
-                "discription": "two columns - iscell & probcell",
+                "description": "two columns - iscell & probcell",
                 "data": iscell,
             }
         }
