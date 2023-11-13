@@ -8,8 +8,6 @@ import os
 import sys
 from datetime import datetime
 
-from sphinx_pyproject import SphinxConfig
-
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -21,11 +19,10 @@ sys.path.insert(0, os.path.abspath("../studio"))
 
 
 # -- Project information -----------------------------------------------------
-config = SphinxConfig("../pyproject.toml", globalns=globals())
 project = "OptiNiSt"
 copyright = f"{datetime.today().year}, OIST"
 author = ""
-release = ".".join(config.version.split(".")[:2])
+release = "1.0.1"
 
 # -- readthedocs -------------------------------------------------------------
 on_rtd = os.environ.get("READTHEDOCS", None) == "True"
