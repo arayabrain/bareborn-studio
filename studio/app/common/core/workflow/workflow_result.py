@@ -88,31 +88,37 @@ class WorkflowResult:
         """
         The algorithm function of this workflow is being executed at the line:
         https://github.com/snakemake/snakemake/blob/27b224ed12448df8aebc7d1ff8f25e3bf7622232/snakemake/shell.py#L258
-        ```
-        proc = sp.Popen(
-            cmd,
-            bufsize=-1,
-            shell=use_shell,
-            stdout=stdout,
-            universal_newlines=iterable or read or None,
-            close_fds=close_fds,
-            **cls._process_args,
-            env=envvars,
-        )
-        ```
+
+        ::
+
+            proc = sp.Popen(
+                cmd,
+                bufsize=-1,
+                shell=use_shell,
+                stdout=stdout,
+                universal_newlines=iterable or read or None,
+                close_fds=close_fds,
+                **cls._process_args,
+                env=envvars,
+            )
+
         The `cmd` argument has the following format:
-        ```
-        source ~/miniconda3/bin/activate
-        '~/Documents/optinistfs/.snakemake/conda/491889952d2f07f3876bb801eea626e9_';
-        set -euo pipefail;
-        python ~/Documents/optinistfs/.snakemake/scripts/tmp03froqxo.func.py
-        ```
+
+        ::
+
+            source ~/miniconda3/bin/activate
+            '~/Documents/optinistfs/.snakemake/conda/491889952d2f07f3876bb801eea626e9_';
+            set -euo pipefail;
+            python ~/Documents/optinistfs/.snakemake/scripts/tmp03froqxo.func.py
+
         Interrupt the conda activate at the beginning of the process is impossible
         because it is only called when each algorithm function executes.
         This workflow is cancelled by killing process via PID of algorithm function
         saved in pid.json file
+
         Raises:
             HTTPException: if pid_filepath or last_script_file does not exist
+
         """
         if not os.path.exists(self.pid_filepath):
             raise HTTPException(status_code=404)

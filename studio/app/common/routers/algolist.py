@@ -63,23 +63,25 @@ class NestDictGetter:
 async def get_algolist() -> Dict[str, Algo]:
     """_summary_
 
-    Returns:
-        {
-            'caiman': {
-                'children': {
-                    'caiman_mc' : {
-                        'args': ['images', 'timeseries'],
-                        'return': ['images'],
-                        'path': 'caiman/caiman_mc'
-                    },
-                    'caiman_cnmf': {
-                        'args': ['images', 'timeseries'],
-                        'return': ['images'],
-                        'path': 'caiman/caiman_mc'
+    Returns::
+
+            {
+                'caiman': {
+                    'children': {
+                        'caiman_mc' : {
+                            'args': ['images', 'timeseries'],
+                            'return': ['images'],
+                            'path': 'caiman/caiman_mc'
+                        },
+                        'caiman_cnmf': {
+                            'args': ['images', 'timeseries'],
+                            'return': ['images'],
+                            'path': 'caiman/caiman_mc'
+                        }
                     }
                 }
             }
-        }
+
     """
 
     return NestDictGetter.get_nest_dict(wrapper_dict, "")
