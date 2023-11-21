@@ -5,6 +5,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import os
+import sys
 from datetime import datetime
 
 # -- Path setup --------------------------------------------------------------
@@ -13,7 +14,7 @@ from datetime import datetime
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-
+sys.path.insert(0, os.path.abspath("../studio"))
 
 # -- Project information -----------------------------------------------------
 project = "OptiNiSt"
@@ -44,11 +45,16 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.autodoc.typehints",
     "sphinx_copybutton",
+    "sphinxcontrib.autodoc_pydantic",
 ]
+
+# autodoc_pydantic config
+autodoc_pydantic_model_show_field_summary = False
+autodoc_pydantic_settings_show_json_error_strategy = "coerce"
+autodoc_pydantic_model_show_json = False
 
 # Tell myst-parser to assign header anchors for h1-h3.
 myst_heading_anchors = 4
-
 suppress_warnings = ["myst.header"]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -79,6 +85,7 @@ html_favicon = "_static/favicon.ico"
 html_show_sourcelink = False
 
 autosummary_generate = True
+napoleon_custom_sections = [("Returns", "params_style")]
 
 html_theme_options = {
     "canonical_url": "",

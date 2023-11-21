@@ -32,7 +32,6 @@ build_frontend:
 docs:
 	rm -rf docs/_build/
 	poetry install --with doc --no-root
-	# sphinx-apidoc -f -o ./docs/_build/modules ./studio
 	sphinx-autobuild -b html docs docs/_build --port 8001
 
 .PHONY: dockerhub
