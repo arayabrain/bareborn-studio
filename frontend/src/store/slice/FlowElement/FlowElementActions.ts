@@ -8,13 +8,13 @@ import {
   NodeData,
 } from "store/slice/FlowElement/FlowElementType"
 import { FILE_TYPE } from "store/slice/InputNode/InputNodeType"
-import { ParamDTO } from "utils/param/ParamType"
+import { ParamMap } from "utils/param/ParamType"
 
 export type AddingNodeData = Omit<Node<NodeData>, "position"> &
   Partial<Pick<Node<NodeData>, "position">>
 
 export const addAlgorithmNode = createAsyncThunk<
-  ParamDTO,
+  ParamMap,
   {
     node: AddingNodeData
     functionPath: string

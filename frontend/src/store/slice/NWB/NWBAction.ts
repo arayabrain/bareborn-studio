@@ -2,9 +2,9 @@ import { createAsyncThunk } from "@reduxjs/toolkit"
 
 import { getNWBParamsApi } from "api/nwb/NWB"
 import { NWB_SLICE_NAME } from "store/slice/NWB/NWBType"
-import { ParamDTO } from "utils/param/ParamType"
+import { ParamMap } from "utils/param/ParamType"
 
-export const getNWBParams = createAsyncThunk<ParamDTO, void>(
+export const getNWBParams = createAsyncThunk<ParamMap, void>(
   `${NWB_SLICE_NAME}/getNWBParams`,
   async (_, thunkAPI) => {
     const { rejectWithValue } = thunkAPI

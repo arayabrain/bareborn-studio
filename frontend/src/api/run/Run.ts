@@ -7,14 +7,14 @@ import type {
 } from "store/slice/FlowElement/FlowElementType"
 import type { FILE_TYPE } from "store/slice/InputNode/InputNodeType"
 import axios from "utils/axios"
-import type { ParamMap } from "utils/param/ParamType"
+import type { ParamMapWithoutMeta } from "utils/param/ParamType"
 
 export type RunPostData = {
   name: string
   nodeDict: NodeDict
   edgeDict: EdgeDict
-  nwbParam: ParamMap
-  snakemakeParam: ParamMap
+  nwbParam: ParamMapWithoutMeta
+  snakemakeParam: ParamMapWithoutMeta
   forceRunList: { nodeId: string; name: string }[]
 }
 
@@ -39,7 +39,7 @@ export interface InputNodePostData extends InputNodeData {
 
 export interface AlgorithmNodePostData extends AlgorithmNodeData {
   path: string
-  param: ParamMap
+  param: ParamMapWithoutMeta
 }
 
 export async function runApi(

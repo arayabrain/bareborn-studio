@@ -13,10 +13,14 @@ export type ParamParent = {
 
 export type ParamChild = {
   type: "child"
+  dataType?: string
+  doc?: string
   value: unknown
   path: string
 }
 
-export type ParamDTO = {
-  [key: string]: unknown
+export type ParamMapWithoutMeta = {
+  [paramKey: string]: ParamTypeWithoutMeta
 }
+type ParamTypeWithoutMeta = ParamParent | ParamChildWithoutMeta
+type ParamChildWithoutMeta = Omit<ParamChild, "dataType" | "doc">
