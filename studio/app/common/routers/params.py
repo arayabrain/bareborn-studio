@@ -1,22 +1,22 @@
-from typing import Any, Dict
+from typing import Dict, Union
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from studio.app.common.core.utils.config_handler import ConfigReader
-from studio.app.common.core.utils.filepath_finder import find_param_filepath
-from studio.app.common.schemas.params import SnakemakeParams
+from studio.app.common.core.utils.param_utils import get_default_params, get_param_map
+from studio.app.common.schemas.params import ParamChild, ParamParent, SnakemakeParams
 
 router = APIRouter(tags=["params"])
 
 
-@router.get("/params/{name}", response_model=Dict[str, Any])
-async def get_params(name: str):
-    filepath = find_param_filepath(name)
-    config = ConfigReader.read(filepath)
-    return config
+@router.get("/params/{name}", response_model=Dict[str, Union[ParamChild, ParamParent]])
+async def get_params(name: str) -> dict:
+    default_params = get_default_params(name)
+    if default_params is None:
+        raise HTTPException(status_code=404, detail=f"Algo with name {name} not found")
+
+    return get_param_map(default_params)
 
 
-@router.get("/snakemake", response_model=SnakemakeParams)
+@router.get("/snakemake", response_model=Dict[str, Union[ParamChild, ParamParent]])
 async def get_snakemake_params():
-    filepath = find_param_filepath("snakemake")
-    return ConfigReader.read(filepath)
+    return get_param_map(SnakemakeParams)
