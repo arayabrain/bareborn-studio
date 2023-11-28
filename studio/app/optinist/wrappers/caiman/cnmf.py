@@ -302,8 +302,8 @@ class CaimanCnmf(AlgoTemplate):
 
         return info
 
-    @classmethod
-    def get_roi(cls, A, thr, thr_method, swap_dim, dims):
+    @staticmethod
+    def get_roi(A, thr, thr_method, swap_dim, dims):
         from scipy.ndimage import binary_fill_holes
         from skimage.measure import find_contours
 
