@@ -1,9 +1,9 @@
-from studio.app.optinist.wrappers.lccd.lccd_detection import lccd_detect
+from studio.app.optinist.wrappers.lccd.lccd_detection import LccdDetect
 
 lccd_wrapper_dict = {
     "lccd": {
         "lccd_cell_detection": {
-            "function": lccd_detect,
+            "function": LccdDetect,
             "conda_name": "lccd",
         },
     }
