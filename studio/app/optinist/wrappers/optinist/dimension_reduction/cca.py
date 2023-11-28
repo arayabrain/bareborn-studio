@@ -13,7 +13,7 @@ class CCAMainParams(BaseModel):
     scale: bool = Field(True)
     max_iter: int = Field(500)
     tol: float = Field(0.000001)
-    copy: bool = Field(True)
+    copy_data: bool = Field(True, alias="copy")
 
 
 class CCAParams(BaseModel):

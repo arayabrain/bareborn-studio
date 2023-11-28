@@ -10,7 +10,7 @@ from studio.app.optinist.wrappers.optinist.utils import standard_norm
 
 class PCAMainParams(BaseModel):
     n_components: int = Field(2)
-    copy: bool = Field(True)
+    copy_data: bool = Field(True, alias="copy")
     whiten: bool = Field(False)
     svd_solver: str = Field("auto")
     tol: float = Field(0.0)

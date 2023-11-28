@@ -26,7 +26,7 @@ class RegistrationParams(BaseModel):
     reg_tif: bool = Field(False)
     th_badframes: float = Field(1.0)
     diameter: int = Field(0)
-    one_Preg: bool = Field(False)  # exact name is 1Preg, but it is not allowed
+    one_preg: bool = Field(False, alias="1Preg")
     spatial_hp_reg: int = Field(42)
     pre_smooth: int = Field(0)
     spatial_taper: int = Field(40)
@@ -49,8 +49,6 @@ class Suite2pRegistration(AlgoTemplate):
         if len(refImg.shape) == 3:
             refImg = refImg[0]
 
-        one_Preg = params["one_Preg"]
-        params["1Preg"] = one_Preg
         ops = {**default_ops(), **ops, **params}
 
         # register binary

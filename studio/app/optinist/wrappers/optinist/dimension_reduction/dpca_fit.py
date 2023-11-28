@@ -58,13 +58,14 @@ class DPCAParams(BaseModel):
             "in each marginalization (e.g. {'t' : 10, 'ts' : 5})."
         ),
     )
-    copy: bool = Field(
+    copy_data: bool = Field(
         True,
         description=(
             "If False, data passed to fit are overwritten and running fit(X). "
             "transform(X) will not yield the expected results, "
             "use fit_transform(X) instead."
         ),
+        alias="copy",
     )
     n_iter: int = Field(
         0, description="Number of iterations for randomized SVD solver (sklearn)."

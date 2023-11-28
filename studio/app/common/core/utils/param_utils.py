@@ -41,6 +41,7 @@ def get_param_map(params, path=None):
     default_params = {}
 
     for k, v in params.__fields__.items():
+        k = k if v.field_info.alias is None else v.field_info.alias
         if issubclass(type(v.default), BaseModel):
             default_params[k] = {
                 "type": "parent",
@@ -66,9 +67,9 @@ def get_param_map(params, path=None):
 def get_typecheck_params(message_params, name):
     default_params = get_default_params(name)
     if message_params != {} and message_params is not None:
-        return default_params(**nest2dict(message_params)).dict()
+        return default_params(**nest2dict(message_params)).dict(by_alias=True)
     else:
-        return default_params().dict()
+        return default_params().dict(by_alias=True)
 
 
 def nest2dict(value):
