@@ -22,10 +22,25 @@ describe("AlgorithmNode", () => {
   const name = "suite2p_roi"
   const functionPath = "suite2p/suite2p_roi"
   const algorithmParams = {
-    param1: 1,
-    param2: "param2",
+    param1: {
+      type: "child",
+      value: 1,
+      path: "param1",
+    },
+    param2: {
+      type: "child",
+      value: "param2",
+      path: "param2",
+    },
     param3: {
-      param4: 4,
+      type: "parent",
+      children: {
+        param4: {
+          type: "child",
+          value: 4,
+          path: "param3/param4",
+        },
+      },
     },
   }
   const addAlgorithmNodeAction = {
@@ -66,12 +81,12 @@ describe("AlgorithmNode", () => {
     expect(selectAlgorithmNodeById(nodeId)(targetState).params).toEqual({
       param1: {
         type: "child",
-        value: algorithmParams.param1,
+        value: 1,
         path: "param1",
       },
       param2: {
         type: "child",
-        value: algorithmParams.param2,
+        value: "param2",
         path: "param2",
       },
       param3: {
@@ -79,7 +94,7 @@ describe("AlgorithmNode", () => {
         children: {
           param4: {
             type: "child",
-            value: algorithmParams.param3.param4,
+            value: 4,
             path: "param3/param4",
           },
         },
