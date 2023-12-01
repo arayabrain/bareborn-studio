@@ -64,7 +64,7 @@ sqlmodel = "0.0.12"
 pymysql = "1.1.0"
 fastapi_pagination = "0.12.13"
 plotly = "5.18.0"
-kaleido = "0.2.1"
+kaleido = "0.2.1.post1"
 filelock = "*"
 ruamel-yaml = "^0.18.5"
 
