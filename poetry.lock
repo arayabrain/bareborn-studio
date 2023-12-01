@@ -3219,13 +3219,13 @@ files = [
 
 [[package]]
 name = "snakemake"
-version = "7.30.1"
+version = "7.31.1"
 description = "Workflow management system to create reproducible and scalable data analyses"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "snakemake-7.30.1-py3-none-any.whl", hash = "sha256:559e4c544a90eb34e79c211afaa70c7c373be00690af885e7c12a5f4f7a70f17"},
-    {file = "snakemake-7.30.1.tar.gz", hash = "sha256:0e907ae6ea18a7e7c8b9f08976ee1874da66f79cbd4ad1b25cc7e7b9a8670f80"},
+    {file = "snakemake-7.31.1-py3-none-any.whl", hash = "sha256:919c1494b3f2caa8100de4282cddffac11fb26e49c41b1655b8eb70ffafa5732"},
+    {file = "snakemake-7.31.1.tar.gz", hash = "sha256:6fadcc9a051737aa187dccf437879b3b83ddc917fff9bd7d400e056cf17a1788"},
 ]
 
 [package.dependencies]
@@ -3980,4 +3980,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "24a03c16411f6e968310732e134badc23d1693f98e6c5e407e722637aa64f804"
+content-hash = "0990ae99892df32d4be1593191bbd9ab6ccace63c080365a4553f74366e0603d"
