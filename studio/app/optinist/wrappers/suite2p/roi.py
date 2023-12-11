@@ -7,7 +7,7 @@ from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import FluoData, IscellData, RoiData, Suite2pData
 
 
-class RoiParams(BaseModel):
+class Suite2pRoiParams(BaseModel):
     tau: float = Field(1.0, description="this is the main parameter for deconvolution")
 
     # classification parameters
@@ -87,7 +87,7 @@ class RoiParams(BaseModel):
 
 class Suite2pRoi(AlgoTemplate):
     def run(
-        self, params: RoiParams, ops: Suite2pData
+        self, params: Suite2pRoiParams, ops: Suite2pData
     ) -> dict(ops=Suite2pData, fluorescence=FluoData, iscell=IscellData):
         import numpy as np
         from suite2p import ROI, classification, default_ops, detection, extraction

@@ -9,7 +9,7 @@ from studio.app.optinist.dataclass import FluoData, IscellData
 from studio.app.optinist.wrappers.caiman.cnmf import CaimanCnmf
 
 
-class InitParams(BaseModel):
+class CaimanCnmfEInitParams(BaseModel):
     # Ain: Optional[List] = Field(
     #     None, description="possibility to seed with predetermined binary masks"
     # )
@@ -71,11 +71,11 @@ class InitParams(BaseModel):
     )
 
 
-class PreprocessParams(BaseModel):
+class CaimanCnmfEPreprocessParams(BaseModel):
     p: int = Field(1, description="order of the autoregressive system")
 
 
-class PatchParams(BaseModel):
+class CaimanCnmfEPatchParams(BaseModel):
     rf: Optional[int] = Field(
         40,
         description=(
@@ -105,7 +105,7 @@ class PatchParams(BaseModel):
     )
 
 
-class MergeParams(BaseModel):
+class CaimanCnmfEMergeParams(BaseModel):
     thr: float = Field(0.9)
     merge_thr: float = Field(
         0.7, description="merging threshold, max correlation allowed"
@@ -113,10 +113,12 @@ class MergeParams(BaseModel):
 
 
 class CaimanCnmfEParams(BaseModel):
-    init_params: InitParams = Field(InitParams())
-    preprocess_params: PreprocessParams = Field(PreprocessParams())
-    patch_params: PatchParams = Field(PatchParams())
-    merge_params: MergeParams = Field(MergeParams())
+    init_params: CaimanCnmfEInitParams = Field(CaimanCnmfEInitParams())
+    preprocess_params: CaimanCnmfEPreprocessParams = Field(
+        CaimanCnmfEPreprocessParams()
+    )
+    patch_params: CaimanCnmfEPatchParams = Field(CaimanCnmfEPatchParams())
+    merge_params: CaimanCnmfEMergeParams = Field(CaimanCnmfEMergeParams())
 
 
 class CaimanCnmfE(AlgoTemplate):

@@ -6,7 +6,7 @@ from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import FluoData, Suite2pData
 
 
-class SpikeDeconvParams(BaseModel):
+class Suite2pSpikeDeconvParams(BaseModel):
     baseline: str = Field(
         "maximin", description="baselining mode (can also choose 'prctile')"
     )
@@ -22,7 +22,7 @@ class SpikeDeconvParams(BaseModel):
 
 class Suite2pSpikeDeconv(AlgoTemplate):
     def run(
-        self, params: SpikeDeconvParams, ops: Suite2pData
+        self, params: Suite2pSpikeDeconvParams, ops: Suite2pData
     ) -> dict(ops=Suite2pData, spks=FluoData):
         import numpy as np
         from suite2p import default_ops, extraction

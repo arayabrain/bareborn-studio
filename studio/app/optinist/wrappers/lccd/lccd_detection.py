@@ -8,7 +8,7 @@ from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import FluoData, LccdData, RoiData
 
 
-class BlobDetectorParams(BaseModel):
+class LccdBlobDetectorParams(BaseModel):
     filtersize1: int = Field(100)
     filtersize2: int = Field(4)
     sigma: float = Field(1.25)
@@ -18,27 +18,27 @@ class BlobDetectorParams(BaseModel):
     sparse: bool = Field(False)
 
 
-class RoiIntegrationParams(BaseModel):
+class LccdRoiIntegrationParams(BaseModel):
     overlap_threshold: float = Field(0.4)
     min_area: int = Field(20)
     max_area: int = Field(100)
     sparse: bool = Field(False)
 
 
-class LccdParams(BaseModel):
+class LccdMainParams(BaseModel):
     frame_divider: int = Field(100)
 
 
-class DffParams(BaseModel):
+class LccdDffParams(BaseModel):
     f0_frames: int = Field(100)
     f0_percentile: int = Field(8)
 
 
 class LccdDetectParams(BaseModel):
-    blob_detector: BlobDetectorParams = Field(BlobDetectorParams())
-    roi_integration: RoiIntegrationParams = Field(RoiIntegrationParams())
-    lccd: LccdParams = Field(LccdParams())
-    dff: DffParams = Field(DffParams())
+    blob_detector: LccdBlobDetectorParams = Field(LccdBlobDetectorParams())
+    roi_integration: LccdRoiIntegrationParams = Field(LccdRoiIntegrationParams())
+    lccd: LccdMainParams = Field(LccdMainParams())
+    dff: LccdDffParams = Field(LccdDffParams())
 
 
 class LccdDetect(AlgoTemplate):

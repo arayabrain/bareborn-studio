@@ -12,7 +12,7 @@ from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import CaimanCnmfData, FluoData, IscellData, RoiData
 
 
-class InitParams(BaseModel):
+class CaimanCnmfInitParams(BaseModel):
     # Ain: Optional[List] = Field(
     #     None, description="possibility to seed with predetermined binary masks"
     # )
@@ -63,11 +63,11 @@ class InitParams(BaseModel):
     method_init: str = Field("greedy_roi")
 
 
-class PreprocessParams(BaseModel):
+class CaimanCnmfPreprocessParams(BaseModel):
     p: int = Field(1, description="order of the autoregressive system")
 
 
-class PatchParams(BaseModel):
+class CaimanCnmfPatchParams(BaseModel):
     rf: Optional[int] = Field(
         None,
         description=(
@@ -83,7 +83,7 @@ class PatchParams(BaseModel):
     )
 
 
-class MergeParams(BaseModel):
+class CaimanCnmfMergeParams(BaseModel):
     thr: float = Field(0.9)
     merge_thr: float = Field(
         0.85, description="merging threshold, max correlation allowed"
@@ -91,10 +91,10 @@ class MergeParams(BaseModel):
 
 
 class CaimanCnmfParams(BaseModel):
-    init_params: InitParams = Field(InitParams())
-    preprocess_params: PreprocessParams = Field(PreprocessParams())
-    patch_params: PatchParams = Field(PatchParams())
-    merge_params: MergeParams = Field(MergeParams())
+    init_params: CaimanCnmfInitParams = Field(CaimanCnmfInitParams())
+    preprocess_params: CaimanCnmfPreprocessParams = Field(CaimanCnmfPreprocessParams())
+    patch_params: CaimanCnmfPatchParams = Field(CaimanCnmfPatchParams())
+    merge_params: CaimanCnmfMergeParams = Field(CaimanCnmfMergeParams())
 
 
 class CaimanCnmf(AlgoTemplate):

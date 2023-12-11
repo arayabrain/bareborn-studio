@@ -12,7 +12,7 @@ from studio.app.common.dataclass import ImageData
 from studio.app.optinist.dataclass import Suite2pData
 
 
-class FileConvertParams(BaseModel):
+class Suite2pFileConvertParams(BaseModel):
     nplanes: int = Field(1)
     nchannels: int = Field(1)
     force_sktiff: bool = Field(False)
@@ -21,7 +21,9 @@ class FileConvertParams(BaseModel):
 
 
 class Suite2pFileConvert(AlgoTemplate):
-    def run(self, params: FileConvertParams, image: ImageData) -> dict(ops=Suite2pData):
+    def run(
+        self, params: Suite2pFileConvertParams, image: ImageData
+    ) -> dict(ops=Suite2pData):
         from suite2p import default_ops, io
 
         print("start suite2p_file_convert:", self.function_id)

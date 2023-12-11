@@ -10,7 +10,7 @@ from studio.app.optinist.dataclass import FluoData, IscellData
 from studio.app.optinist.wrappers.optinist.utils import standard_norm
 
 
-class AdfullerParams(BaseModel):
+class GrangerAdfullerParams(BaseModel):
     maxlag: Optional[int] = Field(None)
     regression: str = Field("c")
     autolag: str = Field("AIC")
@@ -18,7 +18,7 @@ class AdfullerParams(BaseModel):
     regresults: bool = Field(False)
 
 
-class CointParams(BaseModel):
+class GrangerCointParams(BaseModel):
     trend: str = Field("c")
     method: str = Field("aeg")
     maxlag: Optional[int] = Field(None)
@@ -41,8 +41,8 @@ class GrangerParams(BaseModel):
     )
     use_adfuller_test: bool = Field(True)
     use_coint_test: bool = Field(True)
-    adfuller: AdfullerParams = Field(AdfullerParams())
-    coint: CointParams = Field(CointParams())
+    adfuller: GrangerAdfullerParams = Field(GrangerAdfullerParams())
+    coint: GrangerCointParams = Field(GrangerCointParams())
 
 
 class Granger(AlgoTemplate):

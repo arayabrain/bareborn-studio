@@ -10,7 +10,7 @@ from studio.app.optinist.dataclass import BehaviorData, FluoData, IscellData
 from studio.app.optinist.wrappers.optinist.utils import standard_norm
 
 
-class GridSearchParamGridParams(BaseModel):
+class SVMGridSearchParamGridParams(BaseModel):
     C: List[float] = Field([0.001, 0.01, 0.1])
     kernel: List[str] = Field(["linear"])
     degree: List[int] = Field([3])
@@ -21,7 +21,7 @@ class GridSearchParamGridParams(BaseModel):
     decision_function_shape: List[str] = Field(["ovr"])
 
 
-class GridSearchCVParams(BaseModel):
+class SVMGridSearchCVParams(BaseModel):
     scoring: str = Field("accuracy")
     n_jobs: int = Field(1)
     refit: bool = Field(True)
@@ -32,18 +32,18 @@ class GridSearchCVParams(BaseModel):
     return_train_score: bool = Field(False)
 
 
-class GridSearchParams(BaseModel):
-    param_grid: GridSearchParamGridParams = Field(GridSearchParamGridParams())
-    CV: GridSearchCVParams = Field(GridSearchCVParams())
+class SVMGridSearchParams(BaseModel):
+    param_grid: SVMGridSearchParamGridParams = Field(SVMGridSearchParamGridParams())
+    CV: SVMGridSearchCVParams = Field(SVMGridSearchCVParams())
 
 
-class CVParams(BaseModel):
+class SVMCVParams(BaseModel):
     n_splits: int = Field(5)
     shuffle: bool = Field(True)
     # random_state: int = Field(0)
 
 
-class SVCParams(BaseModel):
+class SVMSVCParams(BaseModel):
     C: float = Field(1.0)
     kernel: str = Field("rbf")
     degree: int = Field(3)
@@ -67,9 +67,9 @@ class SVMParams(BaseModel):
     transpose_y: bool = Field(False)
     target_index: int = Field(1)
     use_grid_search: bool = Field(True)
-    grid_search: GridSearchParams = Field(GridSearchParams())
-    CV: CVParams = Field(CVParams())
-    SVC: SVCParams = Field(SVCParams())
+    grid_search: SVMGridSearchParams = Field(SVMGridSearchParams())
+    CV: SVMCVParams = Field(SVMCVParams())
+    SVC: SVMSVCParams = Field(SVMSVCParams())
 
 
 class SVM(AlgoTemplate):

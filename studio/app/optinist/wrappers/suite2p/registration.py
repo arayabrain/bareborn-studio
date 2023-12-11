@@ -8,7 +8,7 @@ from studio.app.common.dataclass import ImageData
 from studio.app.optinist.dataclass import Suite2pData
 
 
-class RegistrationParams(BaseModel):
+class Suite2pRegistrationParams(BaseModel):
     frames_include: int = Field(-1)
     keep_movie_raw: bool = Field(False)
     do_bidiphase: bool = Field(False)
@@ -35,7 +35,7 @@ class RegistrationParams(BaseModel):
 
 class Suite2pRegistration(AlgoTemplate):
     def run(
-        self, params: RegistrationParams, ops: Suite2pData
+        self, params: Suite2pRegistrationParams, ops: Suite2pData
     ) -> dict(ops=Suite2pData):
         from suite2p import default_ops, registration
 

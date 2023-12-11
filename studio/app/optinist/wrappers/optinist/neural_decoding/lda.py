@@ -10,7 +10,7 @@ from studio.app.optinist.dataclass import BehaviorData, FluoData, IscellData
 from studio.app.optinist.wrappers.optinist.utils import standard_norm
 
 
-class CVParams(BaseModel):
+class LDACVParams(BaseModel):
     n_splits: int = Field(5, description="Number of folds. Must be at least 2.")
     shuffle: bool = Field(False)
     # random_state: int = Field(0)
@@ -32,7 +32,7 @@ class LDAParams(BaseModel):
     transpose_x: bool = Field(True)
     transpose_y: bool = Field(False)
     target_index: int = Field(1)
-    CV: CVParams = Field(CVParams())
+    CV: LDACVParams = Field(LDACVParams())
     LDA: LDAMainParams = Field(LDAMainParams())
 
 
