@@ -16,7 +16,13 @@ class InitParams(BaseModel):
     # Ain: Optional[List] = Field(
     #     None, description="possibility to seed with predetermined binary masks"
     # )
-    do_refit: bool = Field(False)
+    do_refit: bool = Field(
+        False,
+        description=(
+            "Whether to re-run seeded CNMF on accepted patches "
+            "to refine and perform deconvolution"
+        ),
+    )
     K: Optional[int] = Field(
         4, description="upper bound on number of components per patch, in general None"
     )
