@@ -3,11 +3,12 @@ import { useSelector } from "react-redux"
 
 import { Typography, Grid, Popover } from "@mui/material"
 
-import { IS_STANDALONE } from "const/Mode"
+import { ParamSection } from "components/common/ParamSection"
 import {
   selectCurrentPipelineName,
   selectPipelineLatestUid,
 } from "store/slice/Pipeline/PipelineSelectors"
+import { selectModeStandalone } from "store/slice/Standalone/StandaloneSeclector"
 import {
   selectCurrentWorkspaceId,
   selectCurrentWorkspaceName,
@@ -18,38 +19,33 @@ export const CurrentPipelineInfo: FC = () => {
   const workspaceName = useSelector(selectCurrentWorkspaceName)
   const workflowId = useSelector(selectPipelineLatestUid)
   const workflowName = useSelector(selectCurrentPipelineName)
+  const isStandalone = useSelector(selectModeStandalone)
 
   return (
     <>
+      {!isStandalone && (
+        <ParamSection title="Workspace">
+          <Grid container mb={1}>
+            {workspaceId && (
+              <LabelValueGridRow
+                label="ID"
+                value={workspaceId.toFixed()}
+                section="workspace"
+              />
+            )}
+            {workspaceName && (
+              <LabelValueGridRow
+                label="NAME"
+                value={workspaceName}
+                section="workspace"
+              />
+            )}
+          </Grid>
+        </ParamSection>
+      )}
       {workflowId && (
-        <>
-          {!IS_STANDALONE && (
-            <>
-              <Typography variant="body2" color="textSecondary">
-                WORKSPACE
-              </Typography>
-              <Grid container paddingBottom={2} paddingX={1}>
-                {workspaceId && (
-                  <LabelValueGridRow
-                    label="ID"
-                    value={workspaceId.toFixed()}
-                    section="workspace"
-                  />
-                )}
-                {workspaceName && (
-                  <LabelValueGridRow
-                    label="NAME"
-                    value={workspaceName}
-                    section="workspace"
-                  />
-                )}
-              </Grid>
-            </>
-          )}
-          <Typography variant="body2" color="textSecondary">
-            WORKFLOW
-          </Typography>
-          <Grid container paddingBottom={2} paddingX={1}>
+        <ParamSection title="Workflow">
+          <Grid container mb={1}>
             <LabelValueGridRow
               label="ID"
               value={workflowId}
@@ -63,7 +59,7 @@ export const CurrentPipelineInfo: FC = () => {
               />
             )}
           </Grid>
-        </>
+        </ParamSection>
       )}
     </>
   )
@@ -103,7 +99,9 @@ const LabelValueGridRow = memo(function LabelValueGridRow({
   return (
     <>
       <Grid item xs={3}>
-        <Typography variant="body2">{label}</Typography>
+        <Typography fontWeight="bold" fontSize="0.95rem" color="text.secondary">
+          {label}
+        </Typography>
       </Grid>
       <Grid item xs={9}>
         <div>

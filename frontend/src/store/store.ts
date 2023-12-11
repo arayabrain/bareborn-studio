@@ -23,6 +23,7 @@ import {
   experimentsReducer,
   workspaceReducer,
   userReducer,
+  modeStandalone,
 } from "store/slice"
 
 export const rootReducer = combineReducers({
@@ -43,10 +44,17 @@ export const rootReducer = combineReducers({
   experiments: experimentsReducer,
   workspace: workspaceReducer,
   user: userReducer,
+  mode: modeStandalone,
 })
 
 export const store = configureStore({
   reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      // Ignore serializable checks because serializing fails
+      // on rejectedWith value
+      serializableCheck: false,
+    }),
 })
 
 export type AppDispatch = typeof store.dispatch
