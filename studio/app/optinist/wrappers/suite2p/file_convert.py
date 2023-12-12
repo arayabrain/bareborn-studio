@@ -1,5 +1,9 @@
 import os
 
+from pydantic import BaseModel
+from pydantic.dataclasses import Field
+
+from studio.app.common.core.algo import AlgoTemplate
 from studio.app.common.core.utils.filepath_creater import (
     create_directory,
     join_filepath,
@@ -8,43 +12,51 @@ from studio.app.common.dataclass import ImageData
 from studio.app.optinist.dataclass import Suite2pData
 
 
-def suite2p_file_convert(
-    image: ImageData, output_dir: str, params: dict = None, **kwargs
-) -> dict(ops=Suite2pData):
-    from suite2p import default_ops, io
+class Suite2pFileConvertParams(BaseModel):
+    nplanes: int = Field(1)
+    nchannels: int = Field(1)
+    force_sktiff: bool = Field(False)
+    batch_size: int = Field(500)
+    do_registration: int = Field(1)
 
-    function_id = output_dir.split("/")[-1]
-    print("start suite2p_file_convert:", function_id)
 
-    data_path_list = []
-    data_name_list = []
-    for file_path in image.path:
-        data_path_list.append(os.path.dirname(file_path))
-        data_name_list.append(os.path.basename(file_path))
+class Suite2pFileConvert(AlgoTemplate):
+    def run(
+        self, params: Suite2pFileConvertParams, image: ImageData
+    ) -> dict(ops=Suite2pData):
+        from suite2p import default_ops, io
 
-    print(data_path_list)
-    print(data_name_list)
-    # data pathと保存pathを指定
-    db = {
-        "data_path": data_path_list,
-        "tiff_list": data_name_list,
-        "save_path0": output_dir,
-        "save_folder": "suite2p",
-    }
+        print("start suite2p_file_convert:", self.function_id)
 
-    ops = {**default_ops(), **params, **db}
+        data_path_list = []
+        data_name_list = []
+        for file_path in image.path:
+            data_path_list.append(os.path.dirname(file_path))
+            data_name_list.append(os.path.basename(file_path))
 
-    # save folderを指定
-    create_directory(join_filepath([ops["save_path0"], ops["save_folder"]]))
+        print(data_path_list)
+        print(data_name_list)
+        # data pathと保存pathを指定
+        db = {
+            "data_path": data_path_list,
+            "tiff_list": data_name_list,
+            "save_path0": self.output_dir,
+            "save_folder": "suite2p",
+        }
 
-    # save ops.npy(parameter) and data.bin
-    ops = io.tiff_to_binary(ops.copy())
+        ops = {**default_ops(), **params, **db}
 
-    info = {
-        "meanImg": ImageData(
-            ops["meanImg"], output_dir=output_dir, file_name="meanImg"
-        ),
-        "ops": Suite2pData(ops, file_name="ops"),
-    }
+        # save folderを指定
+        create_directory(join_filepath([ops["save_path0"], ops["save_folder"]]))
 
-    return info
+        # save ops.npy(parameter) and data.bin
+        ops = io.tiff_to_binary(ops.copy())
+
+        info = {
+            "meanImg": ImageData(
+                ops["meanImg"], output_dir=self.output_dir, file_name="meanImg"
+            ),
+            "ops": Suite2pData(ops, file_name="ops"),
+        }
+
+        return info

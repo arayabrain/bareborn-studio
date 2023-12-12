@@ -3,8 +3,8 @@ from typing import Dict
 from studio.app.common.core.snakemake.smk import Rule
 from studio.app.common.core.snakemake.smk_builder import RuleBuilder
 from studio.app.common.core.utils.filepath_creater import get_pickle_file
+from studio.app.common.core.utils.param_utils import get_typecheck_params
 from studio.app.common.core.workflow.workflow import Edge, Node, NodeType
-from studio.app.common.core.workflow.workflow_params import get_typecheck_params
 
 
 class SmkRule:

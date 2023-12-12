@@ -25,47 +25,48 @@ def insert_binary_col_binary_csc(mat, indices, i=None):
 
     This method is in-place operation.
 
-    Parameters
-    ----------
-    mat: scipy.sparse.csc_matrix
-    i: int
-    indices: numpy.array
-        The indices of nonzero elements in the column to be inserted.
+    ::
 
+        Let mat = scipy.sparse.csc_matrix(np.array([
+            [1, 0, 1],
+            [1, 1, 1],
+            [0, 0, 0],
+        ]))
+        i = 1
+        indices = np.array([2]).
+        The column to be inserted is
+        [
+            [0],
+            [0],
+            [1],
+        ]
+        insert_binary_col_binary_csc(mat, indices, i) changes mat to be
+        [
+            [1, 0, 0, 1],
+            [1, 0, 1, 1],
+            [0, 1, 0, 0],
+        ]       ^ Inserted column
 
-    Let mat = scipy.sparse.csc_matrix(np.array([
-        [1, 0, 1],
-        [1, 1, 1],
-        [0, 0, 0],
-    ]))
-    i = 1
-    indices = np.array([2]).
-    The column to be inserted is
-    [
-        [0],
-        [0],
-        [1],
-    ]
-    insert_binary_col_binary_csc(mat, indices, i) changes mat to be
-    [
-        [1, 0, 0, 1],
-        [1, 0, 1, 1],
-        [0, 1, 0, 0],
-    ]       ^ Inserted column
+        When indices = np.array([0, 2]),
+        The column to be inserted is
+        [
+            [1],
+            [0],
+            [1],
+        ]
+        and insert_binary_col_binary_csc(mat, indices, i) changes mat to be
+        [
+            [1, 1, 0, 1],
+            [1, 0, 1, 1],
+            [0, 1, 0, 0],
+        ]       ^ Inserted column
 
-    When indices = np.array([0, 2]),
-    The column to be inserted is
-    [
-        [1],
-        [0],
-        [1],
-    ]
-    and insert_binary_col_binary_csc(mat, indices, i) changes mat to be
-    [
-        [1, 1, 0, 1],
-        [1, 0, 1, 1],
-        [0, 1, 0, 0],
-    ]       ^ Inserted column
+    Args:
+        mat (scipy.sparse.csc_matrix)
+        i (int)
+        indices (numpy.array): The indices of nonzero elements in the column to be
+        inserted.
+
     """
 
     if not isinstance(mat, scipy.sparse.csc_matrix):
@@ -191,50 +192,49 @@ def array_to_lil_row(arr):
     lil style sparse matrix of the large matrix is achieved.
 
 
-    Parameters
-    ----------
-    arr: 1 dim numpy.array
+    Args:
+        arr (numpy.array): 1-dim array
 
-    Returns
-    -------
-    datum: list of lists
-    row: list of lists
+    Returns:
+        datum: list of lists
+        row: list of lists
 
-    Examples
-    --------
-    >>> arr = np.array([1, 2, 3])
-    >>> array_row_to_lil_row(arr)
-    list([1, 2, 3]), list([0, 1, 2])
+    Examples::
 
-    >>> arr = np.array([0, 0, 1])
-    >>> array_row_to_lil_row(arr)
-    list([1]), list([2])
+        >>> arr = np.array([1, 2, 3])
+        >>> array_row_to_lil_row(arr)
+        list([1, 2, 3]), list([0, 1, 2])
 
-    >>> arr = np.array([0, 0, 0])
-    >>> array_row_to_lil_row(arr)
-    list([]), list([])
+        >>> arr = np.array([0, 0, 1])
+        >>> array_row_to_lil_row(arr)
+        list([1]), list([2])
 
-    # example of array to sparse.lil_matrix conversion.
-    >>> arr = np.array([
-    ...     [1, 2, 3],
-    ...     [0, 0, 1],
-    ...     [0, 0, 0],
-    ...     [7, 8, 0],
-    ... ])
-    >>> rows, data = [], []
-    >>> for row_ in arr:
-    ...     datum, row = array_to_lil_row(row_)
-    ...     rows.append(row)
-    ...     data.append(datum)
-    ... n_rows, n_cols = 4, 3
-    ... lil_arr = scipy.sparse.lil_matrix((n_rows, n_cols), dtype=data[0][0].dtype)
-    ... lil_arr.data = np.array(data, dtype='object')
-    ... lil_arr.rows = np.array(rows, dtype='object')
-    >>> lil_arr.toarray()
-    array([[1, 2, 3],
-           [0, 0, 1],
-           [0, 0, 0],
-           [7, 8, 0]])
+        >>> arr = np.array([0, 0, 0])
+        >>> array_row_to_lil_row(arr)
+        list([]), list([])
+
+        # example of array to sparse.lil_matrix conversion.
+        >>> arr = np.array([
+        ...     [1, 2, 3],
+        ...     [0, 0, 1],
+        ...     [0, 0, 0],
+        ...     [7, 8, 0],
+        ... ])
+        >>> rows, data = [], []
+        >>> for row_ in arr:
+        ...     datum, row = array_to_lil_row(row_)
+        ...     rows.append(row)
+        ...     data.append(datum)
+        ... n_rows, n_cols = 4, 3
+        ... lil_arr = scipy.sparse.lil_matrix((n_rows, n_cols), dtype=data[0][0].dtype)
+        ... lil_arr.data = np.array(data, dtype='object')
+        ... lil_arr.rows = np.array(rows, dtype='object')
+        >>> lil_arr.toarray()
+        array([[1, 2, 3],
+            [0, 0, 1],
+            [0, 0, 0],
+            [7, 8, 0]])
+
     """
 
     row = list(np.where(arr != 0)[0])

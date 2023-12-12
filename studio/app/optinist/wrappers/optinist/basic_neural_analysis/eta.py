@@ -1,124 +1,138 @@
 import numpy as np
+from pydantic import BaseModel
+from pydantic.dataclasses import Field
 
+from studio.app.common.core.algo import AlgoTemplate
 from studio.app.common.dataclass import HeatMapData, TimeSeriesData
 from studio.app.optinist.core.nwb.nwb import NWBDATASET
 from studio.app.optinist.dataclass import BehaviorData, FluoData, IscellData
 
 
-def calc_trigger(behavior_data, trigger_type, trigger_threshold):
-    flg = np.array(behavior_data > trigger_threshold, dtype=int)
-    if trigger_type == "up":
-        trigger_idx = np.where(np.ediff1d(flg) == 1)[0]
-    elif trigger_type == "down":
-        trigger_idx = np.where(np.ediff1d(flg) == -1)[0]
-    elif trigger_type == "cross":
-        trigger_idx = np.where(np.ediff1d(flg) != 0)[0]
-    else:
-        trigger_idx = np.where(np.ediff1d(flg) == 0)[0]
-
-    return trigger_idx
+class ETAParams(BaseModel):
+    transpose_x: bool = Field(True)
+    transpose_y: bool = Field(False)
+    target_index: int = Field(1)
+    trigger_type: str = Field("up", description="available: up, down, cross")
+    trigger_threshold: int = Field(0)
+    start_time: int = Field(-10)
+    end_time: int = Field(10)
 
 
-def calc_trigger_average(neural_data, trigger_idx, start_time, end_time):
-    num_frame = neural_data.shape[0]
+class ETA(AlgoTemplate):
+    def run(
+        self,
+        params: ETAParams,
+        neural_data: FluoData,
+        behaviors_data: BehaviorData,
+        iscell: IscellData = None,
+    ) -> dict(mean=TimeSeriesData):
+        print("start ETA:", self.function_id)
 
-    ind = np.array(range(start_time, end_time), dtype=int)
+        neural_data = neural_data.data
+        behaviors_data = behaviors_data.data
 
-    event_trigger_data = []
-    for trigger in trigger_idx:
-        target_idx = ind + trigger
+        if params["transpose_x"]:
+            X = neural_data.transpose()
+        else:
+            X = neural_data
 
-        if np.min(target_idx) >= 0 and np.max(target_idx) < num_frame:
-            event_trigger_data.append(neural_data[target_idx])
+        if params["transpose_y"]:
+            Y = behaviors_data.transpose()
+        else:
+            Y = behaviors_data
 
-    # (num_event, cell_number, event_time_lambda)
-    event_trigger_data = np.array(event_trigger_data)
+        assert (
+            X.shape[0] == Y.shape[0]
+        ), f"""
+            neural_data and behaviors_data is not same dimension,
+            neural.shape{X.shape}, behavior.shape{Y.shape}"""
 
-    return event_trigger_data
+        if iscell is not None:
+            iscell = iscell.data
+            ind = np.where(iscell > 0)[0]
+            cell_numbers = ind
+            X = X[:, ind]
 
+        Y = Y[:, params["target_index"]]
 
-def ETA(
-    neural_data: FluoData,
-    behaviors_data: BehaviorData,
-    output_dir: str,
-    iscell: IscellData = None,
-    params: dict = None,
-    **kwargs,
-) -> dict(mean=TimeSeriesData):
-    function_id = output_dir.split("/")[-1]
-    print("start ETA:", function_id)
+        # calculate Triggers
+        trigger_idx = self.calc_trigger(
+            Y, params["trigger_type"], params["trigger_threshold"]
+        )
 
-    neural_data = neural_data.data
-    behaviors_data = behaviors_data.data
+        # calculate Triggered average
+        event_trigger_data = self.calc_trigger_average(
+            X, trigger_idx, params["start_time"], params["end_time"]
+        )
 
-    if params["transpose_x"]:
-        X = neural_data.transpose()
-    else:
-        X = neural_data
+        # (cell_number, event_time_lambda)
+        if len(event_trigger_data) > 0:
+            mean = np.mean(event_trigger_data, axis=0)
+            sem = np.std(event_trigger_data, axis=0) / np.sqrt(len(event_trigger_data))
+            mean = mean.transpose()
+            sem = sem.transpose()
+        else:
+            assert False, "Output data size is 0"
 
-    if params["transpose_y"]:
-        Y = behaviors_data.transpose()
-    else:
-        Y = behaviors_data
-
-    assert (
-        X.shape[0] == Y.shape[0]
-    ), f"""
-        neural_data and behaviors_data is not same dimension,
-        neural.shape{X.shape}, behavior.shape{Y.shape}"""
-
-    if iscell is not None:
-        iscell = iscell.data
-        ind = np.where(iscell > 0)[0]
-        cell_numbers = ind
-        X = X[:, ind]
-
-    Y = Y[:, params["target_index"]]
-
-    # calculate Triggers
-    trigger_idx = calc_trigger(Y, params["trigger_type"], params["trigger_threshold"])
-
-    # calculate Triggered average
-    event_trigger_data = calc_trigger_average(
-        X, trigger_idx, params["start_time"], params["end_time"]
-    )
-
-    # (cell_number, event_time_lambda)
-    if len(event_trigger_data) > 0:
-        mean = np.mean(event_trigger_data, axis=0)
-        sem = np.std(event_trigger_data, axis=0) / np.sqrt(len(event_trigger_data))
-        mean = mean.transpose()
-        sem = sem.transpose()
-    else:
-        assert False, "Output data size is 0"
-
-    # NWB追加
-    nwbfile = {}
-    nwbfile[NWBDATASET.POSTPROCESS] = {
-        function_id: {
-            "mean": mean,
-            "sem": sem,
-            "num_sample": [len(mean)],
+        # NWB追加
+        nwbfile = {}
+        nwbfile[NWBDATASET.POSTPROCESS] = {
+            self.function_id: {
+                "mean": mean,
+                "sem": sem,
+                "num_sample": [len(mean)],
+            }
         }
-    }
 
-    min_value = np.min(mean, axis=1, keepdims=True)
-    max_value = np.max(mean, axis=1, keepdims=True)
-    norm_mean = (mean - min_value) / (max_value - min_value)
+        min_value = np.min(mean, axis=1, keepdims=True)
+        max_value = np.max(mean, axis=1, keepdims=True)
+        norm_mean = (mean - min_value) / (max_value - min_value)
 
-    info = {}
-    info["mean"] = TimeSeriesData(
-        mean,
-        std=sem,
-        index=list(np.arange(params["start_time"], params["end_time"])),
-        cell_numbers=cell_numbers if iscell is not None else None,
-        file_name="mean",
-    )
-    info["mean_heatmap"] = HeatMapData(
-        norm_mean,
-        columns=list(np.arange(params["start_time"], params["end_time"])),
-        file_name="mean_heatmap",
-    )
-    info["nwbfile"] = nwbfile
+        info = {}
+        info["mean"] = TimeSeriesData(
+            mean,
+            std=sem,
+            index=list(np.arange(params["start_time"], params["end_time"])),
+            cell_numbers=cell_numbers if iscell is not None else None,
+            file_name="mean",
+        )
+        info["mean_heatmap"] = HeatMapData(
+            norm_mean,
+            columns=list(np.arange(params["start_time"], params["end_time"])),
+            file_name="mean_heatmap",
+        )
+        info["nwbfile"] = nwbfile
 
-    return info
+        return info
+
+    @staticmethod
+    def calc_trigger(behavior_data, trigger_type, trigger_threshold):
+        flg = np.array(behavior_data > trigger_threshold, dtype=int)
+        if trigger_type == "up":
+            trigger_idx = np.where(np.ediff1d(flg) == 1)[0]
+        elif trigger_type == "down":
+            trigger_idx = np.where(np.ediff1d(flg) == -1)[0]
+        elif trigger_type == "cross":
+            trigger_idx = np.where(np.ediff1d(flg) != 0)[0]
+        else:
+            trigger_idx = np.where(np.ediff1d(flg) == 0)[0]
+
+        return trigger_idx
+
+    @staticmethod
+    def calc_trigger_average(neural_data, trigger_idx, start_time, end_time):
+        num_frame = neural_data.shape[0]
+
+        ind = np.array(range(start_time, end_time), dtype=int)
+
+        event_trigger_data = []
+        for trigger in trigger_idx:
+            target_idx = ind + trigger
+
+            if np.min(target_idx) >= 0 and np.max(target_idx) < num_frame:
+                event_trigger_data.append(neural_data[target_idx])
+
+        # (num_event, cell_number, event_time_lambda)
+        event_trigger_data = np.array(event_trigger_data)
+
+        return event_trigger_data

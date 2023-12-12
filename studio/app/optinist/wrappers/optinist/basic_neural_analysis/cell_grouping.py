@@ -1,30 +1,35 @@
+from pydantic import BaseModel
+from pydantic.dataclasses import Field
+
+from studio.app.common.core.algo import AlgoTemplate
 from studio.app.common.dataclass import TimeSeriesData
-from studio.app.optinist.dataclass import NWBFile
 
 
-def cell_grouping(
-    neural_data: TimeSeriesData,
-    output_dir: str,
-    nwbfile: NWBFile = None,
-    params: dict = None,
-    **kwargs,
-) -> dict():
-    import numpy as np
+class CellGroupingParams(BaseModel):
+    transpose: bool = Field(False)
+    threshold: float = Field(1.0)
+    start_time: int = Field(-10)
+    end_time: int = Field(0)
 
-    neural_data = neural_data.data
-    std = neural_data.std
 
-    if params["transpose"]:
-        neural_data = neural_data.transpose()
+class CellGrouping(AlgoTemplate):
+    def run(self, params: CellGroupingParams, neural_data: TimeSeriesData) -> dict():
+        import numpy as np
 
-    baseline = np.mean(neural_data, axis=1, keepdims=True)
-    std = neural_data[np.argmax(neural_data, axis=1)].std()
+        neural_data = neural_data.data
+        std = neural_data.std
 
-    grouped_cells = (neural_data.max(axis=1) - baseline) / std > params["threshold"]
+        if params["transpose"]:
+            neural_data = neural_data.transpose()
 
-    info = {}
-    info["grouped_cells"] = TimeSeriesData(
-        neural_data[grouped_cells], std=std, file_name="grouped_cells_mean"
-    )
+        baseline = np.mean(neural_data, axis=1, keepdims=True)
+        std = neural_data[np.argmax(neural_data, axis=1)].std()
 
-    return info
+        grouped_cells = (neural_data.max(axis=1) - baseline) / std > params["threshold"]
+
+        info = {}
+        info["grouped_cells"] = TimeSeriesData(
+            neural_data[grouped_cells], std=std, file_name="grouped_cells_mean"
+        )
+
+        return info

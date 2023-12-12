@@ -21,7 +21,7 @@ class NestDictGetter:
                     value, cls._parent_key(parent_key, key)
                 )
             else:
-                sig = inspect.signature(value["function"])
+                sig = inspect.signature(value["function"].run)
                 returns_list = None
                 if sig.return_annotation is not inspect._empty:
                     returns_list = cls._return_list(sig.return_annotation.items())
@@ -29,7 +29,6 @@ class NestDictGetter:
                 algo_dict[key] = Algo(
                     args=cls._args_list(sig.parameters.values()),
                     returns=returns_list,
-                    parameter=value["parameter"] if "parameter" in value else None,
                     path=cls._parent_key(parent_key, key),
                 )
 
@@ -63,23 +62,25 @@ class NestDictGetter:
 async def get_algolist() -> Dict[str, Algo]:
     """_summary_
 
-    Returns:
-        {
-            'caiman': {
-                'children': {
-                    'caiman_mc' : {
-                        'args': ['images', 'timeseries'],
-                        'return': ['images'],
-                        'path': 'caiman/caiman_mc'
-                    },
-                    'caiman_cnmf': {
-                        'args': ['images', 'timeseries'],
-                        'return': ['images'],
-                        'path': 'caiman/caiman_mc'
+    Returns::
+
+            {
+                'caiman': {
+                    'children': {
+                        'caiman_mc' : {
+                            'args': ['images', 'timeseries'],
+                            'return': ['images'],
+                            'path': 'caiman/caiman_mc'
+                        },
+                        'caiman_cnmf': {
+                            'args': ['images', 'timeseries'],
+                            'return': ['images'],
+                            'path': 'caiman/caiman_mc'
+                        }
                     }
                 }
             }
-        }
+
     """
 
     return NestDictGetter.get_nest_dict(wrapper_dict, "")

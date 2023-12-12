@@ -19,7 +19,7 @@ import {
   importWorkflowConfig,
   fetchWorkflow,
 } from "store/slice/Workflow/WorkflowActions"
-import { convertToParamMap, getChildParam } from "utils/param/ParamUtils"
+import { getChildParam } from "utils/param/ParamUtils"
 
 const initialState: AlgorithmNode = {}
 
@@ -50,7 +50,7 @@ export const algorithmNodeSlice = createSlice({
     builder
       .addCase(getAlgoParams.fulfilled, (state, action) => {
         const { nodeId } = action.meta.arg
-        state[nodeId].params = convertToParamMap(action.payload)
+        state[nodeId].params = action.payload
       })
       .addCase(addAlgorithmNode.fulfilled, (state, action) => {
         const { node, functionPath, name, runAlready } = action.meta.arg
@@ -59,7 +59,7 @@ export const algorithmNodeSlice = createSlice({
           state[node.id] = {
             functionPath,
             name,
-            params: convertToParamMap(params),
+            params: params,
             isUpdated: runAlready ?? false,
           }
         }

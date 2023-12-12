@@ -6,18 +6,17 @@ from studio.app.optinist.wrappers.lccd.lccd_python import utils
 
 def filter_roi_by_area(roi, min_area, max_area):
     """
-    Parameters
-    ----------
-    roi: np.array or scipy.sparse.csc (Maybe work with other sparse matrix types)
-        roi has shape (X, n).
-        X is spatial dimension.
-        n is the number of rois
-    min_area: int
-    max_area: int
+    Args:
+        roi (np.array or scipy.sparse.csc): Maybe work with other sparse matrix types.
+            roi has shape (X, n).
+            X is spatial dimension.
+            n is the number of rois
+        min_area (int)
+        max_area (int)
 
-    Returns
-    -------
-    roi
+    Returns:
+        roi
+
     """
 
     n_rois = roi.shape[1]
@@ -80,14 +79,17 @@ class RoiIntegration:
         From both roi_a's ith region and roi_b's jth region,
         remove their intersection.
 
-        Let
-        roi_a[:, i] = [1, 0, 1, 1, 0, 1, 1].T
-        roi_b[:, j] = [0, 1, 1, 0, 1, 1, 0].T
+        ::
 
-        intersection is [0, 0, 1, 0, 0, 1, 0].T
-        then, calling remove_overlap(roi_a, roi_b, i, j),
-        roi_a[:, i] = [1, 0, 0, 1, 0, 0, 1].T
-        roi_b[:, j] = [0, 1, 0, 0, 1, 0, 0].T
+            Let
+            roi_a[:, i] = [1, 0, 1, 1, 0, 1, 1].T
+            roi_b[:, j] = [0, 1, 1, 0, 1, 1, 0].T
+
+            intersection is [0, 0, 1, 0, 0, 1, 0].T
+            then, calling remove_overlap(roi_a, roi_b, i, j),
+            roi_a[:, i] = [1, 0, 0, 1, 0, 0, 1].T
+            roi_b[:, j] = [0, 1, 0, 0, 1, 0, 0].T
+
         """
 
         if self.sparse:  # TODO: improve readability

@@ -1,8 +1,8 @@
 from studio.app.optinist.wrappers.optinist.neural_population_analysis.correlation import (  # noqa: E501
-    correlation,
+    Correlation,
 )
 from studio.app.optinist.wrappers.optinist.neural_population_analysis.cross_correlation import (  # noqa: E501
-    cross_correlation,
+    CrossCorrelation,
 )
 from studio.app.optinist.wrappers.optinist.neural_population_analysis.granger import (
     Granger,
@@ -10,10 +10,10 @@ from studio.app.optinist.wrappers.optinist.neural_population_analysis.granger im
 
 neural_population_analysis_wrapper_dict = {
     "correlation": {
-        "function": correlation,
+        "function": Correlation,
     },
     "cross_correlation": {
-        "function": cross_correlation,
+        "function": CrossCorrelation,
         "conda_name": "optinist",
     },
     "granger": {

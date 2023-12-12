@@ -32,6 +32,7 @@ import { selectPipelineNodeResultStatus } from "store/slice/Pipeline/PipelineSel
 import { NODE_RESULT_STATUS } from "store/slice/Pipeline/PipelineType"
 import { selectSnakemakeParams } from "store/slice/Snakemake/SnakemakeSelectors"
 import { RootState } from "store/store"
+import { removeMetaFromParamMap } from "utils/param/ParamUtils"
 
 /**
  * 前回の結果で、エラーまたはParamに変更があるnodeのリストを返す
@@ -57,6 +58,7 @@ const selectNodeDictForRun = (state: RootState): NodeDict => {
   nodes.forEach((node) => {
     if (isAlgorithmNodeData(node)) {
       const param = selectAlgorithmParams(node.id)(state) ?? {}
+      const paramWithoutMeta = removeMetaFromParamMap(param)
       const functionPath = selectAlgorithmFunctionPath(node.id)(state)
       const algorithmNodePostData: Node<AlgorithmNodePostData> = {
         ...node,
@@ -65,7 +67,7 @@ const selectNodeDictForRun = (state: RootState): NodeDict => {
           label: node.data?.label ?? "",
           type: NODE_TYPE_SET.ALGORITHM,
           path: functionPath,
-          param,
+          param: paramWithoutMeta,
         },
       }
       nodeDict[node.id] = algorithmNodePostData
@@ -113,9 +115,12 @@ export const selectRunPostData = createSelector(
     nodeDictForRun,
     forceRunList,
   ) => {
+    const nwbParamsWithoutMeta = removeMetaFromParamMap(nwbParams)
+    const snakemakeParamsWithoutMeta = removeMetaFromParamMap(snakemakeParams)
+
     const runPostData: Omit<RunPostData, "name"> = {
-      nwbParam: nwbParams,
-      snakemakeParam: snakemakeParams,
+      nwbParam: nwbParamsWithoutMeta,
+      snakemakeParam: snakemakeParamsWithoutMeta,
       edgeDict: edgeDictForRun,
       nodeDict: nodeDictForRun,
       forceRunList,

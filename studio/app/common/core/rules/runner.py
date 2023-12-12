@@ -123,11 +123,14 @@ class Runner:
     @classmethod
     def execute_function(cls, path, params, nwb_params, output_dir, input_info):
         wrapper = cls.dict2leaf(wrapper_dict, path.split("/"))
-        func = copy.deepcopy(wrapper["function"])
-        output_info = func(
-            params=params, nwbfile=nwb_params, output_dir=output_dir, **input_info
+        algo = copy.deepcopy(wrapper["function"])
+        output_info = (
+            algo()
+            .set_output_dir(output_dir)
+            .set_nwb_params(nwb_params)
+            .run(params=params, **input_info)
         )
-        del func
+        del algo
         gc.collect()
 
         return output_info

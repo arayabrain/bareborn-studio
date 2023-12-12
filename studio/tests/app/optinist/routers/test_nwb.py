@@ -12,8 +12,9 @@ def test_nwb_params(client):
     assert response.status_code == 200
     assert isinstance(data, dict)
 
-    assert isinstance(data["session_description"], str)
-    assert data["session_description"] == "optinist"
+    session_description = data["session_description"]["value"]
+    assert isinstance(session_description, str)
+    assert session_description == "optinist"
 
 
 def test_download_nwb(client):
