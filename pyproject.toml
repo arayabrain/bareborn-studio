@@ -53,7 +53,7 @@ future = "*"
 pynwb = "2.2.0"
 psutil = "*"
 nbstripout = "*"
-snakemake = { version = ">=7.24, <7.31" }
+snakemake = { version = ">=7.24,<7.32" }
 jinja2 = "3.1.*"
 httpx = "*"
 firebase_admin = "*"
