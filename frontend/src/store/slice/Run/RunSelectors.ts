@@ -84,6 +84,7 @@ const selectNodeDictForRun = (state: RootState): NodeDict => {
           type: NODE_TYPE_SET.INPUT,
           path: filePath ?? "",
           param,
+          matPath: matPath,
           hdf5Path: hdf5Path,
           matPath: matPath,
           fileType,
