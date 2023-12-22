@@ -109,17 +109,13 @@ const ItemSelect = memo(function ItemSelect({ nodeId }: NodeIdProps) {
         <DialogTitle>{"Select File"}</DialogTitle>
         <Structure nodeId={nodeId} />
         <DialogActions>
-          <Button
-            onClick={() => setOpen(false)}
-            color="inherit"
-            variant="outlined"
-          >
+          <Button onClick={() => setOpen(false)} variant="outlined">
             cancel
           </Button>
           <Button
             onClick={() => setOpen(false)}
             color="primary"
-            variant="outlined"
+            variant="contained"
             autoFocus
           >
             OK
