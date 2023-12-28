@@ -1,7 +1,14 @@
 import sys
 
-import isx
-from MicroscopeDataReaderBase import MicroscopeDataReaderBase, OMEDataModel
+try:
+    import isx
+except ModuleNotFoundError:
+    pass
+
+from studio.app.optinist.microscopes.MicroscopeDataReaderBase import (
+    MicroscopeDataReaderBase,
+    OMEDataModel,
+)
 
 
 class IsxdReader(MicroscopeDataReaderBase):
