@@ -65,6 +65,7 @@ describe("RunSelectors", () => {
           neucoeff: { type: "child", value: 0.7, path: "neucoeff" },
         },
         originalValue: false,
+        isUpdate: false,
       },
       suite2p_file_convert_m58owcejm0: {
         functionPath: "suite2p/suite2p_file_convert",
@@ -85,6 +86,7 @@ describe("RunSelectors", () => {
           },
         },
         originalValue: false,
+        isUpdate: false,
       },
     },
     flowElement: {
@@ -588,6 +590,7 @@ describe("RunSelectors", () => {
           },
         },
         originalValue: true,
+        isUpdate: false,
       },
     },
     flowElement: {
@@ -694,11 +697,6 @@ describe("RunSelectors", () => {
         position: { x: 350, y: 153.52022229668373 },
       },
     },
-    forceRunList: [
-      {
-        nodeId: "suite2p_file_convert_6fn2k01zph",
-        name: "suite2p_file_convert",
-      },
-    ],
+    forceRunList: [],
   }
 })
