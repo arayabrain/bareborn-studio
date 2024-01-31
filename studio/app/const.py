@@ -18,3 +18,5 @@ ACCEPR_MATLAB_EXT = [".mat"]
 NOT_DISPLAY_ARGS_LIST = ["params", "output_dir", "nwbfile", "kwargs"]
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+MAXIMUM_IMAGE_DATA_PART_SIZE = 2_000_000_000  # 2GB

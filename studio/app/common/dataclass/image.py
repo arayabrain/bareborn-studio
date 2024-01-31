@@ -1,4 +1,6 @@
 import gc
+import math
+import os
 from typing import Optional
 
 import imageio
@@ -14,6 +16,7 @@ from studio.app.common.core.workflow.workflow import OutputPath, OutputType
 from studio.app.common.dataclass.base import BaseData
 from studio.app.common.dataclass.utils import create_images_list
 from studio.app.common.schemas.outputs import PlotMetaData
+from studio.app.const import MAXIMUM_IMAGE_DATA_PART_SIZE
 from studio.app.dir_path import DIRPATH
 
 
@@ -33,7 +36,32 @@ class ImageData(BaseData):
         if data is None:
             self.path = None
         elif isinstance(data, str):
-            self.path = data
+            size = os.path.getsize(data)
+
+            if size <= MAXIMUM_IMAGE_DATA_PART_SIZE:
+                self.path = data
+            else:
+                self.path = []
+                name, ext = os.path.splitext(os.path.basename(data))
+
+                _dir = join_filepath([output_dir, "tiff", name])
+                create_directory(_dir)
+
+                with tifffile.TiffFile(data) as tffl:
+                    image = tffl.asarray()
+
+                max_frames = image.shape[0]
+                max_frame_per_part = math.ceil(
+                    max_frames / math.ceil(size / MAXIMUM_IMAGE_DATA_PART_SIZE)
+                )
+
+                for t in np.arange(0, max_frames, max_frame_per_part):
+                    _path = join_filepath(
+                        [_dir, f"{name}_{t//max_frame_per_part}{ext}"]
+                    )
+                    with tifffile.TiffWriter(_path, bigtiff=True) as tif:
+                        tif.write(image[t : t + max_frame_per_part])
+                    self.path.append(_path)
         elif isinstance(data, list) and isinstance(data[0], str):
             self.path = data
         else:
