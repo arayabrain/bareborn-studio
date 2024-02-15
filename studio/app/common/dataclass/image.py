@@ -36,44 +36,63 @@ class ImageData(BaseData):
         if data is None:
             self.path = None
         elif isinstance(data, str):
+            path = data
             size = os.path.getsize(data)
-
-            if size <= MAXIMUM_IMAGE_DATA_PART_SIZE:
-                self.path = data
-            else:
-                self.path = []
-                name, ext = os.path.splitext(os.path.basename(data))
-
-                _dir = join_filepath([output_dir, "tiff", name])
-                create_directory(_dir)
-
+            if size >= MAXIMUM_IMAGE_DATA_PART_SIZE:
                 with tifffile.TiffFile(data) as tffl:
                     image = tffl.asarray()
 
-                max_frames = image.shape[0]
-                max_frame_per_part = math.ceil(
-                    max_frames / math.ceil(size / MAXIMUM_IMAGE_DATA_PART_SIZE)
+                path = self.split_image(
+                    image=image, file_name=data, output_dir=output_dir
                 )
-
-                for t in np.arange(0, max_frames, max_frame_per_part):
-                    _path = join_filepath(
-                        [_dir, f"{name}_{t//max_frame_per_part}{ext}"]
-                    )
-                    with tifffile.TiffWriter(_path, bigtiff=True) as tif:
-                        tif.write(image[t : t + max_frame_per_part])
-                    self.path.append(_path)
+            self.path = path
         elif isinstance(data, list) and isinstance(data[0], str):
-            self.path = data
-        else:
-            _dir = join_filepath([output_dir, "tiff", file_name])
-            create_directory(_dir)
+            path = data
+            if len(data) == 1:
+                size = os.path.getsize(data[0])
+                if size >= MAXIMUM_IMAGE_DATA_PART_SIZE:
+                    with tifffile.TiffFile(data[0]) as tffl:
+                        image = tffl.asarray()
 
-            _path = join_filepath([_dir, f"{file_name}.tif"])
-            tifffile.imsave(_path, data)
-            self.path = [_path]
+                    path = self.split_image(
+                        image=image, file_name=data[0], output_dir=output_dir
+                    )
+            self.path = path
+        else:
+            size = data.nbytes
+            if size >= MAXIMUM_IMAGE_DATA_PART_SIZE:
+                self.path = self.split_image(
+                    image=data, file_name=file_name, output_dir=output_dir
+                )
+            else:
+                _dir = join_filepath([output_dir, "tiff", file_name])
+                create_directory(_dir)
+                _path = join_filepath([_dir, f"{file_name}.tif"])
+                tifffile.imsave(_path, data)
+                self.path = [_path]
 
             del data
             gc.collect()
+
+    @classmethod
+    def split_image(cls, image: np.ndarray, file_name: str, output_dir: str):
+        size = image.nbytes
+        max_frames = image.shape[0]
+        max_frame_per_part = math.ceil(
+            max_frames / math.ceil(size / MAXIMUM_IMAGE_DATA_PART_SIZE)
+        )
+        name, ext = os.path.splitext(os.path.basename(file_name))
+        save_paths = []
+
+        _dir = join_filepath([output_dir, "tiff", name])
+        create_directory(_dir)
+
+        for t in np.arange(0, max_frames, max_frame_per_part):
+            _path = join_filepath([_dir, f"{name}_{t//max_frame_per_part}{ext}"])
+            with tifffile.TiffWriter(_path, bigtiff=True) as tif:
+                tif.write(image[t : t + max_frame_per_part])
+            save_paths.append(_path)
+        return save_paths
 
     @property
     def data(self):

@@ -147,6 +147,7 @@ class NWBCreater:
             unit="na",
             format="external",
             starting_time=0.0,
+            starting_frame=[0.0] * len(image_path),
             rate=1.0,
         )
 

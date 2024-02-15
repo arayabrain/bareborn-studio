@@ -37,13 +37,7 @@ class FileWriter:
 
     @classmethod
     def image(cls, rule_config: Rule):
-        info = {
-            rule_config.return_arg: ImageData(
-                rule_config.input[0]
-                if len(rule_config.input) == 1
-                else rule_config.input,
-            )
-        }
+        info = {rule_config.return_arg: ImageData(rule_config.input)}
         nwbfile = rule_config.nwbfile
         nwbfile["image_series"]["external_file"] = info[rule_config.return_arg]
         info["nwbfile"] = {"input": nwbfile}
