@@ -33,7 +33,10 @@ export const ToolBar = memo(function ToolBar(props: UseRunPipelineReturnType) {
       }}
     >
       {!isStandalone && (
-        <Button onClick={() => navigate("/console/workspaces")}>
+        <Button
+          id-test="buttonBackWorkspaces"
+          onClick={() => navigate("/console/workspaces")}
+        >
           <ArrowBackIosIcon />
           Workspaces
         </Button>

@@ -17,7 +17,10 @@ export const getWorkspaceApi = async (id: number): Promise<ItemsWorkspace> => {
 export const getWorkspacesApi = async (params: {
   [key: string]: number
 }): Promise<WorkspaceDataDTO> => {
-  const paramsNew = stringify(params, { indices: false })
+  const paramsNew = stringify(
+    { sort: ["id", "desc"], ...params },
+    { indices: false },
+  )
   const response = await axios.get(`/workspaces?${paramsNew}`)
   return response.data
 }

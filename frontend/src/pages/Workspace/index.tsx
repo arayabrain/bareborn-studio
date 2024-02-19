@@ -178,6 +178,7 @@ const columns = (
         color="primary"
         size="small"
         onClick={() => handleNavWorkflow(params.row.id)}
+        id-test="buttonWorkflow"
       >
         Workflow
       </Button>
@@ -230,6 +231,7 @@ const columns = (
     renderCell: (params: GridRenderCellParams<GridValidRowModel>) =>
       isMine(user, params.row?.user?.id) ? (
         <IconButton
+          id-test={`buttonDelete${params.row.name.replaceAll(" ", "-")}`}
           onClick={() => handleOpenPopupDel(params.row.id, params.row.name)}
           color="error"
         >
@@ -258,6 +260,7 @@ const PopupNew = ({
         <DialogTitle>New Workspace</DialogTitle>
         <DialogContent sx={{ minWidth: 300 }}>
           <Input
+            id-test="inputNameNodeData"
             sx={{ width: "80%" }}
             placeholder={"Workspace Name"}
             value={value || ""}
@@ -270,7 +273,11 @@ const PopupNew = ({
           <Button variant={"outlined"} onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant={"contained"} onClick={handleOkNew}>
+          <Button
+            variant={"contained"}
+            onClick={handleOkNew}
+            id-test="buttonOkModalNodeData"
+          >
             Ok
           </Button>
         </DialogActions>
@@ -482,6 +489,7 @@ const Workspaces = () => {
         }}
       >
         <Button
+          id-test="buttonNewNodeData"
           sx={{
             background: "#000000c4",
             "&:hover": { backgroundColor: "#00000090" },
@@ -544,6 +552,7 @@ const Workspaces = () => {
         />
       ) : null}
       <ConfirmDialog
+        id-test="confirmDeleteWorkspace"
         open={open.del}
         onCancel={handleClosePopupDel}
         onConfirm={handleOkDel}

@@ -20,6 +20,7 @@ export interface ConfirmDialogProps {
   content: string | JSX.Element
   confirmLabel?: string
   iconType?: "warning" | "info"
+  "id-test"?: string
 }
 
 export const ConfirmDialog: FC<ConfirmDialogProps> = ({
@@ -31,6 +32,7 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({
   content,
   confirmLabel,
   iconType,
+  ...props
 }) => {
   const handleClose = () => {
     onCancel && onCancel()
@@ -63,11 +65,11 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({
           content
         )}
       </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" onClick={handleClose}>
+      <DialogActions id-test={props["id-test"]}>
+        <Button variant="outlined" onClick={handleClose} id-test="btnCancel">
           cancel
         </Button>
-        <Button variant="contained" onClick={handleConfirm}>
+        <Button variant="contained" onClick={handleConfirm} id-test="btnOk">
           {confirmLabel ?? "ok"}
         </Button>
       </DialogActions>

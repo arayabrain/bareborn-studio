@@ -120,9 +120,10 @@ export const AlgorithmTreeView = memo(function AlgorithmTreeView() {
           fileType={FILE_TYPE_SET.MATLAB}
         />
       </TreeItem>
-      <TreeItem nodeId="Algorithm" label="Algorithm">
+      <TreeItem id-test="Algorithm" nodeId="Algorithm" label="Algorithm">
         {Object.entries(algoList).map(([name, node], i) => (
           <AlgoNodeComponentRecursive
+            id-test={name}
             name={name}
             node={node}
             onAddAlgoNode={onAddAlgoNode}
@@ -138,12 +139,14 @@ interface InputNodeComponentProps {
   fileName: string
   nodeName: string
   fileType: FILE_TYPE
+  "id-test"?: string
 }
 
 const InputNodeComponent = memo(function InputNodeComponent({
   fileName,
   nodeName,
   fileType,
+  ...props
 }: InputNodeComponentProps) {
   const dispatch = useDispatch()
 
@@ -202,6 +205,7 @@ const InputNodeComponent = memo(function InputNodeComponent({
 
   return (
     <LeafItem
+      id-test={props["id-test"]}
       ref={dragRef}
       style={{
         opacity: isDragging ? 0.6 : 1,
@@ -229,12 +233,14 @@ interface AlgoNodeComponentBaseProps {
 
 interface AlgoNodeComponentRecursiveProps extends AlgoNodeComponentBaseProps {
   node: AlgorithmNodeType
+  "id-test"?: string
 }
 
 const AlgoNodeComponentRecursive = memo(function AlgoNodeComponentRecursive({
   name,
   node,
   onAddAlgoNode,
+  ...props
 }: AlgoNodeComponentRecursiveProps) {
   if (isAlgoChild(node)) {
     return (
@@ -246,7 +252,7 @@ const AlgoNodeComponentRecursive = memo(function AlgoNodeComponentRecursive({
     )
   } else {
     return (
-      <TreeItem nodeId={name} label={name}>
+      <TreeItem id-test={props["id-test"]} nodeId={name} label={name}>
         {Object.entries(node.children).map(([name, node], i) => (
           <AlgoNodeComponentRecursive
             name={name}
@@ -285,6 +291,7 @@ const AlgoNodeComponent = memo(function AlgoNodeComponent({
       }}
       onFocusCapture={(e) => e.stopPropagation()}
       nodeId={name}
+      id-test={name}
       label={
         <AddButton
           name={name}
