@@ -88,7 +88,9 @@ class ImageData(BaseData):
         create_directory(_dir)
 
         for t in np.arange(0, max_frames, max_frame_per_part):
-            _path = join_filepath([_dir, f"{name}_{t//max_frame_per_part}{ext}"])
+            _path = join_filepath(
+                [_dir, f"{name}_{t//max_frame_per_part}{ext or '.tif'}"]
+            )
             with tifffile.TiffWriter(_path, bigtiff=True) as tif:
                 tif.write(image[t : t + max_frame_per_part])
             save_paths.append(_path)
