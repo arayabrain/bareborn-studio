@@ -13,7 +13,7 @@ import AutorenewIcon from "@mui/icons-material/Autorenew"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import FolderIcon from "@mui/icons-material/Folder"
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined"
-import { Tooltip } from "@mui/material"
+import { Divider, IconButton, Tooltip } from "@mui/material"
 import Box from "@mui/material/Box"
 import Button from "@mui/material/Button"
 import Checkbox, { CheckboxProps } from "@mui/material/Checkbox"
@@ -190,15 +190,16 @@ const FileTreeView = memo(function FileTreeView({
     <div>
       {isLoading && <LinearProgress />}
       {fileType === FILE_TREE_TYPE_SET.IMAGE ? (
-        <Box sx={{ display: "flex", borderBottom: "1px solid black" }}>
-          <Typography flexGrow={5} sx={{ maxWidth: "50%" }}>
-            Files
-          </Typography>
-          <Typography flexGrow={3} marginLeft={2}>
-            Shapes
-          </Typography>
-          <Box flexGrow={1}></Box>
-        </Box>
+        <>
+          <Box sx={{ display: "flex" }}>
+            <Typography sx={{ width: "50%" }}>Files</Typography>
+            <Typography sx={{ minWidth: "35%" }} marginLeft={2}>
+              Shapes
+            </Typography>
+            <Box></Box>
+          </Box>
+          <Divider />
+        </>
       ) : null}
       <TreeView
         disableSelection={multiSelect}
@@ -259,6 +260,7 @@ const TreeNode = memo(function TreeNode({
         label={
           multiSelect && node.nodes.filter((node) => !node.isDir).length > 0 ? (
             <TreeItemLabel
+              isDir={node.isDir}
               fileType={fileType}
               shape={node.shape}
               label={node.name}
@@ -297,6 +299,7 @@ const TreeNode = memo(function TreeNode({
         label={
           multiSelect ? (
             <TreeItemLabel
+              isDir={node.isDir}
               fileType={fileType}
               shape={node.shape}
               label={node.name}
@@ -322,12 +325,14 @@ interface TreeItemLabelProps {
   shape: number[]
   label: string
   checkboxProps: CheckboxProps
+  isDir?: boolean
 }
 
 const TreeItemLabel = memo(function TreeItemLabel({
   fileType,
   shape,
   label,
+  isDir,
   checkboxProps,
 }: TreeItemLabelProps) {
   const dispatch = useDispatch<AppDispatch>()
@@ -341,15 +346,14 @@ const TreeItemLabel = memo(function TreeItemLabel({
     [dispatch, workspaceId],
   )
   return (
-    <Box display="flex" alignItems="center">
+    <Box height={24} display="flex" alignItems="center">
       <Tooltip
         title={<span style={{ fontSize: 14 }}>{label}</span>}
         placement={"left-start"}
       >
         <Box
-          flexGrow={5}
           sx={{
-            maxWidth: "48%",
+            width: "48%",
             textOverflow: "ellipsis",
             overflowX: "hidden",
             whiteSpace: "pre",
@@ -360,30 +364,34 @@ const TreeItemLabel = memo(function TreeItemLabel({
       </Tooltip>
       {fileType === FILE_TREE_TYPE_SET.IMAGE ? (
         <>
-          <Box flexGrow={3} marginLeft={2}>
-            {!shape ? (
-              <Tooltip
-                title={
-                  <span style={{ fontSize: 14 }}>
-                    parsing image shape failed
-                  </span>
-                }
-                placement={"right"}
-              >
-                <ErrorOutlineIcon color={"error"} />
-              </Tooltip>
-            ) : (
-              `(${shape.join(", ")})`
-            )}
+          <Box minWidth={175} marginLeft={2} alignItems={"center"}>
+            {!isDir ? (
+              !shape ? (
+                <Tooltip
+                  title={
+                    <span style={{ fontSize: 14 }}>
+                      parsing image shape failed
+                    </span>
+                  }
+                  placement={"right"}
+                >
+                  <ErrorOutlineIcon color={"error"} />
+                </Tooltip>
+              ) : (
+                `(${shape.join(", ")})`
+              )
+            ) : null}
           </Box>
-          <Box
-            marginRight={1}
-            display={"flex"}
-            alignItems={"center"}
-            onClick={(event) => onUpdate(event, label)}
-          >
-            <AutorenewIcon />
-          </Box>
+          {!isDir ? (
+            <IconButton
+              sx={{ minWidth: 24 }}
+              onClick={(event) => onUpdate(event, label)}
+            >
+              <AutorenewIcon />
+            </IconButton>
+          ) : (
+            <Box width={24} marginRight={2} />
+          )}
         </>
       ) : null}
       <Box>
@@ -394,6 +402,7 @@ const TreeItemLabel = memo(function TreeItemLabel({
           sx={{
             marginRight: "4px",
             padding: "2px",
+            minWidth: 24,
           }}
         />
       </Box>
