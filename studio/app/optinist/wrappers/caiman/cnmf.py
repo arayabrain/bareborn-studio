@@ -66,12 +66,14 @@ def get_roi(A, thr, thr_method, swap_dim, dims):
 def caiman_cnmf(
     images: ImageData, output_dir: str, params: dict = None, **kwargs
 ) -> dict(fluorescence=FluoData, iscell=IscellData):
+    import caiman as cm
     import scipy
     from caiman import local_correlations, stop_server
+    from caiman.base.rois import extract_active_components, register_multisession
     from caiman.cluster import setup_cluster
     from caiman.mmapping import prepare_shape
     from caiman.paths import memmap_frames_filename
-    from caiman.source_extraction.cnmf import cnmf
+    from caiman.source_extraction.cnmf import cnmf, estimates
     from caiman.source_extraction.cnmf.params import CNMFParams
 
     function_id = output_dir.split("/")[-1]
@@ -87,10 +89,7 @@ def caiman_cnmf(
     do_refit = params.pop("do_refit", None)
     thr = params.pop("thr", None)
 
-    file_path = images.path
-    if isinstance(file_path, list):
-        file_path = file_path[0]
-
+    image_paths = images.path if isinstance(images.path, list) else [images.path]
     images = images.data
 
     # np.arrayをmmapへ変換
@@ -99,8 +98,8 @@ def caiman_cnmf(
     T = images.shape[0]
     shape_mov = (np.prod(dims), T)
 
-    dir_path = join_filepath(file_path.split("/")[:-1])
-    basename = file_path.split("/")[-1]
+    dir_path = join_filepath(image_paths[0].split("/")[:-1])
+    basename = image_paths[0].split("/")[-1]
     fname_tot = memmap_frames_filename(basename, dims, T, order)
 
     mmap_images = np.memmap(
@@ -125,20 +124,50 @@ def caiman_cnmf(
     else:
         ops = CNMFParams(params_dict={**params, "fr": fr})
 
-    if "dview" in locals():
-        stop_server(dview=dview)  # noqa: F821
+    cnm_list = []
+    templates = []
+    for image in image_paths:
+        ops = CNMFParams(params_dict={**params, "fr": fr, "fnames": [image]})
+        cnm = cnmf.CNMF(n_processes=2, params=ops)
+        cnm = cnm.fit_file()
+        cnm_list.append(cnm)
+        templates.append(cm.load(image).mean(0))
 
-    c, dview, n_processes = setup_cluster(
-        backend="local", n_processes=None, single_thread=True
+    spatial = [cnm.estimates.A for cnm in cnm_list]
+    spatial_background = [cnm.estimates.b for cnm in cnm_list]
+    dims = templates[0].shape
+
+    # https://github.com/flatironinstitute/CaImAn/blob/main/demos/notebooks/demo_multisession_registration.ipynb
+    A_union, A_assignments, matchings = register_multisession(
+        A=spatial, dims=dims, templates=templates
+    )
+    b_union, b_assignments, matchings = register_multisession(
+        A=spatial_background, dims=dims, templates=templates
     )
 
-    cnm = cnmf.CNMF(n_processes=n_processes, dview=dview, Ain=Ain, params=ops)
-    cnm = cnm.fit(mmap_images)
+    cnm.estimates = estimates.Estimates(
+        A=scipy.sparse.csc_matrix(A_union),
+        b=b_union,
+        dims=dims,
+    )
 
-    if do_refit:
-        cnm = cnm.refit(mmap_images, dview=dview)
+    # ====================
+    # Single session CNMF
+    # ====================
+    # if "dview" in locals():
+    #     stop_server(dview=dview)  # noqa: F821
 
-    stop_server(dview=dview)
+    # c, dview, n_processes = setup_cluster(
+    #     backend="local", n_processes=None, single_thread=True
+    # )
+
+    # cnm = cnmf.CNMF(n_processes=n_processes, dview=dview, Ain=Ain, params=ops)
+    # cnm = cnm.fit(mmap_images)
+
+    # if do_refit:
+    #     cnm = cnm.refit(mmap_images, dview=dview)
+
+    # stop_server(dview=dview)
 
     # contours plot
     Cn = local_correlations(mmap_images.transpose(1, 2, 0))
@@ -149,8 +178,8 @@ def caiman_cnmf(
 
     iscell = np.concatenate(
         [
-            np.ones(len(cnm.estimates.C)),
-            np.zeros(cnm.estimates.b.shape[-1] if cnm.estimates.b is not None else 0),
+            np.ones(cnm.estimates.A.shape[-1]),
+            np.zeros(cnm.estimates.b.shape[-1]),
         ]
     )
 
@@ -215,28 +244,28 @@ def caiman_cnmf(
     }
 
     # Fluorescence
-    fluorescence = (
-        np.concatenate(
-            [
-                cnm.estimates.C,
-                cnm.estimates.f,
-            ]
-        )
-        if cnm.estimates.f is not None
-        else cnm.estimates.C
-    )
+    # fluorescence = (
+    #     np.concatenate(
+    #         [
+    #             cnm.estimates.C,
+    #             cnm.estimates.f,
+    #         ]
+    #     )
+    #     if cnm.estimates.f is not None
+    #     else cnm.estimates.C
+    # )
 
-    nwbfile[NWBDATASET.FLUORESCENCE] = {
-        function_id: {
-            "Fluorescence": {
-                "table_name": "ROIs",
-                "region": list(range(n_rois + n_bg)),
-                "name": "Fluorescence",
-                "data": fluorescence.T,
-                "unit": "lumens",
-            }
-        }
-    }
+    # nwbfile[NWBDATASET.FLUORESCENCE] = {
+    #     function_id: {
+    #         "Fluorescence": {
+    #             "table_name": "ROIs",
+    #             "region": list(range(n_rois + n_bg)),
+    #             "name": "Fluorescence",
+    #             "data": fluorescence.T,
+    #             "unit": "lumens",
+    #         }
+    #     }
+    # }
 
     info = {
         "images": ImageData(
@@ -244,7 +273,7 @@ def caiman_cnmf(
             output_dir=output_dir,
             file_name="images",
         ),
-        "fluorescence": FluoData(fluorescence, file_name="fluorescence"),
+        # "fluorescence": FluoData(fluorescence, file_name="fluorescence"),
         "iscell": IscellData(iscell, file_name="iscell"),
         "all_roi": RoiData(
             np.nanmax(im, axis=0), output_dir=output_dir, file_name="all_roi"
@@ -257,7 +286,7 @@ def caiman_cnmf(
         "non_cell_roi": RoiData(
             non_cell_roi, output_dir=output_dir, file_name="non_cell_roi"
         ),
-        "edit_roi_data": EditRoiData(mmap_images, im),
+        # "edit_roi_data": EditRoiData(mmap_images, im),
         "nwbfile": nwbfile,
     }
 
