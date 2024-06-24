@@ -1,10 +1,10 @@
 from typing import Optional
 
-import numpy as np
-import pandas as pd
 # import plotly.graph_objects as go
 # import plotly.io as pio
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 from studio.app.common.core.utils.filepath_creater import join_filepath
 from studio.app.common.core.utils.json_writer import JsonWriter
@@ -42,7 +42,7 @@ class PieData(BaseData):
     def save_plot(self, output_dir):
         plt.figure(figsize=(8, 8))  # Optional: Adjust the figure size as needed
         plt.pie(self.data[0], labels=self.columns, counterclock=False, startangle=90)
-        plt.axis('equal')  # Equal aspect ratio ensures the pie chart is circular.
+        plt.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
         plot_file = join_filepath([output_dir, f"{self.file_name}.png"])
         plt.savefig(plot_file)
         plt.close()

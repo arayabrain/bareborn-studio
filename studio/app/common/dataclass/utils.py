@@ -1,6 +1,8 @@
-from PIL import Image 
+import copy
+
 import numpy as np
-import copy 
+from PIL import Image
+
 
 def create_images_list(data):
     assert len(data.shape) == 2, "data is error"
@@ -14,6 +16,7 @@ def create_images_list(data):
         images.append(_img.tolist())
 
     return images
+
 
 def save_thumbnail(plot_file):
     try:
