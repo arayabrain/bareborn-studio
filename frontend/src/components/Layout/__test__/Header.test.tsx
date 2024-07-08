@@ -3,7 +3,7 @@ import { MemoryRouter } from "react-router-dom"
 
 import configureStore from "redux-mock-store"
 
-import { describe, test, expect, jest } from "@jest/globals"
+import { describe, test, expect } from "@jest/globals"
 import { render } from "@testing-library/react"
 
 import Header from "components/Layout/Header"
