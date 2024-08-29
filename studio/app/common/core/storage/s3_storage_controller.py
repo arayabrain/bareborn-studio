@@ -1,5 +1,4 @@
 import os
-import re
 import shutil
 
 import boto3
@@ -21,10 +20,6 @@ class S3StorageController(BaseRemoteStorageController):
     S3 Storage Controller
     """
 
-    # TODO: 認証情報の管理方式の組み込み
-    # - 現段階では、awscli で事前認証した状態で、利用可能としている
-
-    # TODO: S3 bucket は、最終的にユーザー単位での区画分けとなる想定
     S3_STORAGE_URL = os.environ.get("S3_STORAGE_URL")
     S3_STORAGE_BUCKET = S3_STORAGE_URL.split("//")[-1]
 
@@ -51,89 +46,28 @@ class S3StorageController(BaseRemoteStorageController):
 
     def download_all_experiments_metas(self) -> bool:
         """
-        NOTE:
-          - この処理（config yaml files の S3 からのダウンロード）では、
-            ダウンロード対象ファイルリストの取得に、python module (boto3) ではなく、
-            外部コマンド (aws cli) を利用している
-          - aws cli を利用する事由
-            1. boto3 では、取得対象のファイルリストの Server(AWS) Side でのfilterをサポートしていない（2024.7時点）
-                - 「Prefix配下のファイルリストをすべて取得 → Client Side でのFilter」の操作手順となる
-            2. また 1. の操作を行う場合、Pagination の考慮も必要となる
-          - 上記のため、ファイルリストの取得には、aws cli を利用する形式としている
-            - aws cli (`aws s3 ls`) も、基本的には Server(AWS) Side のファイルリストfilterには非対応だが、
-              `aws s3 sync` の利用により、間接的に Server(AWS) Side での filterが利用可能
-            - なお aws cli の利用は暫定的な対応であり、最終的には boto3 でfilterを実現できることが望ましい
+        Download all experiment metadata files from S3 using boto3.
         """
-
-        # ----------------------------------------
-        # make paths
-        # ----------------------------------------
-
-        import subprocess
-        import tempfile
-
+        paginator = self.__s3_client.get_paginator("list_objects_v2")
         target_files = []
-        with tempfile.TemporaryDirectory() as tempdir:
-            """
-            # CLI Command Description
-            - Use `aws s3 sync`
-                - Specify --dryrun to get file list (no actual sync)
-            - search target files
-                - Experiment Metadata Files
-                    - DIRPATH.EXPERIMENT_YML
-                    - DIRPATH.WORKFLOW_YML
-            - command result (stdout) format
-                > (dryrun) download: s3://{FILE_URL} to {DOWNLOAD_LOCAL_PATH}
-                > ... (repeat above)
-            """
-            aws_s3_sync_command = (
-                f"aws s3 sync {__class__.S3_STORAGE_OUTPUT_URL} {tempdir} "
-                "--dryrun --exclude '*' "
-                f"--include '*/{DIRPATH.EXPERIMENT_YML}' "
-                f"--include '*/{DIRPATH.WORKFLOW_YML}' "
-            )
 
-            # run aws cli command
-            cmd_ret = subprocess.run(
-                aws_s3_sync_command,
-                shell=True,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            assert (
-                cmd_ret.returncode == 0
-            ), f"Fail aws_s3_sync_command. {cmd_ret.stderr}"
-
-            # extract target files paths from command's stdout
-            target_files_str = re.sub(
-                "^.*(s3://[^ ]*) .*$", r"\1", cmd_ret.stdout, flags=(re.MULTILINE)
-            ).strip()
-            target_files = target_files_str.split("\n")
-
-            logger.debug(
-                "aws s3 sync result: [returncode:%d][len:%d]",
-                cmd_ret.returncode,
-                len(target_files),
-            )
+        for page in paginator.paginate(
+            Bucket=__class__.S3_STORAGE_BUCKET, Prefix=__class__.S3_OUTPUT_DIR
+        ):
+            for obj in page.get("Contents", []):
+                if obj["Key"].endswith(DIRPATH.EXPERIMENT_YML) or obj["Key"].endswith(
+                    DIRPATH.WORKFLOW_YML
+                ):
+                    target_files.append(obj["Key"])
 
         logger.debug(
-            "download all medata from remote storage (s3). [count: %d]",
+            "download all metadata from remote storage (s3). [count: %d]",
             len(target_files),
         )
 
-        # ----------------------------------------
-        # exec downloading
-        # ----------------------------------------
-
-        # do copy data from remote storage
-        target_files_count = len(target_files)
-        for index, remote_config_yml_abs_path in enumerate(target_files):
-            relative_config_yml_path = remote_config_yml_abs_path.replace(
-                f"{__class__.S3_STORAGE_OUTPUT_URL}/", ""
-            )
-            remote_config_yml_path = (
-                f"{__class__.S3_OUTPUT_DIR}/{relative_config_yml_path}"
+        for index, remote_config_yml_path in enumerate(target_files):
+            relative_config_yml_path = remote_config_yml_path.replace(
+                f"{__class__.S3_OUTPUT_DIR}/", ""
             )
             local_config_yml_path = f"{DIRPATH.OUTPUT_DIR}/{relative_config_yml_path}"
             local_config_yml_dir = os.path.dirname(local_config_yml_path)
@@ -141,24 +75,21 @@ class S3StorageController(BaseRemoteStorageController):
             if not os.path.isfile(local_config_yml_path):
                 logger.debug(
                     f"copy config_yml: {relative_config_yml_path} "
-                    f"({index+1}/{target_files_count})"
+                    f"({index+1}/{len(target_files)})"
                 )
 
                 os.makedirs(local_config_yml_dir, exist_ok=True)
 
-                # do download config file
                 self.__s3_client.download_file(
                     __class__.S3_STORAGE_BUCKET,
                     remote_config_yml_path,
                     local_config_yml_path,
                 )
-
             else:
                 logger.debug(
                     f"skip copy config_yml: {relative_config_yml_path} "
-                    f"({index+1}/{target_files_count})"
+                    f"({index+1}/{len(target_files)})"
                 )
-                continue
 
         return True
 
