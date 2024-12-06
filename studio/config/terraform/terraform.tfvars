@@ -1,0 +1,6 @@
+db_name = "studio"
+db_username = "studio_db_user"
+db_password = "studio_db_password"
+initial_firebase_uid = "LMPSJo1E5kTaESBaT6S8Msgliwy1"
+initial_user_name = "Miles"
+initial_user_email = "miles_desforges@araya.org"

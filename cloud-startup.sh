@@ -1,16 +1,27 @@
 #!/bin/bash
-set -e
+set -e  # Exit immediately if a command exits with a non-zero status
+
+# Map infrastructure environment variables (DB_*) to application expected variables (MYSQL_*)
+# This allows the application's config.py to find the correct environment variables
+# while maintaining infrastructure naming conventions
+export MYSQL_SERVER="${DB_HOST}"
+export MYSQL_USER="${DB_USER}"
+export MYSQL_PASSWORD="${DB_PASSWORD}"
+export MYSQL_DATABASE="${DB_NAME}"
 
 echo 'Starting container'
 echo 'Attempting to connect to RDS'
-echo "DB_HOST: ${DB_HOST}"
-echo "DB_USER: ${DB_USER}"
-echo "DB_NAME: ${DB_NAME}"
+# Log environment variables for debugging
+echo "DB_HOST: ${MYSQL_SERVER}"
+echo "DB_USER: ${MYSQL_USER}"
+echo "DB_NAME: ${MYSQL_DATABASE}"
 
 # Wait for RDS to be available
+# This is necessary because RDS might still be initializing when container starts
+# Tries 30 times with 2 second intervals (total 60 seconds timeout)
 max_tries=30
 counter=0
-until mysql -h "${DB_HOST}" -u "${DB_USER}" -p"${DB_PASSWORD}" "${DB_NAME}" -e 'SELECT 1;'
+until mysql -h "${MYSQL_SERVER}" -u "${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" -e 'SELECT 1;'
 do
     sleep 2
     [[ counter -eq $max_tries ]] && echo "Failed to connect to Database" && exit 1
@@ -20,28 +31,86 @@ done
 
 echo 'Database connection successful'
 
-# Run database migrations
+# Create database if it doesn't exist
+# This ensures the application's database exists before proceeding
+mysql -h "$MYSQL_SERVER" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" <<-EOSQL
+    CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};
+    USE ${MYSQL_DATABASE};
+EOSQL
+
+if ! mysql -h "$MYSQL_SERVER" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "USE ${MYSQL_DATABASE}"; then
+    echo "Failed to create/access database ${MYSQL_DATABASE}"
+    exit 1
+fi
+
+echo "Database ${MYSQL_DATABASE} ready"
+
+# Run database migrations using alembic
+# This ensures all database tables and schemas are up to date
+cd /app
 alembic upgrade head
 
-# check backend input parameters
+# Initialize admin user and organization
+# Only proceeds if all required environment variables are set
+# This section handles first-time setup of the application
+if [ ! -z "$INITIAL_FIREBASE_UID" ] && [ ! -z "$INITIAL_USER_NAME" ] && [ ! -z "$INITIAL_USER_EMAIL" ]; then
+    echo "Checking for existing admin user..."
+    # Check if user already exists to prevent duplicate creation
+    USER_EXISTS=$(mysql -h "$MYSQL_SERVER" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -N -s -e \
+        "SELECT COUNT(*) FROM ${MYSQL_DATABASE}.users WHERE uid='$INITIAL_FIREBASE_UID';")
+
+    if [ "$USER_EXISTS" -eq "0" ]; then
+        # Create default organization first (required due to foreign key constraint)
+        echo "Creating default organization..."
+        mysql -h "$MYSQL_SERVER" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" ${MYSQL_DATABASE} <<-EOSQL
+            INSERT IGNORE INTO organization (id, name) VALUES (1, 'Default Organization');
+EOSQL
+
+        # Create the initial admin user
+        echo "Creating initial admin user..."
+        mysql -h "$MYSQL_SERVER" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" ${MYSQL_DATABASE} <<-EOSQL
+            INSERT INTO users (uid, organization_id, name, email, active)
+            VALUES ('$INITIAL_FIREBASE_UID', 1, '$INITIAL_USER_NAME', '$INITIAL_USER_EMAIL', true);
+EOSQL
+        echo "Initial admin user created successfully"
+    else
+        echo "Admin user already exists, skipping creation"
+    fi
+fi
+
+# Verify backend configuration
+# Ensures required environment variables are set before starting the application
 echo "Host: $BACKEND_HOST"
 echo "Port: $BACKEND_PORT"
-
 if [ -z "$BACKEND_HOST" ] || [ -z "$BACKEND_PORT" ]; then
     echo "Please provide 'BACKEND_HOST' and 'BACKEND_PORT' environment variables"
     exit 1
 fi
 
-# Start the application in the background
+# Start the application in background
+echo "Starting application..."
 poetry run python main.py --host="$BACKEND_HOST" --port="$BACKEND_PORT" &
 APP_PID=$!
 
-# Check load balancer
+# Allow initial startup time matching ECS health check startPeriod
+echo "Waiting for initial startup..."
+sleep 30
+
+# Single initial health check before load balancer check
+echo "Verifying initial health..."
+if ! curl -v http://127.0.0.1:8000/health; then
+    echo "Initial health check failed"
+    # Don't exit - let ECS handle it
+fi
+
+# Load balancer health check function
+# Verifies that the application is accessible through the load balancer
 check_load_balancer() {
     if [ -n "$AWS_SERVICE_URL" ]; then
         echo "Checking load balancer status..."
         max_tries=30
         counter=0
+        # Try for 5 minutes (30 attempts * 10 seconds)
         until curl -s -o /dev/null --max-time 10 "$AWS_SERVICE_URL"
         do
             sleep 10
@@ -57,10 +126,12 @@ check_load_balancer() {
     fi
 }
 
-# Run load balancer check
+# Run load balancer check in background
+# This allows parallel checking while the application is starting
 check_load_balancer &
 LB_CHECK_PID=$!
 
-# Wait for both processes
+# Wait for all background processes to complete
+# This ensures the container keeps running as long as the application is running
 wait $APP_PID
 wait $LB_CHECK_PID

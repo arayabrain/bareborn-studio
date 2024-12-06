@@ -2,6 +2,9 @@ FROM --platform=linux/amd64 python:3.8.20-slim
 
 WORKDIR /app
 
+COPY alembic.ini /app/
+COPY pyproject.toml poetry.lock /app/
+
 # install default packages
 RUN apt-get --allow-releaseinfo-change update && \
     apt-get install --no-install-recommends -y sudo procps iproute2 iputils-ping telnet wget curl unzip less vim \
@@ -48,7 +51,7 @@ RUN bash run_download_model_files.sh && rm run_download_model_files.sh
 COPY frontend/build /app/frontend/build
 COPY studio /app/studio
 COPY sample_data /app/sample_data
-COPY main.py alembic.ini ./
+COPY main.py /app
 
 # Copy the cloud-startup.sh script
 COPY cloud-startup.sh ./
