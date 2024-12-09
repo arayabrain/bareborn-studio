@@ -214,6 +214,22 @@ async def create_file(
 DOWNLOAD_STATUS: Dict[str, DownloadStatus] = {}
 
 
+@router.delete(
+    "/{workspace_id}/delete/{filename}",
+    response_model=bool,
+    dependencies=[Depends(is_workspace_owner)],
+)
+async def delete_file(workspace_id: str, filename: str):
+    filepath = join_filepath([DIRPATH.INPUT_DIR, workspace_id, filename])
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="File not found.")
+    try:
+        os.remove(filepath)
+        return True
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get(
     "/{workspace_id}/download/status",
     response_model=DownloadStatus,
