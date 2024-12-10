@@ -1,0 +1,5 @@
+db_username = "your_db_username"
+db_password = "your_db_password"
+initial_firebase_uid = "your_firebase_uid"
+initial_user_name = "Your Name"
+initial_user_email = "your.email@domain.com"
