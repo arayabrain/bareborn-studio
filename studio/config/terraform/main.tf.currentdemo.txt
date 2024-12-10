@@ -86,43 +86,39 @@ resource "aws_subnet" "private2" {
   }
 }
 
-# Elastic IP for NAT Instance
-resource "aws_eip" "nat_instance" {
+# Elastic IPs for NAT Gateways
+resource "aws_eip" "nat1" {
   domain = "vpc"
-  instance = aws_instance.nat.id
+  tags = {
+    Name = "optinist-cloud-eip1-tf"
+  }
+}
+
+resource "aws_eip" "nat2" {
+  domain = "vpc"
+  tags = {
+    Name = "optinist-cloud-eip2-tf"
+  }
+}
+
+# NAT Gateways
+resource "aws_nat_gateway" "nat1" {
+  allocation_id = aws_eip.nat1.id
+  subnet_id     = aws_subnet.public1.id
+  depends_on    = [aws_internet_gateway.main]
 
   tags = {
-    Name = "optinist-nat-instance-eip-tf"
+    Name = "optinist-cloud-nat-public1-ap-northeast-1a-tf"
   }
 }
 
-# NAT Instance
-data "aws_ami" "nat_instance" {
-  most_recent = true
-  owners      = ["amazon"]
+resource "aws_nat_gateway" "nat2" {
+  allocation_id = aws_eip.nat2.id
+  subnet_id     = aws_subnet.public2.id
+  depends_on    = [aws_internet_gateway.main]
 
-  filter {
-    name   = "name"
-    values = ["amzn-ami-vpc-nat-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
-
-data "aws_network_interface" "nat" {
-  depends_on = [aws_instance.nat]
-
-  filter {
-    name   = "attachment.instance-id"
-    values = [aws_instance.nat.id]
-  }
-
-  filter {
-    name   = "attachment.device-index"
-    values = ["0"]
+  tags = {
+    Name = "optinist-cloud-nat-public2-ap-northeast-1c-tf"
   }
 }
 
@@ -145,8 +141,7 @@ resource "aws_route_table" "private1" {
 
   route {
     cidr_block     = "0.0.0.0/0"
- #   nat_gateway_id = aws_nat_gateway.nat1.id
-    network_interface_id = data.aws_network_interface.nat.id
+    nat_gateway_id = aws_nat_gateway.nat1.id
   }
 
   tags = {
@@ -159,8 +154,7 @@ resource "aws_route_table" "private2" {
 
   route {
     cidr_block     = "0.0.0.0/0"
- #   nat_gateway_id = aws_nat_gateway.nat1.id
-    network_interface_id = data.aws_network_interface.nat.id
+    nat_gateway_id = aws_nat_gateway.nat2.id
   }
 
   tags = {
@@ -235,6 +229,22 @@ resource "aws_security_group" "ecs" {
   ingress {
     from_port        = 8000
     to_port          = 8009
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  ingress {
+    from_port        = 8080
+    to_port          = 8089
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  ingress {
+    from_port        = 443
+    to_port          = 443
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
@@ -341,6 +351,21 @@ resource "aws_security_group" "rds" {
     security_groups = [aws_security_group.ecs.id]
   }
 
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow MySQL"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -370,29 +395,7 @@ resource "aws_security_group" "efs" {
   }
 }
 
-resource "aws_security_group" "nat_instance" {
-  name        = "nat-instance-sg-tf"
-  description = "Security group for NAT Instance"
-  vpc_id      = aws_vpc.main.id
 
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [aws_vpc.main.cidr_block]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "optinist-nat-instance-sg-tf"
-  }
-}
 
 # ECS Task Execution Role
 resource "aws_iam_role" "ecs_task_execution" {
@@ -449,29 +452,6 @@ resource "aws_iam_role_policy_attachment" "ecs_task_cloudwatch" {
 resource "aws_iam_role_policy_attachment" "ecs_task_ecr" {
   role       = aws_iam_role.ecs_task.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
-
-# NAT role
-resource "aws_iam_role" "nat_instance" {
-  name = "nat-instance-role-tf"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_instance_profile" "nat_instance" {
-  name = "nat-instance-profile-tf"
-  role = aws_iam_role.nat_instance.name
 }
 
 # RDS Task Role
@@ -572,14 +552,13 @@ resource "aws_db_instance" "main" {
   allocated_storage       = 20
   storage_type            = "gp3"
   engine                  = "mysql"
-  engine_version          = "8.0"
-  instance_class          = "db.t4g.micro"
+  engine_version          = "8.0.35"
+  instance_class          = "db.t3.micro"
   parameter_group_name    = "default.mysql8.0"
   db_name                 = var.db_name
   username                = var.db_username
   password                = var.db_password
   skip_final_snapshot     = true
-  final_snapshot_identifier = "${var.db_name}-final-snapshot"
   backup_retention_period = 7
   monitoring_interval     = 60
   monitoring_role_arn     = aws_iam_role.rds_monitoring.arn
@@ -589,7 +568,7 @@ resource "aws_db_instance" "main" {
   port                    = 3306
   vpc_security_group_ids  = [aws_security_group.rds.id]
   db_subnet_group_name    = aws_db_subnet_group.main.name
-  multi_az                = false
+  multi_az                = true
   storage_encrypted       = true
 
   tags = {
@@ -597,47 +576,9 @@ resource "aws_db_instance" "main" {
   }
 }
 
-# Launch NAT Instance
-resource "aws_instance" "nat" {
-  ami                    = data.aws_ami.nat_instance.id
-  instance_type          = "t3a.nano"
-  subnet_id              = aws_subnet.public1.id
-  vpc_security_group_ids = [aws_security_group.nat_instance.id]
-  source_dest_check      = false
-
-  iam_instance_profile   = aws_iam_instance_profile.nat_instance.name
-
-  root_block_device {
-    volume_size = 8
-    volume_type = "gp3"
-  }
-
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              echo 1 > /proc/sys/net/ipv4/ip_forward
-              iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-              EOF
-
-  tags = {
-    Name = "optinist-nat-instance-tf"
-  }
-}
-
 # EFS File System
 resource "aws_efs_file_system" "snmk" {
   creation_token = "optinist-cloud-snmk-volume-tf"
-
-  lifecycle_policy {
-    transition_to_ia = "AFTER_7_DAYS"
-  }
-
-  lifecycle_policy {
-    transition_to_primary_storage_class = "AFTER_1_ACCESS"
-  }
-
-  performance_mode = "generalPurpose"
-  throughput_mode = "bursting"
 
   tags = {
     Name = "optinist-cloud-snmk-volume-tf"
@@ -896,7 +837,7 @@ resource "aws_ecs_service" "main" {
   network_configuration {
     subnets          = [aws_subnet.private1.id, aws_subnet.private2.id]
     security_groups  = [aws_security_group.ecs.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   capacity_provider_strategy {
@@ -913,8 +854,8 @@ resource "aws_ecs_service" "main" {
   }
 
   depends_on = [
-#    aws_nat_gateway.nat1,
-    aws_instance.nat,
+    aws_nat_gateway.nat1,
+    aws_nat_gateway.nat2,
     aws_db_instance.main,
     aws_lb.main,
     aws_lb_listener.http
@@ -1135,7 +1076,7 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/optinist-cloud-taskdef-tf"
-  retention_in_days = 7
+  retention_in_days = 30
 
   tags = {
     Name = "optinist-cloud-logs-tf"
