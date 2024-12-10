@@ -678,7 +678,8 @@ resource "aws_efs_access_point" "snmk" {
 # S3 bucket
 
 resource "aws_s3_bucket" "app_storage" {
-  bucket = "optinist-app-storage-${data.aws_caller_identity.current.account_id}"  # Using account ID for uniqueness
+  bucket = "optinist-app-storage-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
 
   tags = {
     Name        = "OptiNiSt Application Storage"
