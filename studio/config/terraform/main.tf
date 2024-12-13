@@ -628,14 +628,6 @@ resource "aws_instance" "nat" {
 resource "aws_efs_file_system" "snmk" {
   creation_token = "optinist-cloud-snmk-volume-tf"
 
-  lifecycle_policy {
-    transition_to_ia = "AFTER_7_DAYS"
-  }
-
-  lifecycle_policy {
-    transition_to_primary_storage_class = "AFTER_1_ACCESS"
-  }
-
   performance_mode = "generalPurpose"
   throughput_mode = "bursting"
 
