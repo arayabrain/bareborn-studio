@@ -1,9 +1,35 @@
-import { Box, TextField, TextFieldProps } from "@mui/material"
+import { Box, FormHelperText, TextField, TextFieldProps } from "@mui/material"
 import { styled } from "@mui/material/styles"
 
 export const ParamTextField = styled((props: TextFieldProps) => (
   <Box marginBottom={2}>
-    <TextField variant="outlined" fullWidth {...props} />
+    <TextField
+      variant="outlined"
+      fullWidth
+      {...props}
+      helperText={
+        <span>
+          CaImAn documentation #1{" "}
+          <a
+            href="https://caiman.readthedocs.io/en/latest/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Link
+          </a>
+        </span>
+      }
+    />
+    <FormHelperText>
+      CaImAn documentation #2{" "}
+      <a
+        href="https://caiman.readthedocs.io/en/latest/"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Link
+      </a>
+    </FormHelperText>
   </Box>
 ))(({ theme }) => ({
   "& .MuiInputLabel-root": {
