@@ -1,6 +1,9 @@
 import copy
 
+import cv2
 import numpy as np
+
+from studio.app.const import THUMBNAIL_HEIGHT
 
 
 def create_images_list(data):
@@ -18,5 +21,9 @@ def create_images_list(data):
 
 
 def save_thumbnail(plot_file):
-    # Note: In the barebone-studio version, it does nothing.
-    pass
+    plot_img = cv2.imread(plot_file)
+    h, w = plot_img.shape[:2]
+    thumb_img = cv2.resize(
+        plot_img, dsize=(int(w * (THUMBNAIL_HEIGHT / h)), THUMBNAIL_HEIGHT)
+    )
+    cv2.imwrite(plot_file.replace(".png", ".thumb.png"), thumb_img)

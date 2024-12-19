@@ -24,4 +24,5 @@ class ACCEPT_FILE_EXT(Enum):
 
 NOT_DISPLAY_ARGS_LIST = ["params", "output_dir", "nwbfile", "kwargs"]
 
+THUMBNAIL_HEIGHT = 128
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
