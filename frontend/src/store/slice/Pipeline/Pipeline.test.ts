@@ -131,7 +131,12 @@ describe("Pipeline State Test", () => {
               name: "Node 1",
               message: "",
               outputPaths: {
-                output1: { path: "./output/path", type: "image" },
+                output1: {
+                  path: "./output/path",
+                  type: "image",
+                  data_shape: [],
+                  max_index: null,
+                },
               },
             },
             node2: { status: "pending", name: "Node 2", message: "" },

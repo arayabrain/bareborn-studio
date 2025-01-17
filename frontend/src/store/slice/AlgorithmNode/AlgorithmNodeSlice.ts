@@ -13,7 +13,11 @@ import {
   deleteFlowNodeById,
 } from "store/slice/FlowElement/FlowElementSlice"
 import { NODE_TYPE_SET } from "store/slice/FlowElement/FlowElementType"
-import { run, runByCurrentUid } from "store/slice/Pipeline/PipelineActions"
+import {
+  run,
+  runApplyFilter,
+  runByCurrentUid,
+} from "store/slice/Pipeline/PipelineActions"
 import {
   reproduceWorkflow,
   importWorkflowConfig,
@@ -60,10 +64,10 @@ export const algorithmNodeSlice = createSlice({
         const params = action.payload
         if (node.data?.type === NODE_TYPE_SET.ALGORITHM) {
           state[node.id] = {
+            ...state[node.id],
             functionPath,
             name,
             params: convertToParamMap(params),
-            originalValue: state[node.id]?.originalValue,
             isUpdate: runAlready ?? false,
           }
         }
@@ -81,6 +85,38 @@ export const algorithmNodeSlice = createSlice({
           delete state[action.payload]
         }
       })
+      .addCase(run.fulfilled, (state, action) => {
+        const runPostData = action.meta.arg.runPostData
+        Object.values(runPostData.nodeDict)
+          .filter(isAlgorithmNodePostData)
+          .forEach((node) => {
+            if (state[node.id].dataFilterParam) {
+              state[node.id].dataFilterParam = undefined
+            }
+          })
+      })
+      .addCase(runByCurrentUid.fulfilled, (state, action) => {
+        const runPostData = action.meta.arg.runPostData
+        Object.values(runPostData.nodeDict)
+          .filter(isAlgorithmNodePostData)
+          .forEach((node) => {
+            state[node.id].originalDataFilterValue =
+              state[node.id].dataFilterParam
+          })
+      })
+      .addCase(runApplyFilter.pending, (state, action) => {
+        const { nodeId } = action.meta.arg
+        state[nodeId].loadingFilterParamApi = true
+      })
+      .addCase(runApplyFilter.rejected, (state, action) => {
+        const { nodeId } = action.meta.arg
+        state[nodeId].loadingFilterParamApi = false
+      })
+      .addCase(runApplyFilter.fulfilled, (state, action) => {
+        const { dataFilterParam, nodeId } = action.meta.arg
+        state[nodeId].dataFilterParam = dataFilterParam
+        state[nodeId].loadingFilterParamApi = false
+      })
       .addMatcher(
         isAnyOf(
           fetchWorkflow.fulfilled,
@@ -97,7 +133,9 @@ export const algorithmNodeSlice = createSlice({
                   name: node.data.label,
                   functionPath: node.data.path,
                   params: node.data.param,
+                  dataFilterParam: node.data.dataFilterParam,
                   originalValue: node.data.param,
+                  originalDataFilterValue: node.data.dataFilterParam,
                   isUpdate: false,
                 }
               }

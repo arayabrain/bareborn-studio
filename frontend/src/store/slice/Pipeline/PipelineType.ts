@@ -97,6 +97,8 @@ export type OutputPaths = {
   [outputKey: string]: {
     path: string
     type: DATA_TYPE
+    data_shape: number[]
+    max_index?: number | null
   }
 }
 
